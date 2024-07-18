@@ -1,7 +1,13 @@
 {
     "translations": {
         "de": {
+            "Room Display": "Raumdisplay",
+            "\nRoom Display\n ": "\nRaumdisplay\n ",
+            "The module connects an openHASP display to the IPS system via MQTT.": "Das Modul bindet ein openHASP-Display über MQTT an das IPS-System an.",
+            "Display unit ...": "Anzeigeerät ...",
             "Hostname:": "Gerätename:",
+            "Device IP:": "Geräteadresse:",
+            "Object assignment": "Objektzuordnung ...",
             "Objects:": "Objekte:",
             "Type": "Typ",
             "Caption": "Beschriftung",
