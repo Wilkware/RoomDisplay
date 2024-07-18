@@ -599,7 +599,7 @@ class RoomDisplay extends IPSModule
         }
 
         if ($topic == 'statusupdate') {
-            $this->SendDebug(__FUNCTION__, 'Status: '. $data);
+            $this->SendDebug(__FUNCTION__, 'Status: ' . $data);
         }
 
         // Last Will and Testament (LWT)?
