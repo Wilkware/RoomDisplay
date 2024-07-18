@@ -1,0 +1,270 @@
+{
+    "elements": [
+        {
+            "type": "ValidationTextBox",
+            "name": "Hostname",
+            "caption": "Hostname:"
+        },
+        {
+            "type": "List",
+            "name": "Objects",
+            "caption": "Objects:",
+            "rowCount": 30,
+            "add": true,
+            "delete": true,
+            "changeOrder": true,
+            "columns": [
+                {
+                    "caption": "Type",
+                    "name": "Type",
+                    "width": "100px",
+                    "save": true,
+                    "visible": true,
+                    "add": 9,
+                    "edit": {
+                        "type": "Select",
+                        "options": [
+                            {
+                                "caption": "Arc",
+                                "value": 1
+                            },
+                            {
+                                "caption": "Button",
+                                "value": 3
+                            },
+                            {
+                                "caption": "Dropdown",
+                                "value": 6
+                            },
+                            {
+                                "caption": "Gauge",
+                                "value": 7
+                            },
+                            {
+                                "caption": "Label",
+                                "value": 9
+                            },
+                            {
+                                "caption": "LED Inicator",
+                                "value": 10
+                            },
+                            {
+                                "caption": "Line Meter",
+                                "value": 12
+                            },
+                            {
+                                "caption": "Object",
+                                "value": 14
+                            },
+                            {
+                                "caption": "Roller",
+                                "value": 15
+                            },
+                            {
+                                "caption": "Slider",
+                                "value": 16
+                            },
+                            {
+                                "caption": "Switch",
+                                "value": 18
+                            },
+                            {
+                                "caption": "Toggle Button",
+                                "value": 20
+                            }
+                        ]
+                    }
+                },
+                {
+                    "caption": "Page",
+                    "name": "Page",
+                    "width": "50px",
+                    "save": true,
+                    "visible": true,
+                    "add": 1,
+                    "edit": {
+                        "type": "Select",
+                        "options": [
+                            {
+                                "caption": "1",
+                                "value": 1
+                            },
+                            {
+                                "caption": "2",
+                                "value": 2
+                            },
+                            {
+                                "caption": "3",
+                                "value": 3
+                            },
+                            {
+                                "caption": "4",
+                                "value": 4
+                            },
+                            {
+                                "caption": "5",
+                                "value": 5
+                            },
+                            {
+                                "caption": "6",
+                                "value": 6
+                            },
+                            {
+                                "caption": "7",
+                                "value": 7
+                            },
+                            {
+                                "caption": "8",
+                                "value": 8
+                            },
+                            {
+                                "caption": "9",
+                                "value": 9
+                            },
+                            {
+                                "caption": "10",
+                                "value": 10
+                            },
+                            {
+                                "caption": "11",
+                                "value": 11
+                            },
+                            {
+                                "caption": "12",
+                                "value": 12
+                            }
+                        ]
+                    }
+                },
+                {
+                    "caption": "Id",
+                    "name": "Id",
+                    "width": "50px",
+                    "save": true,
+                    "visible": true,
+                    "add": 1,
+                    "edit": {
+                        "type": "NumberSpinner",
+                        "minimum": 1,
+                        "maximum": 254
+                    }
+                },
+                {
+                    "caption": "Comment",
+                    "name": "Comment",
+                    "width": "150px",
+                    "save": true,
+                    "visible": true,
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "Caption",
+                    "name": "Caption",
+                    "width": "150px",
+                    "save": true,
+                    "visible": true,
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "Value",
+                    "name": "Value",
+                    "width": "100px",
+                    "save": true,
+                    "visible": true,
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "Calculation",
+                    "name": "Calculation",
+                    "width": "150px",
+                    "save": true,
+                    "visible": true,
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "Recalculation",
+                    "name": "Recalculation",
+                    "width": "150px",
+                    "save": true,
+                    "visible": true,
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "Link",
+                    "name": "Link",
+                    "width": "200px",
+                    "save": true,
+                    "visible": true,
+                    "add": 1,
+                    "edit": {
+                        "type": "SelectObject"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "Advanced settings ...",
+            "items": [
+                {
+                    "type": "CheckBox",
+                    "name": "AutoDimBacklight",
+                    "caption": "Auto Dim Backlight!"
+                },
+                {
+                    "type": "CheckBox",
+                    "name": "AutoShutdownBacklight",
+                    "caption": "Auto Shutdow Backlight!"
+                },
+                {
+                    "type": "CheckBox",
+                    "name": "PageOneOnIdle",
+                    "caption": "Page 1 on Idle!"
+                },
+                {
+                    "type": "SelectScript",
+                    "name": "ForwardMessageScript",
+                    "caption": "Forward message to script:"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "type": "RowLayout",
+            "items": [
+                {
+                    "type": "Button",
+                    "label": "Restart",
+                    "onClick": "WWXRD_Restart($id);"
+                },
+                {
+                    "type": "Button",
+                    "caption": "Status",
+                    "onClick": "IPS_RequestAction($id,'StatusUpdate','');"
+                },
+                {
+                    "type": "Button",
+                    "label": "Backup",
+                    "onClick": "echo \"../hook/plate$id\";"
+                }
+            ]
+        }
+    ],
+    "status": []
+}

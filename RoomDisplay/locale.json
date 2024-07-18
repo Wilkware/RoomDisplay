@@ -1,0 +1,40 @@
+{
+    "translations": {
+        "de": {
+            "Hostname:": "Gerätename:",
+            "Objects:": "Objekte:",
+            "Type": "Typ",
+            "Caption": "Beschriftung",
+            "Page": "Seite",
+            "Id": "Id",
+            "Comment": "Kommentar",
+            "Calculation": "Umrechnung",
+            "Recalculation": "Rückrechnung",
+            "Link": "Verknüpfung",
+            "Restart": "Neustart",
+            "Backup": "Sicherung",
+            "Clear Pages": "Seiten löschen",
+            "Reload Pages": "Seiten neu laden",
+            "Idle": "Leerlauf",
+            "Backlight": "Hintergrundbeleuchtung",
+            "Event": "Ereignis",
+            "Value": "Wert",
+            "Text": "Text",
+            "Color": "Farbe",
+            "Off": "Aus",
+            "Short": "Kurz",
+            "Long": "Lang",
+            "Up": "Hoch",
+            "Down": "Runter",
+            "Hold": "Gedrückt",
+            "Release": "Losgelassen",
+            "Changed": "Geändert",
+            "Unknown": "Unbekannt",
+            "Advanced settings ...": "Erweiterte Einstellungen ...",
+            "Auto Dim Backlight!": "Hintergrundbeleuchtung automatisch dimmen!",
+            "Auto Shutdow Backlight!": "Hintergrundbeleuchtung automatisch abschalten!",
+            "Page 1 on Idle!": "Im Ruhezustand auf Seite 1 wechseln!",
+            "Forward message to script:": "Nachricht an Skript weiterleiten:"
+        }
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "id": "{E82EFD7B-159A-4AF3-EBD9-511CA7E06DCA}",
+    "name": "Room Display",
+    "author": "Wilkware (@Pitti)",
+    "url": "https://wilkware.de",
+    "compatibility": {
+        "version": "7.0"
+    },
+    "version": "1.0",
+    "build": 20240718,
+    "date": 1721304000
+}
