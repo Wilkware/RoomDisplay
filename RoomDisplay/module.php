@@ -11,9 +11,15 @@ require_once __DIR__ . '/../libs/_traits.php';
 class RoomDisplay extends IPSModule
 {
     use DebugHelper;
+    use FormatHelper;
     use ProfileHelper;
     use VariableHelper;
     use WebhookHelper;
+
+    // Modul IDs
+    private const GUID_MQTT_IO = '{C6D2AEB3-6E1F-4B2E-8E69-3A1A00246850}';  // Splitter
+    private const GUID_MQTT_TX = '{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}';  // from module to server
+    private const GUID_MQTT_RX = '{7F7632D9-FA40-4F38-8DEA-C83CD4325A32}';  // from server to module
 
     // UI Objects
     private const UI_ARC = 1;
@@ -49,6 +55,32 @@ class RoomDisplay extends IPSModule
     private const PH_VALUE = '{{val}}';
     private const PH_TEXT = '{{txt}}';
 
+    // Constants
+    private const RD_HOST_NAME = 'plate';
+    private const RD_PREFIX_TOPIC = 'hasp/';
+    private const RD_PREFIX_HOOK = '/hook/plate';
+
+    // Echo maps
+    private const RD_STATUS_INFO = [
+        ['node', 'Node', 3],
+        ['idle', 'Idle', 3],
+        ['version', 'Version', 3],
+        ['uptime', 'Uptime', 1],
+        ['ssid', 'WiFi', 3],
+        ['rssi', 'RSSI', 1],
+        ['ip', 'IP', 3],
+        ['mac', 'MAC', 3],
+        ['heapFree', 'Heap Free', 1],
+        ['heapFrag', 'Heap Frag', 1],
+        ['core', 'Core', 3],
+        ['canUpdate', 'Updateable', 0],
+        ['page', 'Page', 1],
+        ['numPages', 'Pages', 1],
+        ['tftDriver', 'TFT Driver', 3],
+        ['tftWidth', 'TFT Width', 1],
+        ['tftHeight', 'TFT Height', 1],
+    ];
+
     /**
      * Overrides the internal IPSModule::Create($id) function
      */
@@ -58,7 +90,8 @@ class RoomDisplay extends IPSModule
         parent::Create();
 
         // Device-Topic (Name)
-        $this->RegisterPropertyString('Hostname', 'plate');
+        $this->RegisterPropertyString('Hostname', self::RD_HOST_NAME);
+        $this->RegisterPropertyString('IP', '');
         // Design Objects
         $this->RegisterPropertyString('Objects', '[]');
 
@@ -68,8 +101,11 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyBoolean('PageOneOnIdle', false);
         $this->RegisterPropertyInteger('ForwardMessageScript', 1);
 
-        // Automatically connect to the MQTT server instance
-        $this->ConnectParent('{C6D2AEB3-6E1F-4B2E-8E69-3A1A00246850}');
+        // Status Update
+        $this->RegisterAttributeString('StatusUpdate', '');
+
+        // Automatically connect to the MQTT server/splitter instance
+        $this->ConnectParent(self::GUID_MQTT_IO);
     }
 
     /**
@@ -77,8 +113,19 @@ class RoomDisplay extends IPSModule
      */
     public function Destroy()
     {
+        // Unregister Hook
         if (!IPS_InstanceExists($this->InstanceID)) {
-            $this->UnregisterHook('/hook/plate' . $this->InstanceID);
+            $this->UnregisterHook(self::RD_PREFIX_HOOK . $this->InstanceID);
+        }
+        // Unregister reference
+        foreach ($this->GetReferenceList() as $id) {
+            $this->UnregisterReference($id);
+        }
+        // Unregister messages
+        foreach ($this->GetMessageList() as $senderID => $messages) {
+            foreach ($messages as $message) {
+                $this->UnregisterMessage($senderID, $message);
+            }
         }
         // Never delete this line!
         parent::Destroy();
@@ -91,12 +138,12 @@ class RoomDisplay extends IPSModule
     {
         // Never delete this line!
         parent::ApplyChanges();
-        $mqttTopic = 'hasp/' . $this->ReadPropertyString('Hostname') . '/';
+        $mqttTopic = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/';
         $this->SetReceiveDataFilter('.*' . $mqttTopic . '.*');
         $this->SendDebug(__FUNCTION__, 'SetReceiveDataFilter(\'.*' . $mqttTopic . '.*\')', 0);
 
         // Webhook for backup
-        $this->RegisterHook('/hook/plate' . $this->InstanceID);
+        $this->RegisterHook(self::RD_PREFIX_HOOK . $this->InstanceID);
 
         // Profile "WWXRD.Idle"
         $association = [
@@ -118,14 +165,14 @@ class RoomDisplay extends IPSModule
 
         // Maintain variables
         $this->MaintainVariable('Idle', $this->Translate('Idle'), 1, 'WWXRD.Idle', 2, true);
-        $this->MaintainVariable('Status', $this->Translate('Online'), 0, 'WWXRD.Status', 1, true);
+        $this->MaintainVariable('Status', $this->Translate('Status'), 0, 'WWXRD.Status', 1, true);
         $this->MaintainVariable('Backlight', $this->Translate('Backlight'), 1, 'WWXRD.Backlight', 3, true);
         $this->MaintainVariable('Page', $this->Translate('Page'), 1, 'WWXRD.Page', 4, true);
         // Maintain actions
         $this->MaintainAction('Backlight', true);
         $this->MaintainAction('Page', true);
 
-        // Validate element liste
+        // Validate object liste
         if ($this->RegisterObjects()) {
             $this->SetStatus(102);
         }
@@ -142,7 +189,14 @@ class RoomDisplay extends IPSModule
     public function GetConfigurationForm()
     {
         // Get form
-        $form = json_decode(file_get_contents(__DIR__ . '/form.json'), false);
+        $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+
+        $ip = $this->ReadPropertyString('IP');
+        // Buttons Backup & Status
+        if ($ip != '') {
+            $form['actions'][0]['items'][1]['enabled'] = true;
+            $form['actions'][0]['items'][2]['enabled'] = true;
+        }
         // return form
         return json_encode($form);
     }
@@ -165,7 +219,10 @@ class RoomDisplay extends IPSModule
                 $this->SendCommand('page=' . $value);
                 break;
             case 'StatusUpdate':
-                $this->SendCommand('statusupdate');
+                $this->StatusUpdate();
+                break;
+            case 'Synchronize':
+                $this->Synchronize();
                 break;
         }
     }
@@ -183,14 +240,14 @@ class RoomDisplay extends IPSModule
         $payload = $data->Payload;
         $this->SendDebug(__FUNCTION__, 'Received Topic: ' . $topic . ' Payload: ' . $payload, 0);
 
-        $prefix = 'hasp/' . $this->ReadPropertyString('Hostname') . '/LWT';
+        $prefix = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/LWT';
         // Check whether the topic begins with a specific prefix
         if (stripos($topic, $prefix) !== false) {
             $this->HandleData('LWT', $payload);
             return;
         }
 
-        $prefix = 'hasp/' . $this->ReadPropertyString('Hostname') . '/state/';
+        $prefix = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/state/';
         // Check whether the topic begins with a specific prefix
         if (stripos($topic, $prefix) === false) {
             $this->SendDebug(__FUNCTION__, 'Topic does not match', 0);
@@ -212,99 +269,18 @@ class RoomDisplay extends IPSModule
      */
     public function MessageSink($timeStamp, $sender, $message, $data)
     {
-        $this->SendDebug(__FUNCTION__, 'SenderId: ' . $sender . ' Data: ' . $this->PrettyPrint($data), 0);
+        $this->SendDebug(__FUNCTION__, 'SenderId: ' . $sender . ' Data: ' . $this->DebugPrint($data), 0);
         // Auf aktualisierungen reagieren.
         if ($message == VM_UPDATE) {
             $objects = json_decode($this->ReadPropertyString('Objects'), true);
-            // alle Elemente durchlaufen
-            foreach ($objects as $item => $element) {
-                if ($element['Object'] != $sender) {
+            // iterate over all objects
+            foreach ($objects as $item => $object) {
+                if ($object['Link'] != $sender) {
                     continue;
                 }
-                $this->SendDebug(__FUNCTION__, $this->PrettyPrint($element), 0);
-                // Umrechenen
-                $value = $this->EvaluateString($data[0], $element['Calculation']);
-                // Debug
-                $this->SendDebug(__FUNCTION__, $this->GetType($element['Type']) . ' :' . $this->SafePrint($value));
-                // Label
-                if ($element['Type'] == self::UI_LABEL) {
-                    if ($element['Caption'] == '') {
-                        // Bei leerer Caption wird der Wert direkt geschrieben.
-                        $this->SetItemText($element['Page'], $element['Id'], $this->EncodeText(strval($value)));
-                    } else {
-                        // sprintf %s bei String, %d bei Integer %f bei Float, %% um ein "%" zu schreiben
-                        $this->SetItemText($element['Page'], $element['Id'], $this->EncodeText(sprintf($element['Caption'], ($value))));
-                    }
-                }
-                // Toggel-Button, Slider, LineMeter
-                if ($element['Type'] == self::UI_TOGGLE || $element['Type'] == self::UI_SLIDER || $element['Type'] == self::UI_METER) {
-                    $this->SetItemValue($element['Page'], $element['Id'], intval($value));
-                    // Toogle Text for Button
-                    if ($element['Caption'] != '') {
-                        $text = $this->EvaluateString($value, $element['Caption']);
-                        $this->SetItemValStr($element['Page'], $element['Id'], $text);
-                    }
-                }
-                // Dropdown || Gauge
-                if (($element['Type'] == self::UI_DROPDOWN) ||
-                    ($element['Type'] == self::UI_GAUGE)) {
-                    // Bei leerem Value wird der Wert direkt geschrieben.
-                    $this->SetItemValue($element['Page'], $element['Id'], $value);
-                }
-                // Arc
-                if ($element['Type'] == self::UI_ARC) {
-                    if ($element['Caption'] == '') {
-                        // Bei leerer Caption wird der Wert direkt geschrieben.
-                        $this->SetItemValStr($element['Page'], $element['Id'], strval($value));
-                    } else {
-                        // sprintf %s bei String, %d bei Integer %f bei Float, %% um ein "%" zu schreiben
-                        $this->SetItemValStr($element['Page'], $element['Id'], sprintf($element['Caption'], $value));
-                    }
-                    if ($element['Value'] == '') {
-                        // Bei leerem Value wird der Wert direkt geschrieben.
-                        $this->SetItemValue($element['Page'], $element['Id'], intval($value));
-                    } else {
-                        // sprintf %s bei String, %d bei Integer %f bei Float, %% um ein "%" zu schreiben
-                        $this->SetItemValue($element['Page'], $element['Id'], intval(sprintf($element['Value'], $value)));
-                    }
-                }
-                // LED Indicator
-                if ($element['Type'] == self::UI_LED) {
-                    $var = IPS_GetVariable($sender);
-                    // Bei Boolscher Variable
-                    if ($var['VariableType'] == 0) {
-                        // Bei Boolscher Variable LEDInidactor ein
-                        if ($value) {
-                            $this->SetItemValue($element['Page'], $element['Id'], 255);
-                        } else {
-                            $this->SetItemValue($element['Page'], $element['Id'], 0);
-                        }
-                    } else {
-                        $this->SetItemValue($element['Page'], $element['Id'], intval($value));
-                    }
-                }
-                // LineMeter
-                if ($element['Type'] == self::UI_METER) {
-                    $this->SetItemValue($element['Page'], $element['Id'], intval($value));
-                    if ($element['Caption'] == '') {
-                        // Bei Leerer Caption wird der Wert direkt geschrieben.
-                        $this->SendCommand('p' . $element['Page'] . 'b' . $element['Id'] . '.value_str=' . strval($value));
-                    } else {
-                        // sprintf %s bei String, %d bei Integer %f bei Float, %% um ein "%" zu schreiben
-                        $this->SendCommand('p' . $element['Page'] . 'b' . $element['Id'] . '.value_str=' . sprintf($element['Caption'], ($value)));
-                    }
-                }
-                // Object
-                if ($element['Type'] == self::UI_OBJECT) {
-                    if ($element['Caption'] != '') {
-                        $text = $this->EvaluateString($value, $element['Caption']);
-                        $this->SetItemValStr($element['Page'], $element['Id'], $text);
-                    }
-                    if ($element['Value'] != '') {
-                        $text = $this->EvaluateString($value, $element['Value']);
-                        $this->SetItemProperty($element['Page'], $element['Id'], 'bg_color', $text);
-                    }
-                }
+                $this->SendDebug(__FUNCTION__, $this->DebugPrint($object), 0);
+                // process data to specific object
+                $this->ProcessData($object, $data[0]);
             }
         }
     }
@@ -316,7 +292,7 @@ class RoomDisplay extends IPSModule
 
     public function SetItemValue(int $page, int $objectId, int $value)
     {
-        $this->SendCommand('p' . $page . 'b' . $objectId . '.val=' . intval($value));
+        $this->SendCommand('p' . $page . 'b' . $objectId . '.val=' . $value);
     }
 
     public function SetItemText(int $page, int $objectId, string $value)
@@ -329,9 +305,14 @@ class RoomDisplay extends IPSModule
         $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.value_str=' . $value . '"]');
     }
 
+    public function SetItemSrc(int $page, int $objectId, string $value)
+    {
+        $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.src=' . $value . '"]');
+    }
+
     public function SendCommand(string $command)
     {
-        $mqttTopic = 'hasp/' . $this->ReadPropertyString('Hostname') . '/command/';
+        $mqttTopic = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/command/';
         $this->SendDebug(__FUNCTION__, 'Topic: ' . $mqttTopic . ' Command: ' . $command, 0);
         $this->SendMQTT($mqttTopic, $command);
     }
@@ -348,17 +329,26 @@ class RoomDisplay extends IPSModule
     {
         $filename = 'pages.jsonl';
 
+        $ip = $this->ReadPropertyString('IP');
         // download the file
-
+        if (empty($ip)) {
+            $this->EchoMessage('No IP adress filed!');
+            return;
+        }
+        $url = 'http://' . $ip . '/' . $filename . '?download=true';
+        $this->SendDebug(__FUNCTION__, $url);
+        $download = file_get_contents($url);
+        if ($download === false) {
+            $this->EchoMessage('Error during download file!');
+            return;
+        }
         // output headers so that the file is downloaded rather than displayed
         header('Content-Type: application/json; charset=utf-8');
         header('Content-Disposition: attachment; filename=' . $filename);
         // create a file pointer connected to the output stream
         $output = fopen('php://output', 'w');
         // output line by line
-        foreach ($entry as $fields) {
-            fputcsv($output, $fields);
-        }
+        fwrite($output, $download);
     }
 
     protected function SendMQTT($topic, $payload)
@@ -366,7 +356,7 @@ class RoomDisplay extends IPSModule
         $resultServer = true;
         $resultClient = true;
         //MQTT Server
-        $server['DataID'] = '{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}';
+        $server['DataID'] = self::GUID_MQTT_TX;
         $server['PacketType'] = 3;
         $server['QualityOfService'] = 0;
         $server['Retain'] = false;
@@ -376,22 +366,7 @@ class RoomDisplay extends IPSModule
         //$this->SendDebug(__FUNCTION__.'MQTT Server', $json, 0);
         $resultServer = @$this->SendDataToParent($json);
 
-        //MQTT Client
-        $buffer['PacketType'] = 3;
-        $buffer['QualityOfService'] = 0;
-        $buffer['Retain'] = false;
-        $buffer['Topic'] = $topic;
-        $buffer['Payload'] = $payload;
-        $json = json_encode($buffer, JSON_UNESCAPED_SLASHES);
-
-        $client['DataID'] = '{97475B04-67C3-A74D-C970-E9409B0EFA1D}';
-        $client['Buffer'] = $json;
-
-        $json = json_encode($client);
-        //$this->SendDebug(__FUNCTION__.'MQTT Client', $json, 0);
-        $resultClient = @$this->SendDataToParent($json);
-
-        return $resultServer === false && $resultClient === false;
+        return $resultServer === false;
     }
 
     private function RegisterObjects()
@@ -400,7 +375,7 @@ class RoomDisplay extends IPSModule
         if ($objects == null) {
             $objects = [];
         }
-        //$this->SendDebug(__FUNCTION__, $this->PrettyPrint($objects));
+        //$this->SendDebug(__FUNCTION__, $this->DebugPrint($objects));
 
         // Unregister reference
         foreach ($this->GetReferenceList() as $id) {
@@ -416,48 +391,48 @@ class RoomDisplay extends IPSModule
         $state = true;
         $count = 1;
         // Check verknüpftes Object
-        foreach ($objects as $item => $element) {
-            //$this->SendDebug(__FUNCTION__, $this->PrettyPrint($element));
-            if ($element['Object'] != 1) {
+        foreach ($objects as $item => $object) {
+            //$this->SendDebug(__FUNCTION__, $this->DebugPrint($object));
+            if ($object['Link'] != 1) {
                 // Objekt muss existiert!
-                if (IPS_ObjectExists($element['Object'])) {
+                if (IPS_ObjectExists($object['Link'])) {
                     // Button  ==> Script, Variable
-                    if ($element['Type'] == self::UI_BUTTOM) {
+                    if ($object['Type'] == self::UI_BUTTOM) {
                         // TODO
                     }
                     // Toggle Button ==> Variable
-                    if ($element['Type'] == self::UI_TOGGLE) {
-                        if (IPS_GetObject($element['Object'])['ObjectType'] != 2) {
+                    if ($object['Type'] == self::UI_TOGGLE) {
+                        if (IPS_GetObject($object['Link'])['ObjectType'] != 2) {
                             echo 'Fehler bei ausgewähltem Objekt ' . $count . ':' . PHP_EOL .
-                                    'Objekt mit der ID: ' . $element['Object'] . ' ist kein Variable' . PHP_EOL .
+                                    'Objekt mit der ID: ' . $object['Link'] . ' ist kein Variable' . PHP_EOL .
                                     'Das Objekt für einen Toggle-Button muss vom Typ "Varaible" sein.' . PHP_EOL;
                             $state = false;
                         }
                     }
                     // Slider ==> Variable
-                    if ($element['Type'] == self::UI_SLIDER) {
-                        if (IPS_GetObject($element['Object'])['ObjectType'] != 2) {
+                    if ($object['Type'] == self::UI_SLIDER) {
+                        if (IPS_GetObject($object['Link'])['ObjectType'] != 2) {
                             echo 'Fehler bei ausgewähltem Objekt ' . $count . ':' . PHP_EOL .
-                                    'Objekt mit der ID: ' . $element['Object'] . ' ist keine Variable' . PHP_EOL .
+                                    'Objekt mit der ID: ' . $object['Link'] . ' ist keine Variable' . PHP_EOL .
                                     'Das Objekt für einen Slider muss vom Typ "Varaible" sein.' . PHP_EOL;
                             $state = false;
                         }
                     }
                     // Dropdown ==> Variable
-                    if ($element['Type'] == self::UI_DROPDOWN) {
-                        if (IPS_GetObject($element['Object'])['ObjectType'] != 2) {
+                    if ($object['Type'] == self::UI_DROPDOWN) {
+                        if (IPS_GetObject($object['Link'])['ObjectType'] != 2) {
                             echo 'Fehler bei ausgewähltem Objekt ' . $count . ':' . PHP_EOL .
-                                    'Objekt mit der ID: ' . $element['Object'] . ' ist keine Variable' . PHP_EOL .
+                                    'Objekt mit der ID: ' . $object['Link'] . ' ist keine Variable' . PHP_EOL .
                                     'Das Objekt für einen Dropdown muss vom Typ "Varaible" sein.' . PHP_EOL;
                             $state = false;
                         }
                     }
-                    $this->RegisterReference($element['Object']);
-                    $this->RegisterMessage($element['Object'], VM_UPDATE);
+                    $this->RegisterReference($object['Link']);
+                    $this->RegisterMessage($object['Link'], VM_UPDATE);
                 }
                 else {
                     echo 'Fehler bei ausgewähltem Objekt ' . $count . ':' . PHP_EOL .
-                        'Das Objekt mit der ID: ' . $element['Object'] . ' existiert nicht!';
+                        'Das Objekt mit der ID: ' . $object['Link'] . ' existiert nicht!';
                     $state = false;
                 }
             }
@@ -466,9 +441,114 @@ class RoomDisplay extends IPSModule
         return $state;
     }
 
+    /**
+     * Process Data - map data to object
+     *
+     * @param mixed $object
+     * @param mixed $data
+     */
+    private function ProcessData($object, $data)
+    {
+        // calculate IPS value to object value
+        $value = $this->EvaluateString($data, $object['Calculation']);
+        // Debug
+        $this->SendDebug(__FUNCTION__, $this->GetType($object['Type']) . ' :' . $this->SafePrint($value));
+        // Arc
+        if ($object['Type'] == self::UI_ARC) {
+            if ($object['Caption'] == '') {
+                // If the caption is empty, the value is written directly.
+                $this->SetItemValStr($object['Page'], $object['Id'], strval($value));
+            } else {
+                // sprintf: %s for string, %d for integer %f for float, %% to write a “%”
+                $this->SetItemValStr($object['Page'], $object['Id'], sprintf($object['Caption'], $value));
+            }
+            if ($object['Value'] == '') {
+                // If the caption is empty, the value is written directly.
+                $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+            } else {
+                // sprintf: %s for string, %d for integer %f for float, %% to write a “%”
+                $this->SetItemValue($object['Page'], $object['Id'], intval(sprintf($object['Value'], $value)));
+            }
+        }
+        // Dropdown || Gauge
+        if (($object['Type'] == self::UI_DROPDOWN) ||
+            ($object['Type'] == self::UI_GAUGE) ||
+            ($object['Type'] == self::UI_SWITCH)) {
+            // write "val" property
+            $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+        }
+        // Image
+        if ($object['Type'] == self::UI_IMAGE) {
+            // write "src" property
+            if ($object['Value'] != '') {
+                $text = $this->EvaluateString($value, $object['Value']);
+                $this->SetItemSrc($object['Page'], $object['Id'], $text);
+            } else {
+                $this->SetItemSrc($object['Page'], $object['Id'], $value);
+            }
+        }
+        // Label
+        if ($object['Type'] == self::UI_LABEL) {
+            if ($object['Caption'] == '') {
+                // If the caption is empty, the value is written directly.
+                $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText(strval($value)));
+            } else {
+                $text = $this->EvaluateString($value, $object['Caption']);
+                $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
+            }
+        }
+        // Toggel-Button, Slider, LineMeter
+        if ($object['Type'] == self::UI_TOGGLE || $object['Type'] == self::UI_SLIDER || $object['Type'] == self::UI_METER) {
+            $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+            // Toogle Text for Button
+            if ($object['Caption'] != '') {
+                $text = $this->EvaluateString($value, $object['Caption']);
+                $this->SetItemValStr($object['Page'], $object['Id'], $text);
+            }
+        }
+        // LED Indicator
+        if ($object['Type'] == self::UI_LED) {
+            $var = IPS_GetVariable($sender);
+            // bool variable ?
+            if ($var['VariableType'] == 0) {
+                // LEDInidactor on/off
+                if ($value) {
+                    $this->SetItemValue($object['Page'], $object['Id'], 255);
+                } else {
+                    $this->SetItemValue($object['Page'], $object['Id'], 0);
+                }
+            } else {
+                // LEDInidactor value
+                $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+            }
+        }
+        // LineMeter
+        if ($object['Type'] == self::UI_METER) {
+            $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+            if ($object['Caption'] == '') {
+                // If the caption is empty, the value is written directly.
+                $this->SendCommand('p' . $object['Page'] . 'b' . $object['Id'] . '.value_str=' . strval($value));
+            } else {
+                // sprintf: %s for string, %d for integer %f for float, %% to write a “%”
+                $this->SendCommand('p' . $object['Page'] . 'b' . $object['Id'] . '.value_str=' . sprintf($object['Caption'], ($value)));
+            }
+        }
+        // Object
+        if ($object['Type'] == self::UI_OBJECT) {
+            if ($object['Caption'] != '') {
+                $text = $this->EvaluateString($value, $object['Caption']);
+                $this->SetItemValStr($object['Page'], $object['Id'], $text);
+            }
+            if ($object['Value'] != '') {
+                $text = $this->EvaluateString($value, $object['Value']);
+                $this->SetItemProperty($object['Page'], $object['Id'], 'bg_color', $text);
+            }
+        }
+    }
+
     private function HandleData(string $topic, string $data)
     {
-        //$this->SendDebug(__FUNCTION__, 'Topic: ' . $topic . ' ,Payload: ' . $data);
+        $this->SendDebug(__FUNCTION__, 'Topic: ' . $topic . ' ,Payload: ' . $data);
         $objects = json_decode($this->ReadPropertyString('Objects'), true);
         // Is idle?
         if ($topic == 'idle') {
@@ -519,8 +599,8 @@ class RoomDisplay extends IPSModule
         if ($match) {
             $index = -1;
             // Find the object
-            foreach ($objects as $item => $element) {
-                if ($element['Page'] == $matches[1] && $element['Id'] == $matches[2]) {
+            foreach ($objects as $item => $object) {
+                if ($object['Page'] == $matches[1] && $object['Id'] == $matches[2]) {
                     $index = $item;
                     break;
                 }
@@ -529,9 +609,9 @@ class RoomDisplay extends IPSModule
                 $this->SendDebug(__FUNCTION__, 'No registered object!', 0);
                 return;
             }
-            $element = $objects[$index];
+            $object = $objects[$index];
             $data = json_decode($data);
-            if (property_exists($data, 'event') && ($element['Object'] != 1)) {
+            if (property_exists($data, 'event') && ($object['Link'] != 1)) {
                 // Save the infos
                 $text = '';
                 if (property_exists($data, 'text')) {
@@ -542,53 +622,52 @@ class RoomDisplay extends IPSModule
                     $value = $data->val;
                 }
                 // Recalculation necessary?
-                if ($element['Recalculation'] != '') {
-                    $value = $this->EvaluateString($value, $element['Recalculation']);
+                if ($object['Recalculation'] != '') {
+                    $value = $this->EvaluateString($value, $object['Recalculation']);
                 }
                 // Type & Value & Text
-                $this->SendDebug(__FUNCTION__, $this->GetType($element['Type']) . ': ' . $this->SafePrint($value) . ', ' . $text, 0);
+                $this->SendDebug(__FUNCTION__, $this->GetType($object['Type']) . ': ' . $this->SafePrint($value) . ', ' . $text, 0);
                 // Button down || Dropdown changed || Toggle Button, Roller, Slider or Switch up
-                if (($element['Type'] == self::UI_BUTTOM && $data->event == self::EH_DOWN) ||
-                    ($element['Type'] == self::UI_DROPDOWN && $data->event == self::EH_CHANGED) ||
-                    ($element['Type'] == self::UI_TOGGLE && $data->event == self::EH_UP) ||
-                    ($element['Type'] == self::UI_ROLLER && $data->event == self::EH_UP) ||
-                    ($element['Type'] == self::UI_SLIDER && $data->event == self::EH_UP) ||
-                    ($element['Type'] == self::UI_SWITCH && $data->event == self::EH_UP)) {
-                    $this->SendDebug(__FUNCTION__, 'Catch');
-                    if (IPS_GetObject($element['Object'])['ObjectType'] == 3) {
-                        IPS_RunScriptEx($element['Object'], ['VALUE' => $value, 'TEXT' => $text]);
-                        $this->SendDebug(__FUNCTION__, 'IPS_RunScriptEx(' . $element['Object'] . ', [VALUE=>' . $value . ',TEXT=>' . $text . '])', 0);
+                if (($object['Type'] == self::UI_BUTTOM && $data->event == self::EH_DOWN) ||
+                    ($object['Type'] == self::UI_DROPDOWN && $data->event == self::EH_CHANGED) ||
+                    ($object['Type'] == self::UI_TOGGLE && $data->event == self::EH_UP) ||
+                    ($object['Type'] == self::UI_ROLLER && $data->event == self::EH_UP) ||
+                    ($object['Type'] == self::UI_SLIDER && $data->event == self::EH_UP) ||
+                    ($object['Type'] == self::UI_SWITCH && $data->event == self::EH_UP)) {
+                    if (IPS_GetObject($object['Link'])['ObjectType'] == 3) {
+                        IPS_RunScriptEx($object['Link'], ['VALUE' => $value, 'TEXT' => $text]);
+                        $this->SendDebug(__FUNCTION__, 'IPS_RunScriptEx(' . $object['Link'] . ', [VALUE=>' . $value . ',TEXT=>' . $text . '])', 0);
                     }
                     else {
                         $this->SendDebug(__FUNCTION__, 'Else');
-                        if (HasAction($element['Object']) && $value != -1) {
-                            RequestAction($element['Object'], $value);
-                            $this->SendDebug(__FUNCTION__, 'RequestAction(' . $element['Object'] . ', ' . $value . ')', 0);
+                        if (HasAction($object['Link']) && $value != -1) {
+                            RequestAction($object['Link'], $value);
+                            $this->SendDebug(__FUNCTION__, 'RequestAction(' . $object['Link'] . ', ' . $value . ')', 0);
                         }
                         elseif ($value != -1) {
-                            SetValue($element['Object'], $value);
-                            $this->SendDebug(__FUNCTION__, 'SetValue(' . $element['Object'] . ', ' . $value . ')', 0);
+                            SetValue($object['Link'], $value);
+                            $this->SendDebug(__FUNCTION__, 'SetValue(' . $object['Link'] . ', ' . $value . ')', 0);
                         }
                         else {
-                            $this->SendDebug(__FUNCTION__, 'No return toobject: ' . $element['Object'], 0);
+                            $this->SendDebug(__FUNCTION__, 'No return toobject: ' . $object['Link'], 0);
                         }
                     }
                 }
             }
 
-            if (property_exists($data, 'val') && ($element['Object'] != 1)) {
+            if (property_exists($data, 'val') && ($object['Link'] != 1)) {
                 // Received Typ = Arc & Value
-                if ($element['Type'] == self::UI_ARC) {
-                    if (HasAction($element['Object']) && $value != -1) {
-                        RequestAction($element['Object'], $data->val);
-                        $this->SendDebug(__FUNCTION__, 'RequestAction():' . $element['Object'] . ' Value: ' . $data->val, 0);
+                if ($object['Type'] == self::UI_ARC) {
+                    if (HasAction($object['Link']) && $value != -1) {
+                        RequestAction($object['Link'], $data->val);
+                        $this->SendDebug(__FUNCTION__, 'RequestAction():' . $object['Link'] . ' Value: ' . $data->val, 0);
                     }
                     elseif ($value != -1) {
-                        SetValue($element['Object'], $value);
-                        $this->SendDebug(__FUNCTION__, 'SetValue(' . $element['Object'] . ', ' . $value . ')', 0);
+                        SetValue($object['Link'], $value);
+                        $this->SendDebug(__FUNCTION__, 'SetValue(' . $object['Link'] . ', ' . $value . ')', 0);
                     }
                     else {
-                        $this->SendDebug(__FUNCTION__, 'No return toobject: ' . $element['Object'], 0);
+                        $this->SendDebug(__FUNCTION__, 'No return toobject: ' . $object['Link'], 0);
                     }
                 }
             }
@@ -599,6 +678,7 @@ class RoomDisplay extends IPSModule
         }
 
         if ($topic == 'statusupdate') {
+            $this->WriteAttributeString('StatusUpdate', $data);
             $this->SendDebug(__FUNCTION__, 'Status: ' . $data);
         }
 
@@ -606,11 +686,11 @@ class RoomDisplay extends IPSModule
         if ($topic == 'LWT') {
             switch ($data) {
                 case 'online':
-                    $this->SetValueInteger('Online', 1);
+                    $this->SetValueBoolean('Status', true);
                     $this->Online();
                     break;
                 default:
-                    $this->SetValueInteger('Online', 0);
+                    $this->SetValueBoolean('Status', false);
             }
         }
     }
@@ -621,8 +701,42 @@ class RoomDisplay extends IPSModule
      */
     private function Online()
     {
-        $this->SendDebug(__FUNCTION__, 'Gerät ist Online', 0);
-        // TODO: Sync linked objects with the device objects
+        $this->SendDebug(__FUNCTION__, 'Display is online', 0);
+        // Sync linked objects with the device objects
+        $this->Synchronize();
+    }
+
+    /**
+     * Status Update - display status information.
+     *
+     */
+    private function StatusUpdate()
+    {
+        $info = $this->ReadAttributeString('StatusUpdate');
+        $this->EchoMessage($this->PrettyPrint(self::RD_STATUS_INFO, $info));
+    }
+
+    /**
+     * Synchronize - from IPS variables to design objects.
+     *
+     */
+    private function Synchronize()
+    {
+        $this->SendDebug(__FUNCTION__, 'Synchronize', 0);
+        $objects = json_decode($this->ReadPropertyString('Objects'), true);
+        // iterate over all objects
+        foreach ($objects as $item => $object) {
+            if ($object['Link'] == 1 || $object['Calculation'] == -1) {
+                continue;
+            }
+            // get actual value
+            $data = GetValue($object['Link']);
+            if(is_bool($data)) {
+                $data = intval($data);
+            }
+            // process data to specific object
+            $this->ProcessData($object, $data);
+        }
     }
 
     /**
@@ -633,6 +747,13 @@ class RoomDisplay extends IPSModule
      */
     private function EvaluateString($value, $subject)
     {
+        // sprintf
+        if (strpos($subject, "%") !== false) {
+            // sprintf: %s for string, %d for integer %f for float, %% to write a “%”
+            return sprintf($subject, $value);
+        }
+
+        // eval
         if (!empty($subject)) {
             $eval = str_replace(self::PH_VALUE, strval($value), $subject);
             $eval = 'return (' . $eval . ');';
@@ -714,5 +835,16 @@ class RoomDisplay extends IPSModule
                 break;
         }
         return $name;
+    }
+
+    /**
+     * Show message via popup
+     *
+     * @param string $caption echo message
+     */
+    private function EchoMessage(string $caption)
+    {
+        $this->UpdateFormField('EchoMessage', 'caption', $this->Translate($caption));
+        $this->UpdateFormField('EchoPopup', 'visible', true);
     }
 }

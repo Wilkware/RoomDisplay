@@ -44,18 +44,18 @@ trait DebugHelper
     }
 
     /**
-     * PrettyPrint
+     * DebugPrint
      *
      * @param mixed $arr    Array to print.
      * @return string Pretty formated array data.
      */
-    protected function PrettyPrint($arr)
+    protected function DebugPrint($arr)
     {
         $retStr = '';
         if (is_array($arr)) {
             foreach ($arr as $key=>$val) {
                 if (is_array($val)) {
-                    $retStr .= '[' . $key . '] => ' . pp($val);
+                    $retStr .= '[' . $key . '] => ' . $this->PrettyPrint($val);
                 }else {
                     $retStr .= '[' . $key . '] => ' . $val . ', ';
                 }

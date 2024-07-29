@@ -37,7 +37,7 @@
                         {
                             "type": "ValidationTextBox",
                             "name": "IP",
-                            "caption": "Device-IP:",
+                            "caption": "Device IP:",
                             "width": "300px"
                         }
                     ]
@@ -84,6 +84,10 @@
                                         "value": 7
                                     },
                                     {
+                                        "caption": "Image",
+                                        "value": 8
+                                    },
+                                    {
                                         "caption": "Label",
                                         "value": 9
                                     },
@@ -128,6 +132,10 @@
                             "edit": {
                                 "type": "Select",
                                 "options": [
+                                    {
+                                        "caption": "0",
+                                        "value": 0
+                                    },
                                     {
                                         "caption": "1",
                                         "value": 1
@@ -301,14 +309,36 @@
                 {
                     "type": "Button",
                     "caption": "Status",
-                    "onClick": "IPS_RequestAction($id,'StatusUpdate','');"
+                    "onClick": "IPS_RequestAction($id,'StatusUpdate','');",
+                    "enabled": false
                 },
                 {
                     "type": "Button",
                     "label": "Backup",
-                    "onClick": "echo \"../hook/plate$id\";"
+                    "onClick": "echo \"../hook/plate$id\";",
+                    "link": true,
+                    "enabled": false
+                },
+                {
+                    "type": "Button",
+                    "caption": "Synchronize",
+                    "onClick": "IPS_RequestAction($id,'Synchronize','');"
                 }
             ]
+        },
+        {
+            "name": "EchoPopup",
+            "type": "PopupAlert",
+            "visible": false,
+            "popup": {
+                "items": [
+                    {
+                        "type": "Label",
+                        "name": "EchoMessage",
+                        "caption": ""
+                    }
+                ]
+            }
         }
     ],
     "status": []
