@@ -731,7 +731,7 @@ class RoomDisplay extends IPSModule
             }
             // get actual value
             $data = GetValue($object['Link']);
-            if(is_bool($data)) {
+            if (is_bool($data)) {
                 $data = intval($data);
             }
             // process data to specific object
@@ -748,7 +748,7 @@ class RoomDisplay extends IPSModule
     private function EvaluateString($value, $subject)
     {
         // sprintf
-        if (strpos($subject, "%") !== false) {
+        if (strpos($subject, '%') !== false) {
             // sprintf: %s for string, %d for integer %f for float, %% to write a “%”
             return sprintf($subject, $value);
         }
