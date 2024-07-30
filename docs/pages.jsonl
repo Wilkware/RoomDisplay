@@ -1,0 +1,151 @@
+{"comment":" ---------------------- Page 00 - ON TOP ------------------------ "}
+{"page":00,"id":01,"obj":"label",   "x":010,"y":000,"w":60,"h":032,"text":"00:00","template":"%R","text_color":"#FFFFFF","align":"left", "enabled":0, "text_font":24}
+{"page":00,"id":02,"obj":"label",   "x":080,"y":000,"w":250,"h":032,"text":"Montag, 1.Januar","text_color":"#FFFFFF","align":"left", "enabled":0, "text_font":24}
+{"page":00,"id":03,"obj":"label",   "x":345,"y":000,"w":120,"h":032,"text":"\uE565", "text_color":"#FFFFFF","align":"right","enabled":0, "text_font":24}
+
+{"comment":" ---------------------- Page 01 - HAUPTSEITE -------------------- "}
+{"page":01,"id":10,"obj":"img","src":"L:/bg10.png","auto_size":0,"w":480}
+{"comment":" --- Wetter -------------- "}
+{"page":01,"id":11,"obj":"label",   "x":020,"y":060,"w":140,"h":140,"align": "left","click":0,"enabled":0,"text_color":"#FFC107","text_font":126,"text":"\uE595"}
+{"page":01,"id":12,"obj":"label",   "x":195,"y":060,"w":260,"h":080,"align":"right","click":0,"enabled":0,"text_color":"#FFFFFF","text_font":72, "text":"23°C"}
+{"page":01,"id":13,"obj":"label",   "x":195,"y":150,"w":260,"h":080,"align":"right","click":0,"enabled":0,"text_color":"#C0C0C0","text_font":32, "text":"Teilweise bewölkt"}
+{"comment":" --- Luftfeuchte --------- "}
+{"page":01,"id":14,"obj":"arc",     "x":020,"y":220,"w":080,"h":080,"min":0,"max":100,"enabled":0,"type":0,"rotation":270,"start_angle":0,"end_angle":360,"adjustable":false,"val":050,"bg_opa":0,"line_width":8,"line_width10":8,"value_str":"\uE58C","line_color1":"#FFFFFF","line_color":"#FFFFFF","line_opa":90,"border_side":0,"value_font":36}
+{"comment":" --- Regen --------------- "}
+{"page":01,"id":15,"obj":"arc",     "x":140,"y":220,"w":080,"h":080,"min":0,"max":100,"enabled":0,"type":0,"rotation":270,"start_angle":0,"end_angle":360,"adjustable":false,"val":075,"bg_opa":0,"line_width":8,"line_width10":8,"value_str":"\uE596","line_color1":"#FFFFFF","line_color":"#FFFFFF","line_opa":90,"border_side":0,"value_font":36}
+{"comment":" --- Wind ---------------- "}
+{"page":01,"id":16,"obj":"arc",     "x":260,"y":220,"w":080,"h":080,"min":0,"max":100,"enabled":0,"type":0,"rotation":270,"start_angle":0,"end_angle":360,"adjustable":false,"val":016,"bg_opa":0,"line_width":8,"line_width10":8,"value_str":"\uE59D","line_color1":"#FFFFFF","line_color":"#FFFFFF","line_opa":90,"border_side":0,"value_font":36}
+{"comment":" --- Powerwall ----------- "}
+{"page":01,"id":17,"obj":"arc",     "x":380,"y":220,"w":080,"h":080,"min":0,"max":100,"enabled":0,"type":0,"rotation":270,"start_angle":0,"end_angle":360,"adjustable":false,"val":100,"bg_opa":0,"line_width":8,"line_width10":8,"value_str":"\uF2A2","line_color1":"#FFFFFF","line_color":"#FCFCFC","line_opa":90,"border_side":0,"value_font":36}
+{"comment":" --- Buttons ------------- "}
+{"page":01,"id":20,"obj":"tabview", "x":000,"y":060,"w":480,"h":420,"bg_opa":0,"btn_pos":0,"border_width":0}
+{"page":01,"id":30,"obj":"tab","parentid":20}
+{"page":01,"id":40,"obj":"tab","parentid":20}
+{"page":01,"id":50,"obj":"tab","parentid":20}
+{"comment":" --- Tab 1 (3x) -------------- "}
+{"page":01,"id":31,"obj":"btn",     "x":015,"y":270,"w":215,"h":110,"parentid":30,"align":"center","text":"\uE2DC\nHaus",   "toggle":false,"text_color":"#FFFFFF","text_font":36,"bg_opa":50,"bg_color":"#FFFFFF","border_side":0,"radius":10,"action":{"up":"page 02"}}
+{"page":01,"id":32,"obj":"btn",     "x":250,"y":270,"w":215,"h":110,"parentid":30,"align":"center","text":"\uE769\nZimmer", "toggle":false,"text_color":"#FFFFFF","text_font":36,"bg_opa":50,"bg_color":"#FFFFFF","border_side":0,"radius":10,"action":{"up":"page 03"}}
+{"page":01,"id":33,"obj":"label",   "x":040,"y":370,"w":400,"h":040,"parentid":30,"align":"center","text":"#C0C0C0 \u2022# #606060 \u2022# #606060 \u2022#","text_font":48}
+{"comment":" --- Tab 2 (4x) -------------- "}
+{"page":01,"id":41,"obj":"btn",     "x":015,"y":270,"w":215,"h":110,"parentid":40,"align":"center","text":"\uE75A\nMusik",  "toggle":false,"text_color":"#FFFFFF","text_font":36,"bg_opa":50,"bg_color":"#FFFFFF","border_side":0,"radius":10,"action":{"up":"page 04"}}
+{"page":01,"id":42,"obj":"btn",     "x":250,"y":270,"w":215,"h":110,"parentid":40,"align":"center","text":"\uEA7A\nMüll",   "toggle":false,"text_color":"#FFFFFF","text_font":36,"bg_opa":50,"bg_color":"#FFFFFF","border_side":0,"radius":10,"action":{"up":"page 05"}}
+{"page":01,"id":43,"obj":"label",   "x":040,"y":370,"w":400,"h":040,"parentid":40,"align":"center","text":"#606060 \u2022# #C0C0C0 \u2022# #606060 \u2022#","text_font":48}
+{"comment":" --- Tab 3 (5x) -------------- "}
+{"page":01,"id":51,"obj":"btn",     "x":015,"y":270,"w":215,"h":110,"parentid":50,"align":"center","text":"\uE10B\nVerkehr","toggle":false,"text_color":"#FFFFFF","text_font":36,"bg_opa":50,"bg_color":"#FFFFFF","border_side":0,"radius":10,"action":{"up":"page 06"}}
+{"page":01,"id":52,"obj":"btn",     "x":250,"y":270,"w":215,"h":110,"parentid":50,"align":"center","text":"\uE5A8\nWetter", "toggle":false,"text_color":"#FFFFFF","text_font":36,"bg_opa":50,"bg_color":"#FFFFFF","border_side":0,"radius":10,"action":{"up":"page 07"}}
+{"page":01,"id":53,"obj":"label",   "x":040,"y":370,"w":400,"h":040,"parentid":50,"align":"center","text":"#606060 \u2022# #606060 \u2022# #C0C0C0 \u2022#","text_font":48}
+
+{"comment":" ---------------------- Page 02 - HAUS -------------------------- "}
+{"page":02,"id":04,"obj":"img","src":"L:/bg10.png","auto_size":0,"w":480}
+{"comment":" --- Navi Buttons .--------- "}
+{"page":02,"id":05,"obj":"btn",     "x":005,"y":042,"w":150,"h":048,"action":{"down": "page prev"},"bg_opa":30,"border_side":0,"text":"\uE04D","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":02,"id":06,"obj":"btn",     "x":165,"y":042,"w":150,"h":048,"action":{"down": "page back"},"bg_opa":30,"border_side":0,"text":"\uE2DC","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":02,"id":07,"obj":"btn",     "x":325,"y":042,"w":150,"h":048,"action":{"down": "page next"},"bg_opa":30,"border_side":0,"text":"\uE054","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"comment":" --- In/Out Frame ---------- "}
+{"page":02,"id":11,"obj":"obj",     "x":015,"y":135,"w":100,"h":100,"bg_color":"#FFFFFF","bg_opa":50,"border_side":0,"radius":50}
+{"page":02,"id":12,"obj":"obj",     "x":130,"y":135,"w":100,"h":100,"bg_color":"#FFFFFF","bg_opa":50,"border_side":0,"radius":50}
+{"page":02,"id":13,"obj":"obj",     "x":245,"y":135,"w":100,"h":100,"bg_color":"#FFFFFF","bg_opa":50,"border_side":0,"radius":50}
+{"page":02,"id":14,"obj":"obj",     "x":360,"y":135,"w":100,"h":100,"bg_color":"#FFFFFF","bg_opa":50,"border_side":0,"radius":50}
+{"comment":" --- In/Out Image ---------- "}
+{"page":02,"id":21,"obj":"img",     "x":000,"y":000,"parentid":11,"auto_size":1,"src":"L:/in-hw.png"}
+{"page":02,"id":22,"obj":"img",     "x":000,"y":000,"parentid":12,"auto_size":1,"src":"L:/in-aw.png"}
+{"page":02,"id":23,"obj":"img",     "x":000,"y":000,"parentid":13,"auto_size":1,"src":"L:/in-pw.png"}
+{"page":02,"id":24,"obj":"img",     "x":000,"y":000,"parentid":14,"auto_size":1,"src":"L:/in-lw.png"}
+{"comment":" --- Label Buttons --------- "}
+{"page":02,"id":31,"obj":"label",   "x":025,"y":305,"w":130,"h":040,"align":"center","click":0,"enabled":0,"text_color":"#FFFFFF","text_font":24,"text":"Einfahrt","text_opa":180}
+{"page":02,"id":32,"obj":"label",   "x":175,"y":305,"w":130,"h":040,"align":"center","click":0,"enabled":0,"text_color":"#FFFFFF","text_font":24,"text":"Garage","text_opa":180}
+{"page":02,"id":33,"obj":"label",   "x":325,"y":305,"w":130,"h":040,"align":"center","click":0,"enabled":0,"text_color":"#FFFFFF","text_font":24,"text":"Haustür","text_opa":180}
+{"comment":" --- Toggle Buttons -------- "}
+{"page":02,"id":41,"obj":"btn",     "x":025,"y":295,"w":130,"h":160,"align":"center","bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE10B","text_color":"#FFFFFF","text_font":64,"toggle":true, "radius":10}
+{"page":02,"id":42,"obj":"btn",     "x":175,"y":295,"w":130,"h":160,"align":"center","bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"","text_color":"#FFFFFF","value_font":64,"toggle":true, "radius":10}
+{"page":02,"id":43,"obj":"btn",     "x":325,"y":295,"w":130,"h":160,"align":"center","bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uF0AF","text_color":"#FFFFFF","text_font":64,"toggle":false,"radius":10}
+{"comment":" --- Label State ----------- "}
+{"page":02,"id":51,"obj":"label",   "x":025,"y":415,"w":130,"h":040,"align":"center","click":0,"enabled":0,"text_color":"#FFFFFF","text_font":24,"text":"Zu","text_opa":180}
+{"page":02,"id":52,"obj":"label",   "x":175,"y":415,"w":130,"h":040,"align":"center","click":0,"enabled":0,"text_color":"#FFFFFF","text_font":24,"text":"Auf","text_opa":180}
+{"page":02,"id":53,"obj":"label",   "x":325,"y":415,"w":130,"h":040,"align":"center","click":0,"enabled":0,"text_color":"#FFFFFF","text_font":24,"text":"Öffnen","text_opa":180}
+
+{"comment":" ---------------------- Page 03 - ZIMMER ------------------------ "}
+{"page":03,"id":04,"obj":"img","src":"L:/bg10.png","auto_size":0,"w":480}
+{"comment":" --- Navi Buttons .--------- "}
+{"page":03,"id":05,"obj":"btn",     "x":005,"y":042,"w":150,"h":048,"action":{"down": "page prev"},"bg_opa":30,"border_side":0,"text":"\uE04D","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":03,"id":06,"obj":"btn",     "x":165,"y":042,"w":150,"h":048,"action":{"down": "page back"},"bg_opa":30,"border_side":0,"text":"\uE2DC","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":03,"id":07,"obj":"btn",     "x":325,"y":042,"w":150,"h":048,"action":{"down": "page next"},"bg_opa":30,"border_side":0,"text":"\uE054","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":03,"id":10,"obj":"obj",     "x":020,"y":115,"w":295,"h":267,"bg_color":"#FFFFFF","bg_opa":30,"border_side":0,"radius":10,"click":0}
+{"comment":" --- Regler ---------------- "}
+{"page":03,"id":21,"obj":"arc",     "x":065,"y":125,"w":210,"h":210,"min":150,"max":250,"val":190,"border_side":0,"type":0,"rotation":0,"start_angle":135,"end_angle":45,"adjustable":"true","line_width":16,"line_width10":16,"line_color10":"#34bdeb","bg_opa":0,"pad_top20":5,"pad_bottom20":5,"pad_left20":5,"pad_right20":5,"pad_top":5,"pad_bottom":5,"pad_left":5,"pad_right":5,"bg_grad_dir20":0,"bg_color20":"#FFFFFF"}
+{"comment":" --- Ist-Temp -------------- "}
+{"page":03,"id":31,"obj":"gauge",   "x":018,"y":018,"w":175,"h":175,"parentid":21,"min":150,"max":250,"val":225,"format":1,"critical_value":251,"label_count":11,"line_count":21,"border_width":0,"pad_top":2,"pad_bottom":2,"pad_left":2,"pad_right":2,"value_str":"°C","value_ofs_y":55,"value_font":16,"bg_opa":0,"line_width10":3,"line_rounded10":1,"line_color":"#348feb","line_color60":"#348feb","scale_grad_color":"#eb4934","scale_grad_color60":"#eb4934","scale_end_color60":"#eb4934","text_font":16, "enabled":0}
+{"page":03,"id":32,"obj":"obj",     "x":075,"y":075,"w":060,"h":060,"parentid":21,"click":0,"radius":30,"border_width":2,"border_opa":200}
+{"page":03,"id":33,"obj":"label",   "x":070,"y":090,"w":070,"h":030,"parentid":21,"text":"22,5","text_font":24,"align":"center"}
+{"comment":" --- Modus ----------------- "}
+{"page":03,"id":41,"obj":"dropdown","x":045,"y":315,"w":090,"h":035,"options":"Auto\nManuell\nUrlaub","direction":"1","radius":5,"text_font":16,"bg_opa10":100,"bg_opa40":150,"bg_opa50":200}
+{"comment":" --- Soll-Temp -------------- "}
+{"page":03,"id":50,"obj":"obj",     "x":145,"y":315,"w":050,"h":035,"click":0,"radius":5,"bg_opa":100}
+{"comment":" --- Soll-Temp -------------- "}
+{"page":03,"id":51,"obj":"label",   "x":145,"y":315,"w":050,"h":030,"text":"24,8","text_font":24,"align":"center"}
+{"comment":" --- Profil ----------------- "}
+{"page":03,"id":61,"obj":"dropdown","x":205,"y":315,"w":090,"h":035,"options":"Auswärts\nDaheim\nAus","direction":"1","radius":5,"text_font":16,"bg_opa10":100,"bg_opa40":150,"bg_opa50":200}
+{"comment":" --- Deckenlicht ---------- "}
+{"page":03,"id":71,"obj":"btn",     "x":020,"y":370,"w":180,"h":090,"align":"center","bg_opa":50,"bg_color":"#FFFFFF","border_side":0,"text":"\uE769","text_color":"#FFFFFF","toggle":true,"text_font":64,"radius":10}
+{"comment":" --- Balkontür ------------ "}
+{"page":03,"id":81,"obj":"obj",     "x":220,"y":370,"w":90,"h":090,"align":"center","bg_opa":150,"bg_color":"#F35A2C","value_str":"\uE81C","radius":50,"border_side":0,"value_font":64,"click":0}
+{"comment":" --- Shutter -------------- "}
+{"page":03,"id":90,"obj":"obj",     "x":335,"y":115,"w":120,"h":345,"bg_color":"#FFFFFF","bg_opa":30,"border_side":0,"click":0,"enabled":0,"radius":10}
+{"page":03,"id":91,"obj":"slider",  "x":405,"y":135,"w":020,"h":305,"min":0,"max":100,"pad_left20":"15","pad_right20":"15","val":50,"radius":5,"border_side":0,"radius20":40,"bg_grad_dir20":0,"bg_color20":"#FFFFFF","pad_top":0,"pad_bottom":0,"pad_left":0,"pad_right":0,"bg_opa10":25,"bg_color10":"#FFFFFF","bg_grad_color10":"#C0F0C0","border_side10":0}
+
+{"page":03,"id":92,"obj":"label",   "x":345,"y":125,"w":040,"h":040,"align":"right","border_side":0,"enabled":0,"text_color":"#FFFFFF","text_font":32,"text":"\uF11E"}
+{"page":03,"id":93,"obj":"label",   "x":345,"y":405,"w":040,"h":040,"align":"right","border_side":0,"enabled":0,"text_color":"#FFFFFF","text_font":32,"text":"\uF11C"}
+
+{"comment":" ---------------------- Page 04 - MUSIK ------------------------- "}
+{"page":04,"id":04,"obj":"img","src":"L:/bg10.png","auto_size":0,"w":480}
+{"comment":" --- Navi Buttons .---- "}
+{"page":04,"id":05,"obj":"btn",     "x":005,"y":042,"w":150,"h":048,"action":{"down": "page prev"},"bg_opa":30,"bg_color":"#FFFFFF","border_side":0,"text":"\uE04D","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":04,"id":06,"obj":"btn",     "x":165,"y":042,"w":150,"h":048,"action":{"down": "page back"},"bg_opa":30,"bg_color":"#FFFFFF","border_side":0,"text":"\uE2DC","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":04,"id":07,"obj":"btn",     "x":325,"y":042,"w":150,"h":048,"action":{"down": "page next"},"bg_opa":30,"bg_color":"#FFFFFF","border_side":0,"text":"\uE054","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"comment":" --- Text Infos ------- "}
+{"page":04,"id":11,"obj":"label",   "x":020,"y":120,"w":280,"h":050,"align":"center","border_side":0,"text_color":"#FFFFFF","text_font":32,"mode":"dots","text":"Interpret"}
+{"page":04,"id":21,"obj":"label",   "x":020,"y":170,"w":280,"h":040,"align":"center","border_side":0,"text_color":"#C0C0C0","text_font":24,"mode":"dots","text":"Titel"}
+{"comment":" --- Skip Prev -------- "}
+{"page":04,"id":31,"obj":"btn",     "x":020,"y":230,"w":075,"h":075,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE4AE","text_color":"#FFFFFF","text_font":32,"toggle":false,"radius":10}
+{"comment":" --- Play / Pause ------"}
+{"page":04,"id":41,"obj":"btn",     "x":110,"y":230,"w":095,"h":165,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text_color":"#FFFFFF","radius":10,"toggle":true,"value_font":64}
+{"comment":" --- Skip Next -------- "}
+{"page":04,"id":51,"obj":"btn",     "x":220,"y":230,"w":075,"h":075,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE4AD","text_color":"#FFFFFF","text_font":32,"toggle":false,"radius":10}
+{"comment":" --- Mute ------------- "}
+{"page":04,"id":61,"obj":"btn",     "x":020,"y":320,"w":075,"h":075,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE75F","text_color":"#FFFFFF","text_font":32,"toggle":true, "radius":10}
+{"comment":" --- Shuffle ---------- "}
+{"page":04,"id":71,"obj":"btn",     "x":220,"y":320,"w":075,"h":075,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE49D","text_color":"#FFFFFF","text_font":32,"toggle":true,"radius":10}
+{"comment":" --- Volume ----------- "}
+{"page":04,"id":81,"obj":"slider",  "x":020,"y":415,"h":040,"w":275,"min":0,"max":100,"val":50,"radius":20,"bg_opa10":25,"bg_color10":"#FFFFFF","bg_grad_color10":"#C0F0C0","border_side":0,"radius20":40,"bg_grad_dir20":0,"bg_color20":"#FFFFFF","pad_top":0,"pad_bottom":0,"pad_left":0,"pad_right":0,"bg_opa":70,"border_side10":0}
+{"comment":" --- Favorites -------- "}
+{"page":04,"id":91,"obj":"roller",  "x":315,"y":130,"w":150,"rows":7,"options":"Mein Mix\nAntenne\nArabella\nRock\nPop\nBayern 1\nBayern 3\nBayern 5\nMDR Jump\nFussball","mode":1, "radius":10,"border_side":0,"text_font":24,"bg_color":"#FFFFFF","bg_opa":30,"bg_opa1":150,"align": "center"}
+
+{"comment":" ---------------------- Page 05 - MÜLL -------------------------- "}
+{"page":05,"id":04,"obj":"img","src":"L:/bg10.png","auto_size":0,"w":480}
+{"comment":" --- Navi Buttons .---- "}
+{"page":05,"id":05,"obj":"btn",     "x":005,"y":042,"w":150,"h":048,"action":{"down": "page prev"},"bg_opa":30,"bg_color":"#FFFFFF","border_side":0,"text":"\uE04D","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":05,"id":06,"obj":"btn",     "x":165,"y":042,"w":150,"h":048,"action":{"down": "page back"},"bg_opa":30,"bg_color":"#FFFFFF","border_side":0,"text":"\uE2DC","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":05,"id":07,"obj":"btn",     "x":325,"y":042,"w":150,"h":048,"action":{"down": "page next"},"bg_opa":30,"bg_color":"#FFFFFF","border_side":0,"text":"\uE054","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"comment":" --- Waste Info ------- "}
+{"page":05,"id":11,"obj":"label",   "x":020,"y":115,"w":460,"h":140,"align":"center","border_side":0,"text_font":126,"text":"#999A9C \uEA7A# #FFC107 \uEA7A# "}
+{"page":05,"id":21,"obj":"label",   "x":020,"y":270,"w":460,"h":040,"align":"center","border_side":0,"text_color":"#FFFFFF","text_font":32,"text":"Restmüll, Gelber Sackel"}
+{"page":05,"id":31,"obj":"label",   "x":020,"y":340,"w":460,"h":200,"align":"center","border_side":0,"text_color":"#C0C0C0","text_font":24,"text":"Nächste Abholung:\nin 6 Tagen\nam Montag 1.1."}
+
+{"comment":" ---------------------- Page 06 - VERKEHR -------------------------- "}
+{"page":06,"id":04,"obj":"img","src":"L:/bg10.png","auto_size":0,"w":480}
+{"comment":" --- Navi Buttons .---- "}
+{"page":06,"id":05,"obj":"btn",     "x":005,"y":042,"w":150,"h":048,"action":{"down": "page prev"},"bg_opa":30,"bg_color":"#FFFFFF","border_side":0,"text":"\uE04D","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":06,"id":06,"obj":"btn",     "x":165,"y":042,"w":150,"h":048,"action":{"down": "page back"},"bg_opa":30,"bg_color":"#FFFFFF","border_side":0,"text":"\uE2DC","text_color":"#FFFFFF","text_font":32,"radius":10}
+{"page":06,"id":07,"obj":"btn",     "x":325,"y":042,"w":150,"h":048,"action":{"down": "page next"},"bg_opa":30,"bg_color":"#FFFFFF","border_side":0,"text":"\uE054","text_color":"#FFFFFF","text_font":32,"radius":10}
+
+{"page":06,"id":91,"obj":"btn",     "x":020,"y":115,"w":075,"h":045,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uF11E","text_color":"#FFFFFF","text_font":32,"toggle":true, "radius":10}
+{"page":06,"id":92,"obj":"btn",     "x":020,"y":175,"w":075,"h":045,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"25%","text_color":"#FFFFFF","text_font":24,"toggle":true, "radius":10}
+{"page":06,"id":93,"obj":"btn",     "x":020,"y":235,"w":075,"h":045,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"50%","text_color":"#FFFFFF","text_font":24,"toggle":true, "radius":10}
+{"page":06,"id":94,"obj":"btn",     "x":020,"y":295,"w":075,"h":045,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"75%","text_color":"#FFFFFF","text_font":24,"toggle":true, "radius":10}
+{"page":06,"id":95,"obj":"btn",     "x":020,"y":355,"w":075,"h":045,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"99%","text_color":"#FFFFFF","text_font":24,"toggle":true, "radius":10}
+{"page":06,"id":96,"obj":"btn",     "x":020,"y":415,"w":075,"h":045,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uF11C","text_color":"#FFFFFF","text_font":32,"toggle":true, "radius":10}
+
+
+{"comment":" ---------------------- Page - NAVIGATION ----------------------- "}
+{"page":07,"id":00,"next":01}
+{"page":01,"id":00,"prev":07}

@@ -80,6 +80,14 @@ class RoomDisplay extends IPSModule
         ['tftWidth', 'TFT Width', 1],
         ['tftHeight', 'TFT Height', 1],
     ];
+    private const RD_MOOD_LIGHT = [
+        ['state', 'Status', 5],
+        ['brightness', 'Brightness', 3],
+        ['color', 'Color', 3],
+        ['r', '(R)ed', 1],
+        ['g', '(G)reen', 1],
+        ['b', '(B)lue', 1],
+    ];
 
     /**
      * Overrides the internal IPSModule::Create($id) function
@@ -101,8 +109,9 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyBoolean('PageOneOnIdle', false);
         $this->RegisterPropertyInteger('ForwardMessageScript', 1);
 
-        // Status Update
+        // Info Attributes
         $this->RegisterAttributeString('StatusUpdate', '');
+        $this->RegisterAttributeString('MoodLight', '');
 
         // Automatically connect to the MQTT server/splitter instance
         $this->ConnectParent(self::GUID_MQTT_IO);
@@ -116,16 +125,6 @@ class RoomDisplay extends IPSModule
         // Unregister Hook
         if (!IPS_InstanceExists($this->InstanceID)) {
             $this->UnregisterHook(self::RD_PREFIX_HOOK . $this->InstanceID);
-        }
-        // Unregister reference
-        foreach ($this->GetReferenceList() as $id) {
-            $this->UnregisterReference($id);
-        }
-        // Unregister messages
-        foreach ($this->GetMessageList() as $senderID => $messages) {
-            foreach ($messages as $message) {
-                $this->UnregisterMessage($senderID, $message);
-            }
         }
         // Never delete this line!
         parent::Destroy();
@@ -194,8 +193,8 @@ class RoomDisplay extends IPSModule
         $ip = $this->ReadPropertyString('IP');
         // Buttons Backup & Status
         if ($ip != '') {
-            $form['actions'][0]['items'][1]['enabled'] = true;
-            $form['actions'][0]['items'][2]['enabled'] = true;
+            $form['actions'][2]['items'][0]['items'][2]['enabled'] = true;
+            $form['actions'][2]['items'][0]['items'][3]['enabled'] = true;
         }
         // return form
         return json_encode($form);
@@ -218,8 +217,32 @@ class RoomDisplay extends IPSModule
             case 'Page':
                 $this->SendCommand('page=' . $value);
                 break;
+            case 'PagePrev':
+                $this->SendCommand('page=prev');
+                break;
+            case 'PageBack':
+                $this->SendCommand('page=back');
+                break;
+            case 'PageNext':
+                $this->SendCommand('page=next');
+                break;
+            case 'ReloadPages':
+                $this->SendCommand('run /pages.jsonl');
+                break;
+            case 'ClearPages':
+                $this->SendCommand('clearpage=all');
+                break;
+            case 'Restart':
+                $this->SendCommand('restart');
+                break;
+            case 'ScreenShot':
+                $this->SendCommand('screenshot');
+                break;
+            case 'MoodLight':
+                $this->MoodLight($value);
+                break;
             case 'StatusUpdate':
-                $this->StatusUpdate();
+                $this->StatusUpdate($value);
                 break;
             case 'Synchronize':
                 $this->Synchronize();
@@ -285,31 +308,11 @@ class RoomDisplay extends IPSModule
         }
     }
 
-    public function SetItemProperty(int $page, int $objectId, string $property, string $value)
-    {
-        $this->SendCommand('p' . $page . 'b' . $objectId . '.' . $property . '=' . $value);
-    }
-
-    public function SetItemValue(int $page, int $objectId, int $value)
-    {
-        $this->SendCommand('p' . $page . 'b' . $objectId . '.val=' . $value);
-    }
-
-    public function SetItemText(int $page, int $objectId, string $value)
-    {
-        $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.text=' . $value . '"]');
-    }
-
-    public function SetItemValStr(int $page, int $objectId, string $value)
-    {
-        $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.value_str=' . $value . '"]');
-    }
-
-    public function SetItemSrc(int $page, int $objectId, string $value)
-    {
-        $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.src=' . $value . '"]');
-    }
-
+    /**
+     * Send Command to display
+     *
+     * @param string $command command name/data
+     */
     public function SendCommand(string $command)
     {
         $mqttTopic = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/command/';
@@ -317,9 +320,14 @@ class RoomDisplay extends IPSModule
         $this->SendMQTT($mqttTopic, $command);
     }
 
-    public function Restart()
+    /**
+     * Send JSON Lines to display
+     *
+     * @param array $data JSONL array
+     */
+    public function SendJSONL(array $data)
     {
-        $this->SendCommand('restart');
+        $this->SendCommand('jsonl ' . json_encode($data, JSON_UNESCAPED_SLASHES));
     }
 
     /**
@@ -327,14 +335,29 @@ class RoomDisplay extends IPSModule
      */
     protected function ProcessHookData()
     {
-        $filename = 'pages.jsonl';
-
+        $this->SendDebug(__FUNCTION__, $_GET);
+        $file = isset($_GET['file']) ? $_GET['file'] : '';
+        $filename = '';
+        $contenttype = '';
         $ip = $this->ReadPropertyString('IP');
         // download the file
         if (empty($ip)) {
             $this->EchoMessage('No IP adress filed!');
             return;
         }
+        switch ($file) {
+            case 'pages':
+                $filename = 'pages.jsonl';
+                $contenttype = 'Content-Type: application/json; charset=utf-8';
+                break;
+            case 'screenshot':
+                $filename = 'screenshot.bmp';
+                $contenttype = 'Content-Type: image/bmp';
+                break;
+            default:
+                return;
+        }
+
         $url = 'http://' . $ip . '/' . $filename . '?download=true';
         $this->SendDebug(__FUNCTION__, $url);
         $download = file_get_contents($url);
@@ -343,7 +366,7 @@ class RoomDisplay extends IPSModule
             return;
         }
         // output headers so that the file is downloaded rather than displayed
-        header('Content-Type: application/json; charset=utf-8');
+        header($contenttype);
         header('Content-Disposition: attachment; filename=' . $filename);
         // create a file pointer connected to the output stream
         $output = fopen('php://output', 'w');
@@ -367,6 +390,31 @@ class RoomDisplay extends IPSModule
         $resultServer = @$this->SendDataToParent($json);
 
         return $resultServer === false;
+    }
+
+    private function SetItemProperty(int $page, int $objectId, string $property, string $value)
+    {
+        $this->SendCommand('p' . $page . 'b' . $objectId . '.' . $property . '=' . $value);
+    }
+
+    private function SetItemValue(int $page, int $objectId, int $value)
+    {
+        $this->SendCommand('p' . $page . 'b' . $objectId . '.val=' . $value);
+    }
+
+    private function SetItemText(int $page, int $objectId, string $value)
+    {
+        $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.text=' . $value . '"]');
+    }
+
+    private function SetItemValStr(int $page, int $objectId, string $value)
+    {
+        $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.value_str=' . $value . '"]');
+    }
+
+    private function SetItemSrc(int $page, int $objectId, string $value)
+    {
+        $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.src=' . $value . '"]');
     }
 
     private function RegisterObjects()
@@ -682,6 +730,11 @@ class RoomDisplay extends IPSModule
             $this->SendDebug(__FUNCTION__, 'Status: ' . $data);
         }
 
+        if ($topic == 'moodlight') {
+            $this->WriteAttributeString('MoodLight', $data);
+            $this->SendDebug(__FUNCTION__, 'Moodlight: ' . $data);
+        }
+
         // Last Will and Testament (LWT)?
         if ($topic == 'LWT') {
             switch ($data) {
@@ -710,10 +763,30 @@ class RoomDisplay extends IPSModule
      * Status Update - display status information.
      *
      */
-    private function StatusUpdate()
+    private function StatusUpdate($value)
     {
-        $info = $this->ReadAttributeString('StatusUpdate');
-        $this->EchoMessage($this->PrettyPrint(self::RD_STATUS_INFO, $info));
+        if ($value) {
+            $this->SendCommand('statusupdate');
+        }
+        else {
+            $info = $this->ReadAttributeString('StatusUpdate');
+            $this->EchoMessage($this->PrettyPrint(self::RD_STATUS_INFO, $info));
+        }
+    }
+
+    /**
+     * Mood Light - display moodlight information.
+     *
+     */
+    private function MoodLight($value)
+    {
+        if ($value) {
+            $this->SendCommand('moodlight');
+        }
+        else {
+            $info = $this->ReadAttributeString('MoodLight');
+            $this->EchoMessage($this->PrettyPrint(self::RD_MOOD_LIGHT, $info));
+        }
     }
 
     /**

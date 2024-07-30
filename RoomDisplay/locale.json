@@ -18,8 +18,13 @@
             "Calculation": "Umrechnung",
             "Recalculation": "Rückrechnung",
             "Link": "Verknüpfung",
+            "Query from ...": "Abfrage von ...",
+            "Execute action ...": "Aktion ausführen ...",
             "Restart": "Neustart",
             "Backup": "Sicherung",
+            "Page layout": "Seitenaufbau",
+            "Moodlight": "Stimmungslicht",
+            "Screenshot": "Bildschirmfoto",
             "Synchronize": "Syncronisieren",
             "Clear Pages": "Seiten löschen",
             "Reload Pages": "Seiten neu laden",
@@ -39,13 +44,22 @@
             "Changed": "Geändert",
             "Unknown": "Unbekannt",
             "Node": "MQTT Name",
+            "Brightness": "Helligkeit",
+            "(R)ed": "(R)ot",
+            "(G)reen": "(G)rün",
+            "(B)lue": "(B)lau",
+            "< Prev ]": "< Vorher] ",
+            "[ Back ]": "[ Zurück ]",
+            "[ Next >": "[ Weiter >",
             "No IP adress filed!": "Keine IP Adresse hinterlegt!",
             "Error during download file!": "Fehler beim herunterladen der Datei aufgetreten!",
             "Advanced settings ...": "Erweiterte Einstellungen ...",
             "Auto Dim Backlight!": "Hintergrundbeleuchtung automatisch dimmen!",
             "Auto Shutdow Backlight!": "Hintergrundbeleuchtung automatisch abschalten!",
             "Page 1 on Idle!": "Im Ruhezustand auf Seite 1 wechseln!",
-            "Forward message to script:": "Nachricht an Skript weiterleiten:"
+            "Forward message to script:": "Nachricht an Skript weiterleiten:",
+            "Source code, donation and licence ...": "Quellcode, Spende und Lizenz ...",
+            "The software is free of charge for non-commercial use, I would appreciate a donation if you like the module.": "Die Software ist für die nicht kommerzielle Nutzung kostenlos, über eine Spende bei Gefallen des Moduls würde ich mich sehr freuen."
         }
     }
 }
