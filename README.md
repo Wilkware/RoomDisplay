@@ -171,10 +171,10 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}'
 
 v1.2.202408728
 
-* _NEU_: Hintegrundbilder und Beispielbilder hinzugefügt
+* _NEU_: Hintergrundbilder und Beispielbilder hinzugefügt
 * _NEU_: Bibliotheks- bzw. Modulinfos vereinheitlicht
 * _FIX_: Fehler beim Abrufen von 'MoodLight' korrigiert
-* _FIX_: Problem beim Auswerten von boolschen Werten gelöst
+* _FIX_: Problem beim Auswerten von booleschen Werten gelöst
 
 v1.1.20240730
 
