@@ -315,7 +315,7 @@
                 },
                 {
                     "type": "Button",
-                    "caption": "[ Next >", 
+                    "caption": "[ Next >",
                     "onClick": "IPS_RequestAction($id,'PageNext',true);",
                     "enabled": true
                 },
@@ -343,7 +343,7 @@
                         {
                             "type": "Button",
                             "caption": "Moodlight",
-                            "onClick": "IPS_RequestAction($id,'Moonlight',true);",
+                            "onClick": "IPS_RequestAction($id,'MoodLight',true);",
                             "enabled": true
                         },
                         {

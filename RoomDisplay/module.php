@@ -687,7 +687,6 @@ class RoomDisplay extends IPSModule
                         $this->SendDebug(__FUNCTION__, 'IPS_RunScriptEx(' . $object['Link'] . ', [VALUE=>' . $value . ',TEXT=>' . $text . '])', 0);
                     }
                     else {
-                        $this->SendDebug(__FUNCTION__, 'Else');
                         if (HasAction($object['Link']) && $value != -1) {
                             RequestAction($object['Link'], $value);
                             $this->SendDebug(__FUNCTION__, 'RequestAction(' . $object['Link'] . ', ' . $value . ')', 0);
@@ -828,11 +827,23 @@ class RoomDisplay extends IPSModule
 
         // eval
         if (!empty($subject)) {
+            // bool to string is bad (empty for false)
+            if (is_bool($value)) {
+                $value = intval($value);
+            }
             $eval = str_replace(self::PH_VALUE, strval($value), $subject);
             $eval = 'return (' . $eval . ');';
             $this->SendDebug(__FUNCTION__, 'eval: ' . $eval);
-            $code = eval($eval);
-            if ($code === false) {
+            try {
+                $code = eval($eval);
+                if ($code === false) {
+                    $code = '';
+                }
+            } catch (ParseError $e) {
+                // Report error somehow
+                IPS_LogMessage('RD Error', $e->GetMessage());
+                IPS_LogMessage('RD Eval', $eval);
+                IPS_LogMessage('RD Subject', $subject);
                 $code = '';
             }
             return $code;
