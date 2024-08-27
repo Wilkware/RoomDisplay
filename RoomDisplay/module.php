@@ -497,25 +497,26 @@ class RoomDisplay extends IPSModule
      */
     private function ProcessData($object, $data)
     {
+        $this->SendDebug(__FUNCTION__, 'Data: ' . $data . ' (' . gettype($data) . ')');
         // calculate IPS value to object value
-        $value = $this->EvaluateString($data, $object['Calculation']);
+        $value = $this->EvaluateString($object['Calculation'], $data);
         // Debug
         $this->SendDebug(__FUNCTION__, $this->GetType($object['Type']) . ' :' . $this->SafePrint($value));
-        // Arc
-        if ($object['Type'] == self::UI_ARC) {
+        // Arc || LineMeter
+        if (($object['Type'] == self::UI_ARC) || ($object['Type'] == self::UI_METER)) {
             if ($object['Caption'] == '') {
                 // If the caption is empty, the value is written directly.
-                $this->SetItemValStr($object['Page'], $object['Id'], strval($value));
+                $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText(strval($value)));
             } else {
-                // sprintf: %s for string, %d for integer %f for float, %% to write a “%”
-                $this->SetItemValStr($object['Page'], $object['Id'], sprintf($object['Caption'], $value));
+                $text = $this->EvaluateString($object['Caption'], $value);
+                $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText(strval($text)));
             }
             if ($object['Value'] == '') {
                 // If the caption is empty, the value is written directly.
                 $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             } else {
-                // sprintf: %s for string, %d for integer %f for float, %% to write a “%”
-                $this->SetItemValue($object['Page'], $object['Id'], intval(sprintf($object['Value'], $value)));
+                $value = $this->EvaluateString($object['Value'], $value);
+                $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             }
         }
         // Dropdown || Gauge
@@ -529,7 +530,7 @@ class RoomDisplay extends IPSModule
         if ($object['Type'] == self::UI_IMAGE) {
             // write "src" property
             if ($object['Value'] != '') {
-                $text = $this->EvaluateString($value, $object['Value']);
+                $text = $this->EvaluateString($object['Value'], $value);
                 $this->SetItemSrc($object['Page'], $object['Id'], $text);
             } else {
                 $this->SetItemSrc($object['Page'], $object['Id'], $value);
@@ -541,17 +542,25 @@ class RoomDisplay extends IPSModule
                 // If the caption is empty, the value is written directly.
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText(strval($value)));
             } else {
-                $text = $this->EvaluateString($value, $object['Caption']);
+                $text = $this->EvaluateString($object['Caption'], $value);
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
             }
         }
-        // Toggel-Button, Slider, LineMeter
-        if ($object['Type'] == self::UI_TOGGLE || $object['Type'] == self::UI_SLIDER || $object['Type'] == self::UI_METER) {
+        // Button
+        if ($object['Type'] == self::UI_BUTTOM) {
+            // Text for Button
+            if ($object['Caption'] != '') {
+                $text = $this->EvaluateString($object['Caption'], $value);
+                $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
+            }
+        }
+        // Toggel-Button, Slider
+        if ($object['Type'] == self::UI_TOGGLE || $object['Type'] == self::UI_SLIDER) {
             $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             // Toogle Text for Button
             if ($object['Caption'] != '') {
-                $text = $this->EvaluateString($value, $object['Caption']);
-                $this->SetItemValStr($object['Page'], $object['Id'], $text);
+                $text = $this->EvaluateString($object['Caption'], $value);
+                $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText($text));
             }
         }
         // LED Indicator
@@ -570,26 +579,22 @@ class RoomDisplay extends IPSModule
                 $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             }
         }
-        // LineMeter
-        if ($object['Type'] == self::UI_METER) {
-            $this->SetItemValue($object['Page'], $object['Id'], intval($value));
-            if ($object['Caption'] == '') {
-                // If the caption is empty, the value is written directly.
-                $this->SendCommand('p' . $object['Page'] . 'b' . $object['Id'] . '.value_str=' . strval($value));
-            } else {
-                // sprintf: %s for string, %d for integer %f for float, %% to write a “%”
-                $this->SendCommand('p' . $object['Page'] . 'b' . $object['Id'] . '.value_str=' . sprintf($object['Caption'], ($value)));
-            }
-        }
         // Object
         if ($object['Type'] == self::UI_OBJECT) {
             if ($object['Caption'] != '') {
-                $text = $this->EvaluateString($value, $object['Caption']);
-                $this->SetItemValStr($object['Page'], $object['Id'], $text);
+                $text = $this->EvaluateString($object['Caption'], $value);
+                $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText($text));
             }
             if ($object['Value'] != '') {
-                $text = $this->EvaluateString($value, $object['Value']);
+                $text = $this->EvaluateString($object['Value'], $value);
                 $this->SetItemProperty($object['Page'], $object['Id'], 'bg_color', $text);
+            }
+        }
+        // Roller
+        if ($object['Type'] == self::UI_ROLLER) {
+            if ($object['Value'] != '') {
+                $value = $this->EvaluateString($object['Value'], $value);
+                $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             }
         }
     }
@@ -671,7 +676,7 @@ class RoomDisplay extends IPSModule
                 }
                 // Recalculation necessary?
                 if ($object['Recalculation'] != '') {
-                    $value = $this->EvaluateString($value, $object['Recalculation']);
+                    $value = $this->EvaluateString($object['Recalculation'], $value, $text);
                 }
                 // Type & Value & Text
                 $this->SendDebug(__FUNCTION__, $this->GetType($object['Type']) . ': ' . $this->SafePrint($value) . ', ' . $text, 0);
@@ -679,7 +684,7 @@ class RoomDisplay extends IPSModule
                 if (($object['Type'] == self::UI_BUTTOM && $data->event == self::EH_DOWN) ||
                     ($object['Type'] == self::UI_DROPDOWN && $data->event == self::EH_CHANGED) ||
                     ($object['Type'] == self::UI_TOGGLE && $data->event == self::EH_UP) ||
-                    ($object['Type'] == self::UI_ROLLER && $data->event == self::EH_UP) ||
+                    ($object['Type'] == self::UI_ROLLER && $data->event == self::EH_CHANGED) ||
                     ($object['Type'] == self::UI_SLIDER && $data->event == self::EH_UP) ||
                     ($object['Type'] == self::UI_SWITCH && $data->event == self::EH_UP)) {
                     if (IPS_GetObject($object['Link'])['ObjectType'] == 3) {
@@ -696,7 +701,7 @@ class RoomDisplay extends IPSModule
                             $this->SendDebug(__FUNCTION__, 'SetValue(' . $object['Link'] . ', ' . $value . ')', 0);
                         }
                         else {
-                            $this->SendDebug(__FUNCTION__, 'No return toobject: ' . $object['Link'], 0);
+                            $this->SendDebug(__FUNCTION__, 'No return to object: ' . $object['Link'], 0);
                         }
                     }
                 }
@@ -802,36 +807,36 @@ class RoomDisplay extends IPSModule
                 continue;
             }
             // get actual value
-            $data = GetValue($object['Link']);
-            if (is_bool($data)) {
-                $data = intval($data);
-            }
+            $value = GetValue($object['Link']);
             // process data to specific object
-            $this->ProcessData($object, $data);
+            $this->ProcessData($object, $value);
         }
     }
 
     /**
      * Evaluate String
      *
-     * @param mixed $value Value
      * @param mixed $subject Expression text
+     * @param mixed $value Value == {{val}}
+     * @param mixed $text Text == {{txt}}
      */
-    private function EvaluateString($value, $subject)
+    private function EvaluateString($subject, $value, $text = '')
     {
         // sprintf
-        if (strpos($subject, '%') !== false) {
+        if ((strlen($subject) != 0) && (strpos($subject, '{{') === false)) {
             // sprintf: %s for string, %d for integer %f for float, %% to write a “%”
-            return sprintf($subject, $value);
+            $ret = sprintf($subject, $value);
+            $this->SendDebug(__FUNCTION__, 'sprintf: ' . $ret . ' <= ' . $subject);
+            return $ret;
         }
-
-        // eval
-        if (!empty($subject)) {
-            // bool to string is bad (empty for false)
-            if (is_bool($value)) {
-                $value = intval($value);
-            }
+        // bool to string is bad (empty for false)
+        if (is_bool($value)) {
+            $value = intval($value);
+        }
+        // eval - empty(0) is true :(
+        if (strlen($subject) != 0) {
             $eval = str_replace(self::PH_VALUE, strval($value), $subject);
+            $eval = str_replace(self::PH_TEXT, strval($text), $eval);
             $eval = 'return (' . $eval . ');';
             $this->SendDebug(__FUNCTION__, 'eval: ' . $eval);
             try {
@@ -841,9 +846,7 @@ class RoomDisplay extends IPSModule
                 }
             } catch (ParseError $e) {
                 // Report error somehow
-                IPS_LogMessage('RD Error', $e->GetMessage());
-                IPS_LogMessage('RD Eval', $eval);
-                IPS_LogMessage('RD Subject', $subject);
+                $this->SendDebug(__FUNCTION__, 'RD Value: ' . $value . ',RD Type: ' . gettype($value) . ',RD Error' . $e->GetMessage() . ',RD Eval' . $eval . ',RD Subject: ' . $subject);
                 $code = '';
             }
             return $code;

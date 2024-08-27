@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-1.2.20240823-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-1.3.20240827-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -169,7 +169,17 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}'
 
 ### 8. Versionshistorie
 
-v1.2.202408728
+v1.3.20240827
+
+* _NEU_: Neue Beispielbilder und Konfigurationen hinzugefügt
+* _NEU_: Neben dem Platzhalter {{val}} wird jetzt auch {{txt}} bei Rückrechnung unterstützt
+* _FIX_: Unterstützung für ARC, BUTTON, LINEMETER und ROLLER hinzugefügt bzw. verbessert
+* _FIX_: Fehler bei Umrechnung und Rückrechnung korrigiert
+* _FIX_: Fehler bei Auswertung von booleschen Werten nochmal korrigiert
+* _FIX_: Textausgabe mit Sonderzeichen jetzt bei allen Objekten möglich
+* _FIX_: Bessere und mehr Debug-Meldungen
+
+v1.2.20240728
 
 * _NEU_: Hintergrundbilder und Beispielbilder hinzugefügt
 * _NEU_: Bibliotheks- bzw. Modulinfos vereinheitlicht
