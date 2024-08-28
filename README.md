@@ -198,8 +198,8 @@ v1.0.20240723
 
 Ich möchte mich für die Unterstützung bei der Entwicklung dieses Moduls bedanken bei ...
 
-* _firebuster_ : für die geniale und hervorragende Vorarbeit mit seinem __Modul openHASP__ :1:
-* _ralf_: für den stetigen Austausch rund um das Display und Modulfunktionlitäten :-)
+* _firebuster_ : für die geniale und hervorragende Vorarbeit mit seinem __Modul openHASP__ 👍
+* _ralf_: für den stetigen Austausch rund um das Display und Modulfunktionlitäten 👏
 
 Vielen Dank an Euch!
 
