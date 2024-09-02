@@ -519,8 +519,9 @@ class RoomDisplay extends IPSModule
                 $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             }
         }
-        // Dropdown || Gauge
-        if (($object['Type'] == self::UI_DROPDOWN) ||
+        // Checkbox ||Dropdown || Gauge ||Switch
+        if (($object['Type'] == self::UI_CHECKBOX) ||
+            ($object['Type'] == self::UI_DROPDOWN) ||
             ($object['Type'] == self::UI_GAUGE) ||
             ($object['Type'] == self::UI_SWITCH)) {
             // write "val" property
@@ -682,6 +683,7 @@ class RoomDisplay extends IPSModule
                 $this->SendDebug(__FUNCTION__, $this->GetType($object['Type']) . ': ' . $this->SafePrint($value) . ', ' . $text, 0);
                 // Button down || Dropdown changed || Toggle Button, Roller, Slider or Switch up
                 if (($object['Type'] == self::UI_BUTTOM && $data->event == self::EH_DOWN) ||
+                    ($object['Type'] == self::UI_CHECKBOX && $data->event == self::EH_UP) ||
                     ($object['Type'] == self::UI_DROPDOWN && $data->event == self::EH_CHANGED) ||
                     ($object['Type'] == self::UI_TOGGLE && $data->event == self::EH_UP) ||
                     ($object['Type'] == self::UI_ROLLER && $data->event == self::EH_CHANGED) ||

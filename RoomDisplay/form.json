@@ -76,6 +76,10 @@
                                         "value": 3
                                     },
                                     {
+                                        "caption": "Checkbox",
+                                        "value": 4
+                                    },
+                                    {
                                         "caption": "Dropdown",
                                         "value": 6
                                     },
