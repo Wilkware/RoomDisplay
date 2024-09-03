@@ -519,9 +519,8 @@ class RoomDisplay extends IPSModule
                 $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             }
         }
-        // Checkbox ||Dropdown || Gauge ||Switch
-        if (($object['Type'] == self::UI_CHECKBOX) ||
-            ($object['Type'] == self::UI_DROPDOWN) ||
+        // Dropdown || Gauge ||Switch
+        if (($object['Type'] == self::UI_DROPDOWN) ||
             ($object['Type'] == self::UI_GAUGE) ||
             ($object['Type'] == self::UI_SWITCH)) {
             // write "val" property
@@ -550,6 +549,15 @@ class RoomDisplay extends IPSModule
         // Button
         if ($object['Type'] == self::UI_BUTTOM) {
             // Text for Button
+            if ($object['Caption'] != '') {
+                $text = $this->EvaluateString($object['Caption'], $value);
+                $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
+            }
+        }
+        // Checkbox
+        if ($object['Type'] == self::UI_CHECKBOX) {
+            $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+            // Text for Checkbox
             if ($object['Caption'] != '') {
                 $text = $this->EvaluateString($object['Caption'], $value);
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
