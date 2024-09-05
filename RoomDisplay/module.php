@@ -563,15 +563,25 @@ class RoomDisplay extends IPSModule
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
             }
         }
-        // Toggel-Button, Slider
-        if ($object['Type'] == self::UI_TOGGLE || $object['Type'] == self::UI_SLIDER) {
+        // Slider
+        if ($object['Type'] == self::UI_SLIDER) {
             $this->SetItemValue($object['Page'], $object['Id'], intval($value));
-            // Toogle Text for Button
+            // Text for Slider
             if ($object['Caption'] != '') {
                 $text = $this->EvaluateString($object['Caption'], $value);
                 $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText($text));
             }
         }
+        // Toggle-Button
+        if ($object['Type'] == self::UI_TOGGLE) {
+            $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+            // Toogle Text for Button
+            if ($object['Caption'] != '') {
+                $text = $this->EvaluateString($object['Caption'], $value);
+                $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
+            }
+        }
+
         // LED Indicator
         if ($object['Type'] == self::UI_LED) {
             $var = IPS_GetVariable($sender);

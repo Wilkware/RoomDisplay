@@ -108,13 +108,13 @@
 {"comment":" --- Skip Prev -------- "}
 {"page":04,"id":31,"obj":"btn",     "x":020,"y":230,"w":075,"h":075,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE4AE","text_color":"#FFFFFF","text_font":32,"toggle":false,"radius":10}
 {"comment":" --- Play / Pause ------"}
-{"page":04,"id":41,"obj":"btn",     "x":110,"y":230,"w":095,"h":165,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text_color":"#FFFFFF","radius":10,"toggle":true,"value_font":64}
+{"page":04,"id":41,"obj":"btn",     "x":110,"y":230,"w":095,"h":165,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE40A","text_color":"#FFFFFF","text_font":64,"toggle":true, "radius":10}
 {"comment":" --- Skip Next -------- "}
 {"page":04,"id":51,"obj":"btn",     "x":220,"y":230,"w":075,"h":075,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE4AD","text_color":"#FFFFFF","text_font":32,"toggle":false,"radius":10}
 {"comment":" --- Mute ------------- "}
 {"page":04,"id":61,"obj":"btn",     "x":020,"y":320,"w":075,"h":075,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE75F","text_color":"#FFFFFF","text_font":32,"toggle":true, "radius":10}
 {"comment":" --- Shuffle ---------- "}
-{"page":04,"id":71,"obj":"btn",     "x":220,"y":320,"w":075,"h":075,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE49D","text_color":"#FFFFFF","text_font":32,"toggle":true,"radius":10}
+{"page":04,"id":71,"obj":"btn",     "x":220,"y":320,"w":075,"h":075,"bg_opa":70,"bg_color":"#FFFFFF","border_side":0,"text":"\uE49D","text_color":"#FFFFFF","text_font":32,"toggle":true, "radius":10}
 {"comment":" --- Volume ----------- "}
 {"page":04,"id":81,"obj":"slider",  "x":020,"y":415,"h":040,"w":275,"min":0,"max":100,"val":50,"radius":20,"bg_opa10":25,"bg_color10":"#FFFFFF","bg_grad_color10":"#C0F0C0","border_side":0,"radius20":40,"bg_grad_dir20":0,"bg_color20":"#FFFFFF","pad_top":0,"pad_bottom":0,"pad_left":0,"pad_right":0,"bg_opa":70,"border_side10":0}
 {"comment":" --- Favorites -------- "}

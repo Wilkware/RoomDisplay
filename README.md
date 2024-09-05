@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-1.4.20240902-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-1.4.20240905-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -170,9 +170,11 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}'
 
 ### 8. Versionshistorie
 
-v1.4.20240903
+v1.4.20240905
 
 * _NEU_: UI-Objekt Checkbox wird jetzt unterstützt
+* _FIX_: Textausgabe für Toogle Button korrigiert
+* _FIX_: Jsonl-Konfiguration für Musik Play/Stop Button gefixt
 
 v1.3.20240827
 
