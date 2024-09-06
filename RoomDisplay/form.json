@@ -281,12 +281,50 @@
                 {
                     "type": "CheckBox",
                     "name": "AutoDimBacklight",
-                    "caption": "Auto Dim Backlight!"
+                    "caption": "Automatically switching backlight [0=Off, 1=Darkest, 255=Brightest]!"
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "NumberSpinner",
+                            "name": "AutoOffIdle",
+                            "caption": "Normal (no idle):",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "width": "200px"
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "AutoShortIdle",
+                            "caption": "Short idle:",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "width": "200px"
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "AutoLongIdle",
+                            "caption": "Long idle:",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "width": "200px"
+                        }
+                    ]
                 },
                 {
                     "type": "CheckBox",
                     "name": "AutoShutdownBacklight",
-                    "caption": "Auto Shutdow Backlight!"
+                    "caption": "Activate burn-in protection automatically!"
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "AutoAntiburnCycle",
+                    "caption": "Cycle:",
+                    "suffix": "minutes",
+                    "minimum": 5,
+                    "maximum": 60,
+                    "width": "200px"
                 },
                 {
                     "type": "CheckBox",
@@ -296,7 +334,8 @@
                 {
                     "type": "SelectScript",
                     "name": "ForwardMessageScript",
-                    "caption": "Forward message to script:"
+                    "caption": "Forward message to script:",
+                    "width": "616px"
                 }
             ]
         }

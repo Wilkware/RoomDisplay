@@ -105,13 +105,20 @@ class RoomDisplay extends IPSModule
 
         // Settings
         $this->RegisterPropertyBoolean('AutoDimBacklight', false);
+        $this->RegisterPropertyInteger('AutoOffIdle', 255);
+        $this->RegisterPropertyInteger('AutoShortIdle', 50);
+        $this->RegisterPropertyInteger('AutoLongIdle', 0);
         $this->RegisterPropertyBoolean('AutoShutdownBacklight', false);
+        $this->RegisterPropertyInteger('AutoAntiburnCycle', 60);
         $this->RegisterPropertyBoolean('PageOneOnIdle', false);
         $this->RegisterPropertyInteger('ForwardMessageScript', 1);
 
         // Info Attributes
         $this->RegisterAttributeString('StatusUpdate', '');
         $this->RegisterAttributeString('MoodLight', '');
+
+        // Register Timer
+        $this->RegisterTimer('AntiburnTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", true);');
 
         // Automatically connect to the MQTT server/splitter instance
         $this->ConnectParent(self::GUID_MQTT_IO);
@@ -167,9 +174,13 @@ class RoomDisplay extends IPSModule
         $this->MaintainVariable('Status', $this->Translate('Status'), 0, 'WWXRD.Status', 1, true);
         $this->MaintainVariable('Backlight', $this->Translate('Backlight'), 1, 'WWXRD.Backlight', 3, true);
         $this->MaintainVariable('Page', $this->Translate('Page'), 1, 'WWXRD.Page', 4, true);
+
         // Maintain actions
         $this->MaintainAction('Backlight', true);
         $this->MaintainAction('Page', true);
+
+        // Reset Timer
+        $this->SetTimerInterval('AntiburnTimer', 0);
 
         // Validate object liste
         if ($this->RegisterObjects()) {
@@ -238,6 +249,9 @@ class RoomDisplay extends IPSModule
             case 'ScreenShot':
                 $this->SendCommand('screenshot');
                 break;
+            case 'Antiburn':
+                $this->Antiburn($value);
+                break;
             case 'MoodLight':
                 $this->MoodLight($value);
                 break;
@@ -262,24 +276,20 @@ class RoomDisplay extends IPSModule
         $topic = $data->Topic;
         $payload = $data->Payload;
         $this->SendDebug(__FUNCTION__, 'Received Topic: ' . $topic . ' Payload: ' . $payload, 0);
-
-        $prefix = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/LWT';
         // Check whether the topic begins with a specific prefix
+        $prefix = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/LWT';
         if (stripos($topic, $prefix) !== false) {
             $this->HandleData('LWT', $payload);
             return;
         }
-
-        $prefix = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/state/';
         // Check whether the topic begins with a specific prefix
+        $prefix = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/state/';
         if (stripos($topic, $prefix) === false) {
             $this->SendDebug(__FUNCTION__, 'Topic does not match', 0);
             return;
         }
-
-        //Prefix des Topics abschneiden
+        // Truncate prefix of the topic
         $topic = substr($topic, strlen($prefix));
-        $this->SendDebug(__FUNCTION__, 'Topic: ' . $topic . ' Payload: ' . $payload, 0);
         $this->HandleData($topic, $payload);
     }
 
@@ -293,16 +303,16 @@ class RoomDisplay extends IPSModule
     public function MessageSink($timeStamp, $sender, $message, $data)
     {
         $this->SendDebug(__FUNCTION__, 'SenderId: ' . $sender . ' Data: ' . $this->DebugPrint($data), 0);
-        // Auf aktualisierungen reagieren.
+        // React to updates
         if ($message == VM_UPDATE) {
             $objects = json_decode($this->ReadPropertyString('Objects'), true);
-            // iterate over all objects
+            // Iterate over all objects
             foreach ($objects as $item => $object) {
                 if ($object['Link'] != $sender) {
                     continue;
                 }
                 $this->SendDebug(__FUNCTION__, $this->DebugPrint($object), 0);
-                // process data to specific object
+                // Process data to specific object
                 $this->ProcessData($object, $data[0]);
             }
         }
@@ -340,7 +350,7 @@ class RoomDisplay extends IPSModule
         $filename = '';
         $contenttype = '';
         $ip = $this->ReadPropertyString('IP');
-        // download the file
+        // Download the file
         if (empty($ip)) {
             $this->EchoMessage('No IP adress filed!');
             return;
@@ -365,12 +375,12 @@ class RoomDisplay extends IPSModule
             $this->EchoMessage('Error during download file!');
             return;
         }
-        // output headers so that the file is downloaded rather than displayed
+        // Output headers so that the file is downloaded rather than displayed
         header($contenttype);
         header('Content-Disposition: attachment; filename=' . $filename);
-        // create a file pointer connected to the output stream
+        // Create a file pointer connected to the output stream
         $output = fopen('php://output', 'w');
-        // output line by line
+        // Output line by line
         fwrite($output, $download);
     }
 
@@ -378,7 +388,7 @@ class RoomDisplay extends IPSModule
     {
         $resultServer = true;
         $resultClient = true;
-        //MQTT Server
+        // MQTT Server
         $server['DataID'] = self::GUID_MQTT_TX;
         $server['PacketType'] = 3;
         $server['QualityOfService'] = 0;
@@ -392,31 +402,71 @@ class RoomDisplay extends IPSModule
         return $resultServer === false;
     }
 
+    /**
+     * Set a specific item property
+     *
+     * @param int $page Page Number (1..12)
+     * @param int $objectId UI Object ID
+     * @param string $property Property name
+     * @param string $value Property Value
+     */
     private function SetItemProperty(int $page, int $objectId, string $property, string $value)
     {
         $this->SendCommand('p' . $page . 'b' . $objectId . '.' . $property . '=' . $value);
     }
 
+    /**
+     * Set item value (numeric)
+     *
+     * @param int $page Page Number (1..12)
+     * @param int $objectId UI Object ID
+     * @param int $value Property Value
+     */
     private function SetItemValue(int $page, int $objectId, int $value)
     {
         $this->SendCommand('p' . $page . 'b' . $objectId . '.val=' . $value);
     }
 
+    /**
+     * Set item text (label, caption)
+     *
+     * @param int $page Page Number (1..12)
+     * @param int $objectId UI Object ID
+     * @param string $value Property Value
+     */
     private function SetItemText(int $page, int $objectId, string $value)
     {
         $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.text=' . $value . '"]');
     }
 
+    /**
+     * Set item value string
+     *
+     * @param int $page Page Number (1..12)
+     * @param int $objectId UI Object ID
+     * @param string $value Property Value
+     */
     private function SetItemValStr(int $page, int $objectId, string $value)
     {
         $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.value_str=' . $value . '"]');
     }
 
+    /**
+     * Set item src (image)
+     *
+     * @param int $page Page Number (1..12)
+     * @param int $objectId UI Object ID
+     * @param string $value Property Value
+     */
     private function SetItemSrc(int $page, int $objectId, string $value)
     {
         $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.src=' . $value . '"]');
     }
 
+    /**
+     * Check all register objects
+     *
+     */
     private function RegisterObjects()
     {
         $objects = json_decode($this->ReadPropertyString('Objects'), true);
@@ -438,7 +488,7 @@ class RoomDisplay extends IPSModule
 
         $state = true;
         $count = 1;
-        // Check verknüpftes Object
+        // Check linked object
         foreach ($objects as $item => $object) {
             //$this->SendDebug(__FUNCTION__, $this->DebugPrint($object));
             if ($object['Link'] != 1) {
@@ -498,7 +548,7 @@ class RoomDisplay extends IPSModule
     private function ProcessData($object, $data)
     {
         $this->SendDebug(__FUNCTION__, 'Data: ' . $data . ' (' . gettype($data) . ')');
-        // calculate IPS value to object value
+        // Calculate IPS value to object value
         $value = $this->EvaluateString($object['Calculation'], $data);
         // Debug
         $this->SendDebug(__FUNCTION__, $this->GetType($object['Type']) . ' :' . $this->SafePrint($value));
@@ -523,12 +573,12 @@ class RoomDisplay extends IPSModule
         if (($object['Type'] == self::UI_DROPDOWN) ||
             ($object['Type'] == self::UI_GAUGE) ||
             ($object['Type'] == self::UI_SWITCH)) {
-            // write "val" property
+            // Write "val" property
             $this->SetItemValue($object['Page'], $object['Id'], intval($value));
         }
         // Image
         if ($object['Type'] == self::UI_IMAGE) {
-            // write "src" property
+            // Write "src" property
             if ($object['Value'] != '') {
                 $text = $this->EvaluateString($object['Value'], $value);
                 $this->SetItemSrc($object['Page'], $object['Id'], $text);
@@ -631,24 +681,24 @@ class RoomDisplay extends IPSModule
                 case 'long':
                     $this->SetValue('Idle', 2);
                     break;
-                default:
+                default: // off
                     $this->SetValue('Idle', 0);
+                    $this->SetTimerInterval('AntiburnTimer', 0);
             }
             if ($this->ReadPropertyBoolean('AutoDimBacklight')) {
                 switch ($data) {
                     case 'short':
-                        $this->SendCommand('backlight=50');
+                        $this->SendCommand('backlight=' . $this->ReadPropertyInteger('AutoShortIdle'));
                         break;
                     case 'long':
+                        $this->SendCommand('backlight=' . $this->ReadPropertyInteger('AutoLongIdle'));
                         break;
-                    default:
-                        $this->SendCommand('backlight=255');
+                    default: // off
+                        $this->SendCommand('backlight=' . $this->ReadPropertyInteger('AutoOffIdle'));
                 }
             }
-            if ($this->ReadPropertyBoolean('AutoShutdownBacklight')) {
-                if ($data == 'long') {
-                    $this->SendCommand('backlight=0');
-                }
+            if ($this->ReadPropertyBoolean('AutoShutdownBacklight') && $data == 'long') {
+                $this->SetTimerInterval('AntiburnTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoAntiburnCycle'));
             }
             if ($this->ReadPropertyBoolean('PageOneOnIdle') && $data == 'short') {
                 $this->SendCommand('page 1');
@@ -658,7 +708,11 @@ class RoomDisplay extends IPSModule
         // Is backlight?
         if ($topic == 'backlight') {
             $data = json_decode($data);
-            $this->SetValue('Backlight', $data->brightness);
+            $brightness = $data->brightness;
+            if (isset($data->state) && $data->state == 'off') {
+                $brightness = 0;
+            }
+            $this->SetValue('Backlight', $brightness);
         }
 
         // Is page changed?
@@ -769,6 +823,20 @@ class RoomDisplay extends IPSModule
                 default:
                     $this->SetValueBoolean('Status', false);
             }
+        }
+    }
+
+    /**
+     * Switch antiburn on or off
+     *
+     * @param bool $value
+     */
+    private function Antiburn(bool $value)
+    {
+        if ($value) {
+            $this->SendCommand('antiburn=on');
+        } else {
+            $this->SendCommand('antiburn=off');
         }
     }
 

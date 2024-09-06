@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-1.4.20240905-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-1.5.20240906-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -50,6 +50,7 @@ Was macht bzw. was kann das Modul?
 - Übergabe der Aktion und Ausführung via Script
 - Abfrage von (Status-)Informationen
 - Ausführung von OpenHASP System- bzw. Globalen Kommandos
+- Automatische Schaltung für Helligkeit und Einbrennschutz
 
 ### 2. Voraussetzungen
 
@@ -96,8 +97,12 @@ Hier eine kurze Erklärung der Spalten:
 
 Name                        | Beschreibung
 --------------------------- | ----------------------------------
-Hintergrundbeleuchtung automatisch dimmen! | Dimmt die Beleuchtung im kurzen Leerlauf (idle->short) auf ca 20% ab
-Hintergrundbeleuchtung automatisch abschalten! | Schaltet die Beleuchtung im Leerlauf (idle->long) automatisch ab
+Hintergrundbeleuchtung automatisch schalten! | Schaltet die Beleuchtung in Abhängigkeit der zeitlichen Nutzung
+Normal (kein Leerlauf)      | Wert der Helligkeit bei normaler Nutzung des Displays
+Kurzer Leerlauf             | Wert der Helligkeit nach kürzeren Nicht-Nutzung des Displays
+Langer Leerlauf             | Wert der Helligkeit nach längerer Nicht-Nutzung des Displays
+Einbrennschutz automatisch aktivieren! | Schaltet die Beleuchtung im Leerlauf (idle->long) automatisch ab
+Zyklus                      | Zeitlicher Zyklus in Minuten in dem der Einbrennschutz für 30 Sekunden eingeschaltet wird.
 Im Ruhezustand auf Seite 1 wechseln! | Schaltet im kurzen Leerlauf auf Seite 1 um (idle->short)
 Nachricht an Skript weiterleiten: | Leitet die Aktion bzw. das Ereignis direkt weiter. Die Daten können im Script mit der Variable $_IPS['Data'] empfangen und ausgewertet werden.
 
@@ -170,11 +175,18 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}'
 
 ### 8. Versionshistorie
 
+v1.5.20240906
+
+* _NEU_: Helligkeitssteuerung (Erweiterte Einstellungen) komplett überarbeitet
+* _NEU_: Automatische Abschaltung durch Intervallschaltung für Einbrennschutz ersetzt
+* _FIX_: Kommentare und Debug-Meldungen vereinheitlicht und optimiert
+* _FIX_: Dokumentation überarbeitet
+
 v1.4.20240905
 
 * _NEU_: UI-Objekt Checkbox wird jetzt unterstützt
 * _FIX_: Textausgabe für Toogle Button korrigiert
-* _FIX_: Jsonl-Konfiguration für Musik Play/Stop Button gefixt
+* _FIX_: Konfigurationsbeispiele (Button) gefixt
 
 v1.3.20240827
 
