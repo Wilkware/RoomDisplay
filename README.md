@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-1.5.20240906-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-1.6.20241023-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -24,22 +24,23 @@ Das Modul verbindet ein openHASP-Display über MQTT mit dem IPS-System. Die für
 Das Modul übersetzt Aktionen und Ereignisse in IP-Symcon und aktualisiert umgekehrt die Variablen in IP-Symcon zur Darstellung auf 
 dem Display.
 
-Derzeit werden folgende UI-Objekte unterstützt:
-
-* Arc
-* Button
-* Checkbox
-* Dropdown
-* Gauge
-* Image
-* Label
-* LED Inicator
-* Line Meter
-* Object
-* Roller
-* Slider
-* Switch
-* Toggle Button
+<details>
+  <summary>Derzeit werden folgende UI-Objekte unterstützt:</summary>
+  * Arc
+  * Button
+  * Checkbox
+  * Dropdown
+  * Gauge
+  * Image
+  * Label
+  * LED Inicator
+  * Line Meter
+  * Object
+  * Roller
+  * Slider
+  * Switch
+  * Toggle Button
+</details>
 
 Was macht bzw. was kann das Modul?
 
@@ -104,30 +105,31 @@ Langer Leerlauf             | Wert der Helligkeit nach längerer Nicht-Nutzung d
 Einbrennschutz automatisch aktivieren! | Schaltet die Beleuchtung im Leerlauf (idle->long) automatisch ab
 Zyklus                      | Zeitlicher Zyklus in Minuten in dem der Einbrennschutz für 30 Sekunden eingeschaltet wird.
 Im Ruhezustand auf Seite 1 wechseln! | Schaltet im kurzen Leerlauf auf Seite 1 um (idle->short)
+Keine Syncronisierung im Ruhezustand! | Schaltet die Synchrinistaion im Leerlauf ab (idle->long)
 Nachricht an Skript weiterleiten: | Leitet die Aktion bzw. das Ereignis direkt weiter. Die Daten können im Script mit der Variable $_IPS['Data'] empfangen und ausgewertet werden.
 
 Aktionsbereich:
 
-> Buttonleiste ...
-
-* _Vorher_, _Zurück_, _Weiter_ - eigentlich auch selbsterklärend, mit den Buttons kann man auf den Seiten navigieren
-* _Seiten neu laden_ - liest die pages.jsonl neu ein und rendert die Seiten neu
-* _Seiten löschen_ - alle Seiten löschen
-
 > Aktion ausführen …
 
-* _Stimmungslicht_ - Anfrage nach Informationen zu den aktuellen Moodlight-Einstellungen
-* _Status_ - Anfrage nach Geräte-Status-Update-Informationen
-* _Bildschirmfoto_ - Kommando zum Erstellen eines Screenshots senden
+* _Seiten neu laden_ - liest die pages.jsonl neu ein und rendert die Seiten neu
+* _Seiten löschen_ - alle Seiten löschen
 * _Synchronisieren_ - gerade in der Einstellung- bzw. Entwicklungsphase ein ganz wichtiger Button, er geht durch die Mappingliste und ruft für die verknüpften Variablen deren Werte ab und stellt sie dar. Diese Funktion wird auch immer aufgerufen wenn ein Gerät ONLINE geht! Gerade wenn man alles Seiten gelöscht hat und neu lädt ist der Button sehr hilfreich!
 * _Neustart_ - Reboot des Gerätes
+
+> Steitennavigation ...
+
+* _Vorher_, _Zurück_, _Weiter_ - eigentlich auch selbsterklärend, mit den Buttons kann man auf den Seiten navigieren
 
 > Abfrage von …
 
 * _Stimmungslicht_ - Anzeige der aktuellen Moodlight-Einstellungen
 * _Status_ - Anzeige der Status-Update-Infos
-* _Bildschirmfoto_ - Download und Speichern des angeforderten Screenshots (aktuelle Seite), siehe auch imgs Ordner im Modul
-* _Seitenaufbau_ - Download und Speichern der pages.jsonl Datei (Backup-Zwecke)
+* _Bildschirmfoto_ - Erstellen und Speichern eines aktuellen Screenshots (aktuelle Seite), siehe auch imgs Ordner im Modul
+
+> Dateiverwaltung …
+
+* _Seitenaufbau herunterladen_ - Download und Speichern der pages.jsonl Datei (Backup-Zwecke)
 
 ### 5. Statusvariablen und Profile
 
@@ -174,6 +176,13 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}']);`
 
 ### 8. Versionshistorie
+
+v1.6.20241023
+
+* _NEU_: Syncronisation deaktivierbar im Leerlauf
+* _NEU_: Buttons im Aktionsbereich komplett neu organisiert
+* _FIX_: Aktionen benötigen keine 2 Buttons mehr
+* _FIX_: Namen und Übersetzungen überarbeitet
 
 v1.5.20240906
 

@@ -332,6 +332,11 @@
                     "caption": "Page 1 on Idle!"
                 },
                 {
+                    "type": "CheckBox",
+                    "name": "SyncOnIdle",
+                    "caption": "No synchronization in idle!"
+                },
+                {
                     "type": "SelectScript",
                     "name": "ForwardMessageScript",
                     "caption": "Forward message to script:",
@@ -342,63 +347,23 @@
     ],
     "actions": [
         {
-            "type": "RowLayout",
-            "items": [
-                {
-                    "type": "Button",
-                    "caption": "< Prev ]",
-                    "onClick": "IPS_RequestAction($id,'PagePrev',true);",
-                    "enabled": true
-                },
-                {
-                    "type": "Button",
-                    "caption": "[ Back ]",
-                    "onClick": "IPS_RequestAction($id,'PageBack',true);",
-                    "enabled": true
-                },
-                {
-                    "type": "Button",
-                    "caption": "[ Next >",
-                    "onClick": "IPS_RequestAction($id,'PageNext',true);",
-                    "enabled": true
-                },
-                {
-                    "type": "Button",
-                    "caption": "Reload Pages",
-                    "onClick": "IPS_RequestAction($id,'ReloadPages',true);",
-                    "enabled": true
-                },
-                {
-                    "type": "Button",
-                    "caption": "Clear Pages",
-                    "onClick": "IPS_RequestAction($id,'ClearPages',true);",
-                    "enabled": true
-                }
-            ]
-        },
-        {
             "type": "ExpansionPanel",
             "caption": "Execute action ...",
+            "expanded": true,
             "items": [
                 {
                     "type": "RowLayout",
                     "items": [
                         {
                             "type": "Button",
-                            "caption": "Moodlight",
-                            "onClick": "IPS_RequestAction($id,'MoodLight',true);",
+                            "caption": "Reload Pages",
+                            "onClick": "IPS_RequestAction($id,'ReloadPages',true);",
                             "enabled": true
                         },
                         {
                             "type": "Button",
-                            "caption": "Status",
-                            "onClick": "IPS_RequestAction($id,'StatusUpdate',true);",
-                            "enabled": true
-                        },
-                        {
-                            "type": "Button",
-                            "caption": "Screenshot",
-                            "onClick": "IPS_RequestAction($id,'ScreenShot',true);",
+                            "caption": "Clear Pages",
+                            "onClick": "IPS_RequestAction($id,'ClearPages',true);",
                             "enabled": true
                         },
                         {
@@ -419,6 +384,35 @@
         },
         {
             "type": "ExpansionPanel",
+            "caption": "Page navigation ...",
+            "items": [
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Button",
+                            "caption": "< Prev ]",
+                            "onClick": "IPS_RequestAction($id,'PagePrev',true);",
+                            "enabled": true
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "[ Back ]",
+                            "onClick": "IPS_RequestAction($id,'PageBack',true);",
+                            "enabled": true
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "[ Next >",
+                            "onClick": "IPS_RequestAction($id,'PageNext',true);",
+                            "enabled": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
             "caption": "Query from ...",
             "items": [
                 {
@@ -427,13 +421,13 @@
                         {
                             "type": "Button",
                             "caption": "Moodlight",
-                            "onClick": "IPS_RequestAction($id,'MoodLight', false);",
+                            "onClick": "IPS_RequestAction($id,'MoodLight',true);",
                             "enabled": true
                         },
                         {
                             "type": "Button",
                             "caption": "Status",
-                            "onClick": "IPS_RequestAction($id,'StatusUpdate', false);",
+                            "onClick": "IPS_RequestAction($id,'StatusUpdate',true);",
                             "enabled": true
                         },
                         {
@@ -442,10 +436,21 @@
                             "onClick": "echo \"../hook/plate$id?file=screenshot\";",
                             "link": true,
                             "enabled": false
-                        },
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "File management ...",
+            "items": [
+                {
+                    "type": "RowLayout",
+                    "items": [
                         {
                             "type": "Button",
-                            "caption": "Page layout",
+                            "caption": "Download page layout",
                             "onClick": "echo \"../hook/plate$id?file=pages\";",
                             "link": true,
                             "enabled": false

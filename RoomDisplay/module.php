@@ -111,11 +111,14 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyBoolean('AutoShutdownBacklight', false);
         $this->RegisterPropertyInteger('AutoAntiburnCycle', 60);
         $this->RegisterPropertyBoolean('PageOneOnIdle', false);
+        $this->RegisterPropertyBoolean('SyncOnIdle', false);
         $this->RegisterPropertyInteger('ForwardMessageScript', 1);
 
         // Info Attributes
         $this->RegisterAttributeString('StatusUpdate', '');
         $this->RegisterAttributeString('MoodLight', '');
+        // Idle Attribute
+        $this->RegisterAttributeBoolean('SyncData', true);
 
         // Register Timer
         $this->RegisterTimer('AntiburnTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", true);');
@@ -205,7 +208,7 @@ class RoomDisplay extends IPSModule
         // Buttons Backup & Status
         if ($ip != '') {
             $form['actions'][2]['items'][0]['items'][2]['enabled'] = true;
-            $form['actions'][2]['items'][0]['items'][3]['enabled'] = true;
+            $form['actions'][3]['items'][0]['items'][0]['enabled'] = true;
         }
         // return form
         return json_encode($form);
@@ -245,9 +248,6 @@ class RoomDisplay extends IPSModule
                 break;
             case 'Restart':
                 $this->SendCommand('restart');
-                break;
-            case 'ScreenShot':
-                $this->SendCommand('screenshot');
                 break;
             case 'Antiburn':
                 $this->Antiburn($value);
@@ -305,15 +305,17 @@ class RoomDisplay extends IPSModule
         $this->SendDebug(__FUNCTION__, 'SenderId: ' . $sender . ' Data: ' . $this->DebugPrint($data), 0);
         // React to updates
         if ($message == VM_UPDATE) {
-            $objects = json_decode($this->ReadPropertyString('Objects'), true);
-            // Iterate over all objects
-            foreach ($objects as $item => $object) {
-                if ($object['Link'] != $sender) {
-                    continue;
+            if ($this->ReadAttributeBoolean('SyncData')) {
+                $objects = json_decode($this->ReadPropertyString('Objects'), true);
+                // Iterate over all objects
+                foreach ($objects as $item => $object) {
+                    if ($object['Link'] != $sender) {
+                        continue;
+                    }
+                    $this->SendDebug(__FUNCTION__, $this->DebugPrint($object), 0);
+                    // Process data to specific object
+                    $this->ProcessData($object, $data[0]);
                 }
-                $this->SendDebug(__FUNCTION__, $this->DebugPrint($object), 0);
-                // Process data to specific object
-                $this->ProcessData($object, $data[0]);
             }
         }
     }
@@ -361,6 +363,7 @@ class RoomDisplay extends IPSModule
                 $contenttype = 'Content-Type: application/json; charset=utf-8';
                 break;
             case 'screenshot':
+                $this->SendCommand('screenshot');
                 $filename = 'screenshot.bmp';
                 $contenttype = 'Content-Type: image/bmp';
                 break;
@@ -684,6 +687,10 @@ class RoomDisplay extends IPSModule
                 default: // off
                     $this->SetValue('Idle', 0);
                     $this->SetTimerInterval('AntiburnTimer', 0);
+                    if (!$this->ReadAttributeBoolean('SyncData')) {
+                        $this->Synchronize();
+                    }
+                    $this->WriteAttributeBoolean('SyncData', true);
             }
             if ($this->ReadPropertyBoolean('AutoDimBacklight')) {
                 switch ($data) {
@@ -702,6 +709,9 @@ class RoomDisplay extends IPSModule
             }
             if ($this->ReadPropertyBoolean('PageOneOnIdle') && $data == 'short') {
                 $this->SendCommand('page 1');
+            }
+            if ($this->ReadPropertyBoolean('SyncOnIdle') && $data == 'long') {
+                $this->WriteAttributeBoolean('SyncData', false);
             }
         }
 
@@ -806,11 +816,13 @@ class RoomDisplay extends IPSModule
         if ($topic == 'statusupdate') {
             $this->WriteAttributeString('StatusUpdate', $data);
             $this->SendDebug(__FUNCTION__, 'Status: ' . $data);
+            //$this->StatusUpdate(false);
         }
 
         if ($topic == 'moodlight') {
             $this->WriteAttributeString('MoodLight', $data);
             $this->SendDebug(__FUNCTION__, 'Moodlight: ' . $data);
+            //$this->MoodLight(false);
         }
 
         // Last Will and Testament (LWT)?
@@ -857,10 +869,8 @@ class RoomDisplay extends IPSModule
      */
     private function StatusUpdate($value)
     {
+        $this->SendCommand('statusupdate');
         if ($value) {
-            $this->SendCommand('statusupdate');
-        }
-        else {
             $info = $this->ReadAttributeString('StatusUpdate');
             $this->EchoMessage($this->PrettyPrint(self::RD_STATUS_INFO, $info));
         }
@@ -872,10 +882,8 @@ class RoomDisplay extends IPSModule
      */
     private function MoodLight($value)
     {
+        $this->SendCommand('moodlight');
         if ($value) {
-            $this->SendCommand('moodlight');
-        }
-        else {
             $info = $this->ReadAttributeString('MoodLight');
             $this->EchoMessage($this->PrettyPrint(self::RD_MOOD_LIGHT, $info));
         }
