@@ -195,6 +195,7 @@ v1.7.20241106
 
 * _NEU_: Buttons für das Sortieren der Objekt-Einträge nach _Seite_ und _ID_
 * _NEU_: Buttons für das Duplizieren eines Mapping-Eintages
+* _NEU_: Funktion _DisableIdle_ hinzugefügt (Hilfreich bei Konfigurations-Sessions).
 * _FIX_: Automatisches Schalten auf Seite 1 erfolgt nun erst bei _langem_ Leerlauf
 * _FIX_: Dokumentation/Markdown gefixt
 
