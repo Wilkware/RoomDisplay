@@ -119,6 +119,7 @@ class RoomDisplay extends IPSModule
         $this->RegisterAttributeString('MoodLight', '');
         // Idle Attribute
         $this->RegisterAttributeBoolean('SyncData', true);
+        $this->RegisterAttributeBoolean('DisableIdle', false);
 
         // Register Timer
         $this->RegisterTimer('AntiburnTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", true);');
@@ -261,6 +262,12 @@ class RoomDisplay extends IPSModule
             case 'Synchronize':
                 $this->Synchronize();
                 break;
+            case 'MappingCopy':
+                $this->UpdateMapping($value, true);
+                break;
+            case 'MappingSort':
+                $this->UpdateMapping($value, false);
+                break;
         }
     }
 
@@ -343,6 +350,17 @@ class RoomDisplay extends IPSModule
     }
 
     /**
+     * Send JSON Lines to display
+     *
+     * @param array $data JSONL array
+     */
+    public function DisableIdle(bool $disable)
+    {
+        $this->WriteAttributeBoolean('DisableIdle', $disable);
+        $this->ProcessIdle();
+    }
+
+    /**
      * This function will be called by the hook control. Visibility should be protected!
      */
     protected function ProcessHookData()
@@ -385,6 +403,15 @@ class RoomDisplay extends IPSModule
         $output = fopen('php://output', 'w');
         // Output line by line
         fwrite($output, $download);
+    }
+
+    protected function ProcessIdle()
+    {
+        $disable = $this->ReadAttributeBoolean('DisableIdle');
+        if ($disable) {
+            $this->SendCommand('idle off');
+        }
+        return $disable;
     }
 
     protected function SendMQTT($topic, $payload)
@@ -464,6 +491,22 @@ class RoomDisplay extends IPSModule
     private function SetItemSrc(int $page, int $objectId, string $value)
     {
         $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.src=' . $value . '"]');
+    }
+
+    /**
+     * Set display backlight via staet and brightness
+     *
+     * @param string $data idle state (short, long or off)
+     */
+    private function SetBacklight(string $data)
+    {
+        $state = 'on';
+        $brightness = $this->ReadPropertyInteger('Auto' . ucfirst($data) . 'Idle');
+        // adjust state & brigthness
+        if ($brightness == 0) {
+            $state = 'off';
+        }
+        $this->SendCommand('backlight {"state":"' . $state . '","brightness":' . $brightness . '}');
     }
 
     /**
@@ -679,6 +722,9 @@ class RoomDisplay extends IPSModule
         if ($topic == 'idle') {
             switch ($data) {
                 case 'short':
+                    if ($this->ProcessIdle()) {
+                        return;
+                    }
                     $this->SetValue('Idle', 1);
                     break;
                 case 'long':
@@ -693,21 +739,12 @@ class RoomDisplay extends IPSModule
                     $this->WriteAttributeBoolean('SyncData', true);
             }
             if ($this->ReadPropertyBoolean('AutoDimBacklight')) {
-                switch ($data) {
-                    case 'short':
-                        $this->SendCommand('backlight=' . $this->ReadPropertyInteger('AutoShortIdle'));
-                        break;
-                    case 'long':
-                        $this->SendCommand('backlight=' . $this->ReadPropertyInteger('AutoLongIdle'));
-                        break;
-                    default: // off
-                        $this->SendCommand('backlight=' . $this->ReadPropertyInteger('AutoOffIdle'));
-                }
+                $this->SetBacklight($data);
             }
             if ($this->ReadPropertyBoolean('AutoShutdownBacklight') && $data == 'long') {
                 $this->SetTimerInterval('AntiburnTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoAntiburnCycle'));
             }
-            if ($this->ReadPropertyBoolean('PageOneOnIdle') && $data == 'short') {
+            if ($this->ReadPropertyBoolean('PageOneOnIdle') && $data == 'long') {
                 $this->SendCommand('page 1');
             }
             if ($this->ReadPropertyBoolean('SyncOnIdle') && $data == 'long') {
@@ -907,6 +944,45 @@ class RoomDisplay extends IPSModule
             // process data to specific object
             $this->ProcessData($object, $value);
         }
+    }
+
+    /**
+     * Duplicate a entry and or sort the objects list.
+     *
+     * @param string $value json encoded list plus index.
+     * @param bool $copy flag if also copy a entry
+     */
+    private function UpdateMapping(string $value, bool $copy)
+    {
+        $list = json_decode($value, true);
+
+        // duplicate/copy
+        if ($copy) {
+            // how many lines in the list?
+            $last = count($list);
+            // last line has copy index id
+            $copy = $list[$last - 1];
+            // copy line to last
+            for ($index = 0; $index < $last; $index++) {
+                if ($list[$index]['Id'] == $copy) {
+                    $list[$last - 1] = $list[$index];
+                    break;
+                }
+            }
+        }
+        // sort
+        usort($list, function ($a, $b)
+        {
+            // compare the first column (Page)
+            if ($a['Page'] === $b['Page']) {
+                // if identical. compare the second column (Id)
+                return $a['Id'] <=> $b['Id'];
+            }
+            // otherwise, compare only the first column
+            return $a['Page'] <=> $b['Page'];
+        });
+        $this->SendDebug(__FUNCTION__, $list);
+        $this->UpdateFormField('Objects', 'values', json_encode($list));
     }
 
     /**

@@ -271,6 +271,35 @@
                             }
                         }
                     ]
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Button",
+                            "name": "CopyMapping",
+                            "caption": "Duplicate",
+                            "width": "125px",
+                            "onClick": [
+                                "if (!isset($Objects['Id'])) { return; };",
+                                "$list= [];",
+                                "foreach ($Objects as $line) { $list[] = $line;};",
+                                "$list[] = $Objects['Id'];",
+                                "IPS_RequestAction($id,'MappingCopy', json_encode($list));"
+                            ]
+                        },
+                        {
+                            "type": "Button",
+                            "name": "SortMapping",
+                            "caption": "Re-Sort",
+                            "width": "125px",
+                            "onClick": [
+                                "$list= [];",
+                                "foreach ($Objects as $line) { $list[] = $line;};",
+                                "IPS_RequestAction($id,'MappingSort', json_encode($list));"
+                            ]
+                        }
+                    ]
                 }
             ]
         },

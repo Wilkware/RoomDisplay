@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-1.6.20241023-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-1.8.20241106-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -25,21 +25,23 @@ Das Modul übersetzt Aktionen und Ereignisse in IP-Symcon und aktualisiert umgek
 dem Display.
 
 <details>
-  <summary>Derzeit werden folgende UI-Objekte unterstützt:</summary>
-  * Arc
-  * Button
-  * Checkbox
-  * Dropdown
-  * Gauge
-  * Image
-  * Label
-  * LED Inicator
-  * Line Meter
-  * Object
-  * Roller
-  * Slider
-  * Switch
-  * Toggle Button
+<summary>Derzeit werden folgende UI-Objekte unterstützt:</summary>
+
+* Arc
+* Button
+* Checkbox
+* Dropdown
+* Gauge
+* Image
+* Label
+* LED Inicator
+* Line Meter
+* Object
+* Roller
+* Slider
+* Switch
+* Toggle Button
+
 </details>
 
 Was macht bzw. was kann das Modul?
@@ -83,6 +85,8 @@ Geräteadresse               | IP ist optional , aber ohne gehen Downloads von S
 Name                        | Beschreibung
 --------------------------- | ----------------------------------
 Objekte                     | Table zur Zuordnung zwischen UI- und IPS-Objekt
+DUPLIZIEREN                 | Schalter um selektierte Zeile zu duplizieren (und gleich einzusortieren)
+NEUSORTIEREN                | Schalter um die Liste endsprechend _Seite_ und _ID_ zu sortieren
 
 Hier eine kurze Erklärung der Spalten:
 
@@ -158,6 +162,16 @@ Man könnte die Statusvariablen direkt in die Visualisierung verlinken.
 ### 7. PHP-Befehlsreferenz
 
 ```php
+void WWXRD_DisableIdle(int $InstanzID, bool $disable);
+```
+
+Verhindert das automatische abschalten des Display (Hintergrundbeleuchtung).  
+Wird _true_ übergeben geht das Display nicht mehr in den Leerlaufmodus; abschalten kann man es wieder mit _false_.  
+Die Funktion liefert keinerlei Rückgabewert.
+
+__Beispiel__: `WWXRD_DisableIdle(12345, true);`
+
+```php
 void WWXRD_SendCommand(int $InstanzID, string $command);
 ```
 
@@ -176,6 +190,13 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}']);`
 
 ### 8. Versionshistorie
+
+v1.7.20241106
+
+* _NEU_: Buttons für das Sortieren der Objekt-Einträge nach _Seite_ und _ID_
+* _NEU_: Buttons für das Duplizieren eines Mapping-Eintages
+* _FIX_: Automatisches Schalten auf Seite 1 erfolgt nun erst bei _langem_ Leerlauf
+* _FIX_: Dokumentation/Markdown gefixt
 
 v1.6.20241023
 
