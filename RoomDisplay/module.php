@@ -90,7 +90,9 @@ class RoomDisplay extends IPSModule
     ];
 
     /**
-     * Overrides the internal IPSModule::Create($id) function
+     * In contrast to Construct, this function is called only once when creating the instance and starting IP-Symcon.
+     * Therefore, status variables and module properties which the module requires permanently should be created here.
+     *
      */
     public function Create()
     {
@@ -100,6 +102,8 @@ class RoomDisplay extends IPSModule
         // Device-Topic (Name)
         $this->RegisterPropertyString('Hostname', self::RD_HOST_NAME);
         $this->RegisterPropertyString('IP', '');
+        // Page Layout
+        $this->RegisterPropertyString('Layout', '');
         // Design Objects
         $this->RegisterPropertyString('Objects', '[]');
 
@@ -129,7 +133,9 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Overrides the internal IPSModule::Destroy($id) function
+     * This function is called when deleting the instance during operation and when updating via "Module Control".
+     * The function is not called when exiting IP-Symcon.
+     *
      */
     public function Destroy()
     {
@@ -142,7 +148,8 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Overrides the internal IPSModule::ApplyChanges($id) function
+     * Is executed when "Apply" is pressed on the configuration page and immediately after the instance has been created.
+     *
      */
     public function ApplyChanges()
     {
@@ -196,9 +203,11 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Configuration Form.
+     * The content can be overwritten in order to transfer a self-created configuration page.
+     * This way, content can be generated dynamically.
+     * In this case, the "form.json" on the file system is completely ignored.
      *
-     * @return JSON configuration string.
+     * @return JSON Content of the configuration page
      */
     public function GetConfigurationForm()
     {
@@ -206,20 +215,23 @@ class RoomDisplay extends IPSModule
         $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
 
         $ip = $this->ReadPropertyString('IP');
-        // Buttons Backup & Status
+        // Layout Buttons & Status Buttons
         if ($ip != '') {
+            $form['elements'][3]['items'][1]['items'][0]['enabled'] = true;
+            $form['elements'][3]['items'][1]['items'][1]['enabled'] = true;
+            $form['elements'][3]['items'][1]['items'][2]['enabled'] = true;
+            $form['elements'][3]['items'][1]['items'][3]['enabled'] = true;
             $form['actions'][2]['items'][0]['items'][2]['enabled'] = true;
-            $form['actions'][3]['items'][0]['items'][0]['enabled'] = true;
         }
         // return form
         return json_encode($form);
     }
 
     /**
-     * RequestAction.
+     * Is called when, for example, a button is clicked in the visualization.
      *
-     *  @param string $ident Ident.
-     *  @param string $value Value.
+     *  @param string $ident Ident of the variable
+     *  @param string $value The value to be set
      */
     public function RequestAction($ident, $value)
     {
@@ -262,6 +274,15 @@ class RoomDisplay extends IPSModule
             case 'Synchronize':
                 $this->Synchronize();
                 break;
+            case 'LayoutLoad':
+                $this->UpdateLayout($value, false);
+                break;
+            case 'LayoutSave':
+                $this->UpdateLayout($value, true);
+                break;
+            case 'LayoutCheck':
+                $this->ValidateLayout($value, true);
+                break;
             case 'MappingCopy':
                 $this->UpdateMapping($value, true);
                 break;
@@ -272,7 +293,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * ReceiveData
+     * This function is called by IP-Symcon and processes sent data and, if necessary, forwards it to all child instances.
      *
      * @param string $json Data package in JSON format
      */
@@ -301,13 +322,20 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Internal SDK funktion.
+     * The content of the function can be overwritten in order to carry out own reactions to certain messages.
+     * The function is only called for registered MessageIDs/SenderIDs combinations.
+     *
      * data[0] = new value
      * data[1] = value changed?
      * data[2] = old value
      * data[3] = timestamp.
+     *
+     * @param mixed $timestamp Continuous counter timestamp
+     * @param mixed $sender Sender ID
+     * @param mixed $message ID of the message
+     * @param mixed $data Data of the message
      */
-    public function MessageSink($timeStamp, $sender, $message, $data)
+    public function MessageSink($timestamp, $sender, $message, $data)
     {
         $this->SendDebug(__FUNCTION__, 'SenderId: ' . $sender . ' Data: ' . $this->DebugPrint($data), 0);
         // React to updates
@@ -328,9 +356,9 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Send Command to display
+     * Send Command to display.
      *
-     * @param string $command command name/data
+     * @param string $command Command name/data
      */
     public function SendCommand(string $command)
     {
@@ -340,7 +368,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Send JSON Lines to display
+     * Send JSON Lines to display.
      *
      * @param array $data JSONL array
      */
@@ -350,7 +378,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Send JSON Lines to display
+     * Send JSON Lines to display.
      *
      * @param array $data JSONL array
      */
@@ -362,6 +390,7 @@ class RoomDisplay extends IPSModule
 
     /**
      * This function will be called by the hook control. Visibility should be protected!
+     *
      */
     protected function ProcessHookData()
     {
@@ -405,6 +434,10 @@ class RoomDisplay extends IPSModule
         fwrite($output, $download);
     }
 
+    /**
+     * Check whether idle process is allowed.
+     *
+     */
     protected function ProcessIdle()
     {
         $disable = $this->ReadAttributeBoolean('DisableIdle');
@@ -414,6 +447,12 @@ class RoomDisplay extends IPSModule
         return $disable;
     }
 
+    /**
+     * Send command to MQTT server.
+     *
+     * @param mixed $topic Topic name
+     * @param mixed $payload Payload data
+     */
     protected function SendMQTT($topic, $payload)
     {
         $resultServer = true;
@@ -433,11 +472,11 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Set a specific item property
+     * Set a specific item property.
      *
      * @param int $page Page Number (1..12)
      * @param int $objectId UI Object ID
-     * @param string $property Property name
+     * @param string $property Property namw
      * @param string $value Property Value
      */
     private function SetItemProperty(int $page, int $objectId, string $property, string $value)
@@ -446,7 +485,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Set item value (numeric)
+     * Set item value (numeric).
      *
      * @param int $page Page Number (1..12)
      * @param int $objectId UI Object ID
@@ -458,7 +497,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Set item text (label, caption)
+     * Set item text (label, caption).
      *
      * @param int $page Page Number (1..12)
      * @param int $objectId UI Object ID
@@ -470,7 +509,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Set item value string
+     * Set item value string.
      *
      * @param int $page Page Number (1..12)
      * @param int $objectId UI Object ID
@@ -482,7 +521,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Set item src (image)
+     * Set item src (image).
      *
      * @param int $page Page Number (1..12)
      * @param int $objectId UI Object ID
@@ -494,7 +533,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Set display backlight via staet and brightness
+     * Set display backlight via staet and brightness.
      *
      * @param string $data idle state (short, long or off)
      */
@@ -510,7 +549,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Check all register objects
+     * Check all register objects.
      *
      */
     private function RegisterObjects()
@@ -586,10 +625,10 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Process Data - map data to object
+     * Process map data to object.
      *
-     * @param mixed $object
-     * @param mixed $data
+     * @param mixed $object The mapping object
+     * @param mixed $data The passed data
      */
     private function ProcessData($object, $data)
     {
@@ -677,7 +716,6 @@ class RoomDisplay extends IPSModule
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
             }
         }
-
         // LED Indicator
         if ($object['Type'] == self::UI_LED) {
             $var = IPS_GetVariable($sender);
@@ -714,6 +752,12 @@ class RoomDisplay extends IPSModule
         }
     }
 
+    /**
+     * Handle received data to object
+     *
+     * @param string $topic Topic ID
+     * @param string $data Payload data
+     */
     private function HandleData(string $topic, string $data)
     {
         $this->SendDebug(__FUNCTION__, 'Topic: ' . $topic . ' ,Payload: ' . $data);
@@ -876,9 +920,9 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Switch antiburn on or off
+     * Switch antiburn on or off.
      *
-     * @param bool $value
+     * @param bool $value True for on, otherwise false
      */
     private function Antiburn(bool $value)
     {
@@ -890,7 +934,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Online State (LWT)
+     * Online State (LWT).
      *
      */
     private function Online()
@@ -903,6 +947,7 @@ class RoomDisplay extends IPSModule
     /**
      * Status Update - display status information.
      *
+     * @param mixed $value True to show status info, otherwise false
      */
     private function StatusUpdate($value)
     {
@@ -916,6 +961,7 @@ class RoomDisplay extends IPSModule
     /**
      * Mood Light - display moodlight information.
      *
+     * @param mixed $value True to show moodlight info, otherwise false
      */
     private function MoodLight($value)
     {
@@ -927,7 +973,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Synchronize - from IPS variables to design objects.
+     * Synchronize from IPS variables to design objects.
      *
      */
     private function Synchronize()
@@ -947,9 +993,70 @@ class RoomDisplay extends IPSModule
     }
 
     /**
+     * Load or save the content of page layout file (pages.jsonl).
+     *
+     * @param string $value Layout as JSONL
+     * @param bool $save If true upload, otherwise download from device
+     */
+    private function UpdateLayout(string $value, bool $save)
+    {
+        $ip = $this->ReadPropertyString('IP');
+        // check ip
+        if (empty($ip)) {
+            $this->EchoMessage('No IP adress filed!');
+            return;
+        }
+        // save or load
+        if ($save) {
+            if (empty($value)) {
+                $this->EchoMessage('No Layout to upload!');
+                return;
+            }
+            $body[] = implode("\r\n", [
+                'Content-Disposition: form-data; name="data"; filename="/pages.jsonl"',
+                'Content-Type: application/octet-stream',
+                '',
+                $value,
+            ]);
+            // generate safe boundary
+            do {
+                $boundary = '---------------------' . md5(mt_rand() . microtime());
+            } while (preg_grep("/{$boundary}/", $body));
+
+            // add boundary for each parameters
+            array_walk($body, function (&$part) use ($boundary)
+            {
+                $part = "--{$boundary}\r\n{$part}";
+            });
+            // add final boundary
+            $body[] = "--{$boundary}--";
+            $body[] = '';
+            // send data
+            $curl = curl_init('http://' . $ip . '/edit');
+            @curl_setopt_array($curl, [
+                CURLOPT_POST       => true,
+                CURLOPT_POSTFIELDS => implode("\r\n", $body),
+                CURLOPT_HTTPHEADER => [
+                    'Expect: 100-continue',
+                    "Content-Type: multipart/form-data; boundary={$boundary}", // change Content-Type
+                ],
+            ]);
+            $json = curl_exec($curl);
+            $this->SendDebug(__FUNCTION__, $json);
+            curl_close($curl);
+        } else {
+            $filename = 'pages.jsonl';
+            $url = 'http://' . $ip . '/' . $filename . '?download=true';
+            $this->SendDebug(__FUNCTION__, $url);
+            $download = file_get_contents($url);
+            $this->UpdateFormField('Layout', 'value', $download);
+        }
+    }
+
+    /**
      * Duplicate a entry and or sort the objects list.
      *
-     * @param string $value json encoded list plus index.
+     * @param string $value json encoded list plus index
      * @param bool $copy flag if also copy a entry
      */
     private function UpdateMapping(string $value, bool $copy)
@@ -986,7 +1093,43 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Evaluate String
+     * Validate the passed page layout jsonl.
+     *
+     * @param string $value Layout as JSONL
+     * @param bool $echo If true popup message, otherwise silence
+     */
+    private function ValidateLayout(string $value, bool $echo)
+    {
+        // split the string into lines
+        $lines = explode("\n", trim($value));
+        // count the lines
+        $counter = 0;
+        foreach ($lines as $line) {
+            // increment line counter
+            $counter++;
+            // skip empty lines if they exist in the string
+            if (trim($line) === '') {
+                continue;
+            }
+            // check for JSON errors
+            $valid = json_validate($line);
+            if (!$valid) {
+                // return false if any line is not valid JSON
+                if ($echo) {
+                    $this->EchoMessage($this->Translate('No valid JSON on line: ') . $counter);
+                }
+                return false;
+            }
+        }
+        if ($echo) {
+            $this->EchoMessage('The given string is syntactically valid JSON!');
+        }
+        // return true if every line is a valid JSON object
+        return true;
+    }
+
+    /**
+     * Evaluate passed string as expression.
      *
      * @param mixed $subject Expression text
      * @param mixed $value Value == {{val}}
@@ -1028,7 +1171,7 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Encode Text
+     * Encode text to valid json format.
      *
      * @param mixed $text Text to convert in json format
      */
@@ -1038,7 +1181,7 @@ class RoomDisplay extends IPSModule
         $encoded = json_encode($text);
         // Remove the enclosing quotation marks that are added by json_encode
         $encoded = substr($encoded, 1, -1);
-        // EReplace double backslashes with single backslashes
+        // Replace double backslashes with single backslashes
         $encoded = str_replace('\\\\', '\\', $encoded);
         return $encoded;
     }
@@ -1097,9 +1240,9 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Show message via popup
+     * Show message via popup.
      *
-     * @param string $caption echo message
+     * @param string $caption Echo message text
      */
     private function EchoMessage(string $caption)
     {

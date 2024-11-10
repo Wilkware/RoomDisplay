@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-1.8.20241106-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-1.8.20241110-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -54,6 +54,7 @@ Was macht bzw. was kann das Modul?
 - Abfrage von (Status-)Informationen
 - Ausführung von OpenHASP System- bzw. Globalen Kommandos
 - Automatische Schaltung für Helligkeit und Einbrennschutz
+- Verwaltung, Prüfung und Sicherung des Seitenlayouts
 
 ### 2. Voraussetzungen
 
@@ -61,7 +62,7 @@ Was macht bzw. was kann das Modul?
 
 ### 3. Installation
 
-* Über den im Forum veröffentlichten [Test-Link](https://account.symcon.de/konto/test-einladung?code=58139433149646766846445124842805&bundle=de.wilkware.ips.modul.roomdisplay).
+* Über den Modul Store das Modul _Raumdisplay_ installieren.
 * Alternativ Über das Modul-Control folgende URL hinzufügen.  
 `https://github.com/Wilkware/RoomDisplay` oder `git://github.com/Wilkware/RoomDisplay.git`
 
@@ -79,6 +80,16 @@ Name                        | Beschreibung
 --------------------------- | ----------------------------------
 Gerätenamen                 | Name des Gerätes (= Hostname)
 Geräteadresse               | IP ist optional , aber ohne gehen Downloads von Screenshots und der Designdatei (pages.jsonl) nicht.
+
+> Seitenaufbau …
+
+Name                        | Beschreibung
+--------------------------- | ----------------------------------
+Datei (pages.jsonl)         | JSONL formatierter Inhalt zur Syncronisierung des Seitenaufbaus
+HERUNTERLADEN               | Schalter um den Seitenaufbau vom Gerät herunterzuladen
+HOCHRLADEN                  | Schalter um den Seitenaufbau zum Gerät senden.
+PRÜFEN                      | Schalter um den Inhalt des Seitenaufbaus auf JSONL Konformität zu prüfen.
+SICHERN                     | Schalter um den Seitenaufbau vom Gerät herunterzuladen und in eine Datei zu schreiben.
 
 > Objektzuordnung …
 
@@ -130,10 +141,6 @@ Aktionsbereich:
 * _Stimmungslicht_ - Anzeige der aktuellen Moodlight-Einstellungen
 * _Status_ - Anzeige der Status-Update-Infos
 * _Bildschirmfoto_ - Erstellen und Speichern eines aktuellen Screenshots (aktuelle Seite), siehe auch imgs Ordner im Modul
-
-> Dateiverwaltung …
-
-* _Seitenaufbau herunterladen_ - Download und Speichern der pages.jsonl Datei (Backup-Zwecke)
 
 ### 5. Statusvariablen und Profile
 
@@ -191,11 +198,16 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}'
 
 ### 8. Versionshistorie
 
+v1.8.20241110
+* _NEU_: Veue Sektion zum verwalten des Seitenaufbaus (Layout)
+* _FIX_: Beispielbilder teilweise umbennant/korriegiert
+* _FIX_: Dokumentation vervollständigt
+
 v1.7.20241106
 
 * _NEU_: Buttons für das Sortieren der Objekt-Einträge nach _Seite_ und _ID_
 * _NEU_: Buttons für das Duplizieren eines Mapping-Eintages
-* _NEU_: Funktion _DisableIdle_ hinzugefügt (Hilfreich bei Konfigurations-Sessions).
+* _NEU_: Funktion _DisableIdle_ hinzugefügt (Hilfreich bei Konfigurations-Sessions)
 * _FIX_: Automatisches Schalten auf Seite 1 erfolgt nun erst bei _langem_ Leerlauf
 * _FIX_: Dokumentation/Markdown gefixt
 

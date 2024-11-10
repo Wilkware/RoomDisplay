@@ -46,6 +46,55 @@
         },
         {
             "type": "ExpansionPanel",
+            "caption": "Page layout ...",
+            "items": [
+                {
+                    "type": "ValidationTextBox",
+                    "name": "Layout",
+                    "caption": "File (page.jsonl):",
+                    "width": "90%",
+                    "multiline": true
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Button",
+                            "caption": "Download",
+                            "onClick": [
+                                "IPS_RequestAction($id,'LayoutLoad', $Layout);"
+                            ],
+                            "enabled": false
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "Upload",
+                            "onClick": [
+                                "IPS_RequestAction($id,'LayoutSave', $Layout);"
+                            ],
+                            "enabled": false
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "Validate",
+                            "onClick": [
+                                "IPS_RequestAction($id,'LayoutCheck', $Layout);"
+                            ],
+                            "enabled": false
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "Backup",
+                            "onClick": "echo \"../hook/plate$id?file=pages\";",
+                            "link": true,
+                            "enabled": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
             "caption": "Object assignment ...",
             "items": [
                 {
@@ -463,24 +512,6 @@
                             "type": "Button",
                             "caption": "Screenshot",
                             "onClick": "echo \"../hook/plate$id?file=screenshot\";",
-                            "link": true,
-                            "enabled": false
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "type": "ExpansionPanel",
-            "caption": "File management ...",
-            "items": [
-                {
-                    "type": "RowLayout",
-                    "items": [
-                        {
-                            "type": "Button",
-                            "caption": "Download page layout",
-                            "onClick": "echo \"../hook/plate$id?file=pages\";",
                             "link": true,
                             "enabled": false
                         }
