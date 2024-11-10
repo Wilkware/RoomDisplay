@@ -199,7 +199,7 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}'
 ### 8. Versionshistorie
 
 v1.8.20241110
-* _NEU_: Veue Sektion zum verwalten des Seitenaufbaus (Layout)
+* _NEU_: Neue Sektion zum verwalten des Seitenaufbaus (Layout)
 * _FIX_: Beispielbilder teilweise umbennant/korriegiert
 * _FIX_: Dokumentation vervollständigt
 
