@@ -408,6 +408,12 @@
                             "width": "200px"
                         },
                         {
+                            "type": "Label",
+                            "name": "AutoAntiburnLabel",
+                            "caption": "",
+                            "width": "200px"
+                        },
+                        {
                             "type": "NumberSpinner",
                             "name": "AutoAntiburnBacklight",
                             "caption": "Backlight reduction:",
@@ -578,5 +584,11 @@
             }
         }
     ],
-    "status": []
+    "status": [
+        {
+            "code": 201,
+            "icon": "inactive",
+            "caption": "Object linking incorrect"
+        }
+    ]
 }

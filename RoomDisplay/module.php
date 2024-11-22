@@ -200,7 +200,7 @@ class RoomDisplay extends IPSModule
             $this->SetStatus(102);
         }
         else {
-            $this->SetStatus(200);
+            $this->SetStatus(201);
         }
     }
 
@@ -574,41 +574,29 @@ class RoomDisplay extends IPSModule
         }
 
         $state = true;
-        $count = 1;
         // Check linked object
         foreach ($objects as $item => $object) {
             //$this->SendDebug(__FUNCTION__, $this->DebugPrint($object));
             if ($object['Link'] != 1) {
                 // Objekt muss existiert!
                 if (IPS_ObjectExists($object['Link'])) {
-                    // Button  ==> Script, Variable
-                    if ($object['Type'] == self::UI_BUTTOM) {
-                        // TODO
-                    }
-                    // Toggle Button ==> Variable
-                    if ($object['Type'] == self::UI_TOGGLE) {
-                        if (IPS_GetObject($object['Link'])['ObjectType'] != 2) {
-                            echo 'Fehler bei ausgewähltem Objekt ' . $count . ':' . PHP_EOL .
-                                    'Objekt mit der ID: ' . $object['Link'] . ' ist kein Variable' . PHP_EOL .
-                                    'Das Objekt für einen Toggle-Button muss vom Typ "Varaible" sein.' . PHP_EOL;
-                            $state = false;
-                        }
-                    }
-                    // Slider ==> Variable
-                    if ($object['Type'] == self::UI_SLIDER) {
-                        if (IPS_GetObject($object['Link'])['ObjectType'] != 2) {
-                            echo 'Fehler bei ausgewähltem Objekt ' . $count . ':' . PHP_EOL .
-                                    'Objekt mit der ID: ' . $object['Link'] . ' ist keine Variable' . PHP_EOL .
-                                    'Das Objekt für einen Slider muss vom Typ "Varaible" sein.' . PHP_EOL;
-                            $state = false;
-                        }
-                    }
-                    // Dropdown ==> Variable
-                    if ($object['Type'] == self::UI_DROPDOWN) {
-                        if (IPS_GetObject($object['Link'])['ObjectType'] != 2) {
-                            echo 'Fehler bei ausgewähltem Objekt ' . $count . ':' . PHP_EOL .
-                                    'Objekt mit der ID: ' . $object['Link'] . ' ist keine Variable' . PHP_EOL .
-                                    'Das Objekt für einen Dropdown muss vom Typ "Varaible" sein.' . PHP_EOL;
+                    $type = IPS_GetObject($object['Link'])['ObjectType'];
+                    // only 2(Variable) and 3(Script)
+                    if ($type == 2) {
+                        // Variables is supported for everyone
+                    } elseif ($type == 3) {
+                        if (($object['Type'] == self::UI_BUTTOM) ||
+                            ($object['Type'] == self::UI_CHECKBOX) ||
+                            ($object['Type'] == self::UI_DROPDOWN) ||
+                            ($object['Type'] == self::UI_TOGGLE) ||
+                            ($object['Type'] == self::UI_ROLLER) ||
+                            ($object['Type'] == self::UI_SLIDER) ||
+                            ($object['Type'] == self::UI_SWITCH)) {
+                            // Scripts is supported for these types
+                        } else {
+                            $msg = $this->Translate('The assigned object #%d for page %d with id %d is not supported!');
+                            $msg = sprintf($msg, $object['Link'], $object['Page'], $object['Id']);
+                            $this->LogMessage($msg, KL_WARNING);
                             $state = false;
                         }
                     }
@@ -616,12 +604,12 @@ class RoomDisplay extends IPSModule
                     $this->RegisterMessage($object['Link'], VM_UPDATE);
                 }
                 else {
-                    echo 'Fehler bei ausgewähltem Objekt ' . $count . ':' . PHP_EOL .
-                        'Das Objekt mit der ID: ' . $object['Link'] . ' existiert nicht!';
+                    $msg = $this->Translate('The assigned object #%d for page %d with id %d does not exist!');
+                    $msg = sprintf($msg, $object['Link'], $object['Page'], $object['Id']);
+                    $this->LogMessage($msg, KL_WARNING);
                     $state = false;
                 }
             }
-            $count++;
         }
         return $state;
     }
@@ -935,14 +923,16 @@ class RoomDisplay extends IPSModule
         $anti = $this->ReadPropertyInteger('AutoAntiburnBacklight');
 
         if ($value) {
-            if ($anti < $long) {
+            $this->SendDebug(__FUNCTION__, 'Antiburn ON', 0);
+            if (($anti < $long) && ($anti != 0)) {
                 $this->SendCommand('backlight=' . $anti);
                 $this->SetTimerInterval('AntiburnLight', 35 * 1000);
             }
             $this->SendCommand('antiburn=on');
         } else {
+            $this->SendDebug(__FUNCTION__, 'Antiburn OFF', 0);
             $this->SetTimerInterval('AntiburnLight', 0);
-            if ($anti < $long) {
+            if (($anti < $long) && ($anti != 0)) {
                 $this->SendCommand('backlight=' . $long);
             }
         }

@@ -65,6 +65,8 @@
             "No valid JSON on line: ": "Kein valides JSON in Zeile: ",
             "The given string is syntactically valid JSON!": "Die gegebene Zeichenkette ist syntaktisch gültiges JSON!",
             "Error during download file!": "Fehler beim herunterladen der Datei aufgetreten!",
+            "The assigned object #%d for page %d with id %d does not exist!": "Das zugeordnete Objekt #%d für Seite %d mit der Id %d existiert nicht!",
+            "The assigned object #%d for page %d with id %d is not supported!": "Das zugeordnete Objekt #%d für Seite %d mit der Id %d wird nicht unterstützt!",
             "Advanced settings ...": "Erweiterte Einstellungen ...",
             "Automatically switching backlight [0=Off, 1=Darkest, 255=Brightest]!": "Hintergrundbeleuchtung automatisch schalten [0=Aus, 1=dunkelster Wert, 255=maximale Helligkeit]!",
             "Normal (no idle):": "Normal (kein Leerlauf):",
@@ -76,6 +78,7 @@
             "Page 1 on Idle!": "Im Ruhezustand auf Seite 1 wechseln!",
             "No synchronization in idle!": "Keine Syncronisierung im Ruhezustand!",
             "Forward message to script:": "Nachricht an Skript weiterleiten:",
+            "Object linking incorrect": "Objektverlinkung inkorrekt",
             "Source code, donation and licence ...": "Quellcode, Spende und Lizenz ...",
             "The software is free of charge for non-commercial use, I would appreciate a donation if you like the module.": "Die Software ist für die nicht kommerzielle Nutzung kostenlos, über eine Spende bei Gefallen des Moduls würde ich mich sehr freuen."
         }

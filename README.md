@@ -119,7 +119,7 @@ Kurzer Leerlauf             | Wert der Helligkeit nach kürzeren Nicht-Nutzung d
 Langer Leerlauf             | Wert der Helligkeit nach längerer Nicht-Nutzung des Displays
 Einbrennschutz automatisch aktivieren! | Schaltet die Beleuchtung im Leerlauf (idle->long) automatisch ab
 Zyklus                      | Zeitlicher Zyklus in Minuten in dem der Einbrennschutz für 30 Sekunden eingeschaltet wird.
-Hintergrundbeleuchtung dimmen | Schaltet die Beleuchtung während des Einbrennschutzes (30s) auf die eingestellte Beleuchtungsstärke, solange sie kleiner ist als der Wert für den langen Leerlauf!
+Hintergrundbeleuchtung dimmen | Schaltet die Beleuchtung während des Einbrennschutzes (30s) auf die eingestellte Beleuchtungsstärke, solange sie kleiner ist als der Wert für den langen Leerlauf und nicht Null ist!
 Im Ruhezustand auf Seite 1 wechseln! | Schaltet im kurzen Leerlauf auf Seite 1 um (idle->short)
 Keine Syncronisierung im Ruhezustand! | Schaltet die Synchrinistaion im Leerlauf ab (idle->long)
 Nachricht an Skript weiterleiten: | Leitet die Aktion bzw. das Ereignis direkt weiter. Die Daten können im Script mit der Variable $_IPS['Data'] empfangen und ausgewertet werden.
@@ -201,6 +201,7 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}'
 
 v1.9.20241122
 * _NEU_: Schaltung der Hintergrundbeleutung während des Einbrennschutzes
+* _NEU_: Prüfung der Objektverlinkung umgebaut bzw. eingeführt, Status bei Fehler wird auf 201 gesetzt
 * _FIX_: Synchronisatzionslauf testet auf Existieren des verlinkten Objekts
 * _FIX_: Fehler beim Duplizieren behoben
 
