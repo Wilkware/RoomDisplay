@@ -39,6 +39,7 @@ dem Display.
 * Object
 * Roller
 * Slider
+* Spinner
 * Switch
 * Toggle Button
 
@@ -200,9 +201,11 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}'
 ### 8. Versionshistorie
 
 v1.9.20241122
+* _NEU_: Unterstützung für SPINNER (über Beschriftung kann Drehrichtung, über Wert die Geschwindigkeit gesetzt werden)
 * _NEU_: Schaltung der Hintergrundbeleutung während des Einbrennschutzes
 * _NEU_: Prüfung der Objektverlinkung umgebaut bzw. eingeführt, Status bei Fehler wird auf 201 gesetzt
 * _FIX_: Synchronisatzionslauf testet auf Existieren des verlinkten Objekts
+* _FIX_: Synchronisatzionsfehler bei Skript-Verlinkungen behoben (kein -1 bei Umrechnung gesetzt)
 * _FIX_: Fehler beim Duplizieren behoben
 
 v1.8.20241110
@@ -268,7 +271,7 @@ v1.0.20240723
 Ich möchte mich für die Unterstützung bei der Entwicklung dieses Moduls bedanken bei ...
 
 * _firebuster_ : für die geniale und hervorragende Vorarbeit mit seinem __Modul openHASP__ 👍
-* _ralf_: für den stetigen Austausch rund um das Display und Modulfunktionlitäten 👏
+* _ralf_, _Helmut_, _richimaint_: für den stetigen Austausch rund um das Display und Modulfunktionlitäten 👏
 
 Vielen Dank an Euch!
 
