@@ -478,8 +478,8 @@ class RoomDisplay extends IPSModule
      *
      * @param int $page Page Number (1..12)
      * @param int $objectId UI Object ID
-     * @param string $property Property namw
-     * @param string $value Property Value
+     * @param string $property Property name
+     * @param string $value Property value
      */
     private function SetItemProperty(int $page, int $objectId, string $property, string $value)
     {
@@ -695,6 +695,20 @@ class RoomDisplay extends IPSModule
             if ($object['Caption'] != '') {
                 $text = $this->EvaluateString($object['Caption'], $value);
                 $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText($text));
+            }
+        }
+        // Spinner
+        if ($object['Type'] == self::UI_SPINNER) {
+            $this->SendDebug(__FUNCTION__, 'Spinner sync');
+            if ($object['Caption'] != '') {
+                $text = $this->EvaluateString($object['Caption'], $value);
+                $this->SendDebug(__FUNCTION__, 'Spinner direction: ' . $text);
+                $this->SetItemProperty($object['Page'], $object['Id'], 'direction', strval($text));
+            }
+            if ($object['Value'] != '') {
+                $text = $this->EvaluateString($object['Value'], $value);
+                $this->SendDebug(__FUNCTION__, 'Spinner speed: ' . $text);
+                $this->SetItemProperty($object['Page'], $object['Id'], 'speed', strval($text));
             }
         }
         // Toggle-Button
@@ -990,7 +1004,7 @@ class RoomDisplay extends IPSModule
             if ($object['Link'] == 1 || $object['Calculation'] == -1) {
                 continue;
             }
-            if (IPS_ObjectExists($object['Link'])) {
+            if (IPS_ObjectExists($object['Link']) && (IPS_GetObject($object['Link'])['ObjectType'] == 2)) {
                 // get actual value
                 $value = GetValue($object['Link']);
                 // process data to specific object

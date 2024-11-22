@@ -165,6 +165,10 @@
                                         "value": 16
                                     },
                                     {
+                                        "caption": "Spinner",
+                                        "value": 17
+                                    },
+                                    {
                                         "caption": "Switch",
                                         "value": 18
                                     },
