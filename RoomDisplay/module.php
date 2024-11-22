@@ -935,14 +935,14 @@ class RoomDisplay extends IPSModule
         $anti = $this->ReadPropertyInteger('AutoAntiburnBacklight');
 
         if ($value) {
-            if($anti < $long) {
+            if ($anti < $long) {
                 $this->SendCommand('backlight=' . $anti);
                 $this->SetTimerInterval('AntiburnLight', 35 * 1000);
             }
             $this->SendCommand('antiburn=on');
         } else {
             $this->SetTimerInterval('AntiburnLight', 0);
-            if($anti < $long) {
+            if ($anti < $long) {
                 $this->SendCommand('backlight=' . $long);
             }
         }
@@ -1088,7 +1088,7 @@ class RoomDisplay extends IPSModule
             // how many lines in the list?
             $last = count($list);
             // last line has copy page & id
-            sscanf($list[$last - 1], "p%db%d", $page, $id);
+            sscanf($list[$last - 1], 'p%db%d', $page, $id);
             // copy line to last
             for ($index = 0; $index < $last; $index++) {
                 if (($list[$index]['Page'] == $page) && ($list[$index]['Id'] == $id)) {
