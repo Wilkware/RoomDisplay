@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-1.8.20241110-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-1.8.20241122-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -119,6 +119,7 @@ Kurzer Leerlauf             | Wert der Helligkeit nach kürzeren Nicht-Nutzung d
 Langer Leerlauf             | Wert der Helligkeit nach längerer Nicht-Nutzung des Displays
 Einbrennschutz automatisch aktivieren! | Schaltet die Beleuchtung im Leerlauf (idle->long) automatisch ab
 Zyklus                      | Zeitlicher Zyklus in Minuten in dem der Einbrennschutz für 30 Sekunden eingeschaltet wird.
+Hintergrundbeleuchtung dimmen | Schaltet die Beleuchtung während des Einbrennschutzes (30s) auf die eingestellte Beleuchtungsstärke, solange sie kleiner ist als der Wert für den langen Leerlauf!
 Im Ruhezustand auf Seite 1 wechseln! | Schaltet im kurzen Leerlauf auf Seite 1 um (idle->short)
 Keine Syncronisierung im Ruhezustand! | Schaltet die Synchrinistaion im Leerlauf ab (idle->long)
 Nachricht an Skript weiterleiten: | Leitet die Aktion bzw. das Ereignis direkt weiter. Die Daten können im Script mit der Variable $_IPS['Data'] empfangen und ausgewertet werden.
@@ -197,6 +198,11 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}']);`
 
 ### 8. Versionshistorie
+
+v1.9.20241122
+* _NEU_: Schaltung der Hintergrundbeleutung während des Einbrennschutzes
+* _FIX_: Synchronisatzionslauf testet auf Existieren des verlinkten Objekts
+* _FIX_: Fehler beim Duplizieren behoben
 
 v1.8.20241110
 * _NEU_: Neue Sektion zum verwalten des Seitenaufbaus (Layout)

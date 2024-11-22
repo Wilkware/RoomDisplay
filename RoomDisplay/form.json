@@ -333,7 +333,7 @@
                                 "if (!isset($Objects['Id'])) { return; };",
                                 "$list= [];",
                                 "foreach ($Objects as $line) { $list[] = $line;};",
-                                "$list[] = $Objects['Id'];",
+                                "$list[] = 'p' . $Objects['Page'] . 'b' . $Objects['Id'];",
                                 "IPS_RequestAction($id,'MappingCopy', json_encode($list));"
                             ]
                         },
@@ -396,13 +396,26 @@
                     "caption": "Activate burn-in protection automatically!"
                 },
                 {
-                    "type": "NumberSpinner",
-                    "name": "AutoAntiburnCycle",
-                    "caption": "Cycle:",
-                    "suffix": "minutes",
-                    "minimum": 5,
-                    "maximum": 60,
-                    "width": "200px"
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "NumberSpinner",
+                            "name": "AutoAntiburnCycle",
+                            "caption": "Cycle:",
+                            "suffix": "minutes",
+                            "minimum": 5,
+                            "maximum": 60,
+                            "width": "200px"
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "AutoAntiburnBacklight",
+                            "caption": "Backlight reduction:",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "width": "200px"
+                        }
+                    ]
                 },
                 {
                     "type": "CheckBox",

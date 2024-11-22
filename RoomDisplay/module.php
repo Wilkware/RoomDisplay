@@ -114,6 +114,7 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyInteger('AutoLongIdle', 0);
         $this->RegisterPropertyBoolean('AutoShutdownBacklight', false);
         $this->RegisterPropertyInteger('AutoAntiburnCycle', 60);
+        $this->RegisterPropertyInteger('AutoAntiburnBacklight', 0);
         $this->RegisterPropertyBoolean('PageOneOnIdle', false);
         $this->RegisterPropertyBoolean('SyncOnIdle', false);
         $this->RegisterPropertyInteger('ForwardMessageScript', 1);
@@ -127,6 +128,7 @@ class RoomDisplay extends IPSModule
 
         // Register Timer
         $this->RegisterTimer('AntiburnTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", true);');
+        $this->RegisterTimer('AntiburnLight', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", false);');
 
         // Automatically connect to the MQTT server/splitter instance
         $this->ConnectParent(self::GUID_MQTT_IO);
@@ -778,11 +780,13 @@ class RoomDisplay extends IPSModule
                     $this->SetValue('Idle', 0);
                     $this->SetTimerInterval('AntiburnTimer', 0);
                     if (!$this->ReadAttributeBoolean('SyncData')) {
+                        $this->SendDebug(__FUNCTION__, 'Synchronize()');
                         $this->Synchronize();
                     }
                     $this->WriteAttributeBoolean('SyncData', true);
             }
             if ($this->ReadPropertyBoolean('AutoDimBacklight')) {
+                $this->SendDebug(__FUNCTION__, 'SetBacklight($data)');
                 $this->SetBacklight($data);
             }
             if ($this->ReadPropertyBoolean('AutoShutdownBacklight') && $data == 'long') {
@@ -926,10 +930,21 @@ class RoomDisplay extends IPSModule
      */
     private function Antiburn(bool $value)
     {
+        // Backlights
+        $long = $this->ReadPropertyInteger('AutoLongIdle');
+        $anti = $this->ReadPropertyInteger('AutoAntiburnBacklight');
+
         if ($value) {
+            if($anti < $long) {
+                $this->SendCommand('backlight=' . $anti);
+                $this->SetTimerInterval('AntiburnLight', 35 * 1000);
+            }
             $this->SendCommand('antiburn=on');
         } else {
-            $this->SendCommand('antiburn=off');
+            $this->SetTimerInterval('AntiburnLight', 0);
+            if($anti < $long) {
+                $this->SendCommand('backlight=' . $long);
+            }
         }
     }
 
@@ -985,10 +1000,15 @@ class RoomDisplay extends IPSModule
             if ($object['Link'] == 1 || $object['Calculation'] == -1) {
                 continue;
             }
-            // get actual value
-            $value = GetValue($object['Link']);
-            // process data to specific object
-            $this->ProcessData($object, $value);
+            if (IPS_ObjectExists($object['Link'])) {
+                // get actual value
+                $value = GetValue($object['Link']);
+                // process data to specific object
+                $this->ProcessData($object, $value);
+            }
+            else {
+                $this->LogMessage('Linked object with #' . $object['Link'] . ' dosent exist!', KL_ERROR);
+            }
         }
     }
 
@@ -1067,11 +1087,11 @@ class RoomDisplay extends IPSModule
         if ($copy) {
             // how many lines in the list?
             $last = count($list);
-            // last line has copy index id
-            $copy = $list[$last - 1];
+            // last line has copy page & id
+            sscanf($list[$last - 1], "p%db%d", $page, $id);
             // copy line to last
             for ($index = 0; $index < $last; $index++) {
-                if ($list[$index]['Id'] == $copy) {
+                if (($list[$index]['Page'] == $page) && ($list[$index]['Id'] == $id)) {
                     $list[$last - 1] = $list[$index];
                     break;
                 }
