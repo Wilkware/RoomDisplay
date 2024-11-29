@@ -297,7 +297,7 @@ class RoomDisplay extends IPSModule
             case 'MappingTest':
                 $this->CheckMapping($value);
                 break;
-            }
+        }
     }
 
     /**
@@ -718,7 +718,7 @@ class RoomDisplay extends IPSModule
             if ($object['Value'] != '') {
                 $value = intval($this->EvaluateString($object['Value'], $value));
                 // set direction (-/+)  0 = clockwise, 1 = counter-clockwise
-                $this->SetItemProperty($object['Page'], $object['Id'], 'direction', strval(($value<0?1:0)));
+                $this->SetItemProperty($object['Page'], $object['Id'], 'direction', strval(($value < 0 ? 1 : 0)));
                 // set speed, always positiv
                 $this->SetItemProperty($object['Page'], $object['Id'], 'speed', strval(abs($value)));
             } else {
@@ -1138,11 +1138,11 @@ class RoomDisplay extends IPSModule
     private function CheckMapping(string $value)
     {
         $data = json_decode($value, true);
-        if(empty($data)) {
+        if (empty($data)) {
             $this->EchoMessage('No entry selected from the object list!');
             return;
         }
-        if($data[0]['Link'] < self::IPS_MIN_ID) {
+        if ($data[0]['Link'] < self::IPS_MIN_ID) {
             $this->EchoMessage('Entry does not contain a linked variable!');
             return;
         }
@@ -1153,32 +1153,32 @@ class RoomDisplay extends IPSModule
         // Calculation
         $ecal = 'ok';
         $cal = $value;
-        if($data[0]['Calculation'] != '') {
+        if ($data[0]['Calculation'] != '') {
             $cal = $this->EvaluateString($data[0]['Calculation'], $value, $text, $ecal);
         }
         // Value
         $eval = 'ok';
         $val = $cal;
-        if($data[0]['Value'] != '') {
+        if ($data[0]['Value'] != '') {
             $val = $this->EvaluateString($data[0]['Value'], $cal, $text, $eval);
         }
         // Caption
         $etxt = 'ok';
         $txt = '';
-        if($data[0]['Caption'] != '') {
+        if ($data[0]['Caption'] != '') {
             $txt = $this->EvaluateString($data[0]['Caption'], $cal, $text, $etxt);
         }
         // Recalculation
         $erec = 'ok';
         $rec = $val;
-        if($data[0]['Recalculation'] != '') {
+        if ($data[0]['Recalculation'] != '') {
             $rec = $this->EvaluateString($data[0]['Recalculation'], $val, $text, $etxt);
         }
         // Result
         $msg = $this->Translate("Value of the link:\t\t\t\t%s\nText default value:\t\t\tTXT\n\nValue after calculation:\t\t%s\nEvaluation of the calculation:\t%s\n\nValue (of value):\t\t\t\t%s\nEvaluation of value:\t\t\t%s\n\nValue of caption:\t\t\t\t%s\nEvaluation of caption:\t\t\t%s\n\nValue after recalculation:\t\t%s\nEvaluation of recalculation:\t%s");
         $this->EchoMessage(sprintf($msg, $value, $cal, $ecal, $val, $eval, $txt, $etxt, $rec, $erec));
     }
-    
+
     /**
      * Validate the passed page layout jsonl.
      *
@@ -1222,7 +1222,7 @@ class RoomDisplay extends IPSModule
      * @param mixed $value Value == {{val}}
      * @param mixed $text Text == {{txt}}
      */
-    private function EvaluateString($subject, $value, $text = '', &$error='ok')
+    private function EvaluateString($subject, $value, $text = '', &$error = 'ok')
     {
         // sprintf
         if ((strlen($subject) != 0) && (strpos($subject, '{{') === false)) {
