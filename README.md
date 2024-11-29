@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-1.8.20241122-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-2.0.20241129-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -199,6 +199,11 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}']);`
 
 ### 8. Versionshistorie
+
+v2.0.20241129
+* _NEU_: Rudimentäres Prüfen der Umrechnungen pro Verlinkung
+* _NEU_: Verhalten von Spinner erweitert, Speed & Direction über (+/-) Wert und Beschriftung hinzugefügt
+* _FIX_: Interner Umbau der Wertübername für Dorpdown, Gauge und Switch (Vereinheitlichung)
 
 v1.9.20241122
 * _NEU_: Unterstützung für SPINNER (über Beschriftung kann Drehrichtung, über Wert die Geschwindigkeit gesetzt werden)

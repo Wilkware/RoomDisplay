@@ -16,6 +16,9 @@ class RoomDisplay extends IPSModule
     use VariableHelper;
     use WebhookHelper;
 
+    // Min IPS Object ID
+    private const IPS_MIN_ID = 10000;
+
     // Modul IDs
     private const GUID_MQTT_IO = '{C6D2AEB3-6E1F-4B2E-8E69-3A1A00246850}';  // Splitter
     private const GUID_MQTT_TX = '{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}';  // from module to server
@@ -291,7 +294,10 @@ class RoomDisplay extends IPSModule
             case 'MappingSort':
                 $this->UpdateMapping($value, false);
                 break;
-        }
+            case 'MappingTest':
+                $this->CheckMapping($value);
+                break;
+            }
     }
 
     /**
@@ -649,7 +655,13 @@ class RoomDisplay extends IPSModule
             ($object['Type'] == self::UI_GAUGE) ||
             ($object['Type'] == self::UI_SWITCH)) {
             // Write "val" property
-            $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+            if ($object['Value'] != '') {
+                $value = $this->EvaluateString($object['Value'], $value);
+                $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+            } else {
+                // If the caption is empty, the value is written directly.
+                $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+            }
         }
         // Image
         if ($object['Type'] == self::UI_IMAGE) {
@@ -699,16 +711,18 @@ class RoomDisplay extends IPSModule
         }
         // Spinner
         if ($object['Type'] == self::UI_SPINNER) {
-            $this->SendDebug(__FUNCTION__, 'Spinner sync');
             if ($object['Caption'] != '') {
                 $text = $this->EvaluateString($object['Caption'], $value);
-                $this->SendDebug(__FUNCTION__, 'Spinner direction: ' . $text);
-                $this->SetItemProperty($object['Page'], $object['Id'], 'direction', strval($text));
+                $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText($text));
             }
             if ($object['Value'] != '') {
-                $text = $this->EvaluateString($object['Value'], $value);
-                $this->SendDebug(__FUNCTION__, 'Spinner speed: ' . $text);
-                $this->SetItemProperty($object['Page'], $object['Id'], 'speed', strval($text));
+                $value = intval($this->EvaluateString($object['Value'], $value));
+                // set direction (-/+)  0 = clockwise, 1 = counter-clockwise
+                $this->SetItemProperty($object['Page'], $object['Id'], 'direction', strval(($value<0?1:0)));
+                // set speed, always positiv
+                $this->SetItemProperty($object['Page'], $object['Id'], 'speed', strval(abs($value)));
+            } else {
+                $this->SetItemProperty($object['Page'], $object['Id'], 'speed', strval($value));
             }
         }
         // Toggle-Button
@@ -1117,6 +1131,55 @@ class RoomDisplay extends IPSModule
     }
 
     /**
+     * Try< to check the (re-)calulation eval statements
+     *
+     * @param string $value JSON structure of a selected object mapping
+     */
+    private function CheckMapping(string $value)
+    {
+        $data = json_decode($value, true);
+        if(empty($data)) {
+            $this->EchoMessage('No entry selected from the object list!');
+            return;
+        }
+        if($data[0]['Link'] < self::IPS_MIN_ID) {
+            $this->EchoMessage('Entry does not contain a linked variable!');
+            return;
+        }
+        // Value für {{val}}
+        $value = GetValue($data[0]['Link']);
+        // Text für {{txt}}
+        $text = 'TXT';
+        // Calculation
+        $ecal = 'ok';
+        $cal = $value;
+        if($data[0]['Calculation'] != '') {
+            $cal = $this->EvaluateString($data[0]['Calculation'], $value, $text, $ecal);
+        }
+        // Value
+        $eval = 'ok';
+        $val = $cal;
+        if($data[0]['Value'] != '') {
+            $val = $this->EvaluateString($data[0]['Value'], $cal, $text, $eval);
+        }
+        // Caption
+        $etxt = 'ok';
+        $txt = '';
+        if($data[0]['Caption'] != '') {
+            $txt = $this->EvaluateString($data[0]['Caption'], $cal, $text, $etxt);
+        }
+        // Recalculation
+        $erec = 'ok';
+        $rec = $val;
+        if($data[0]['Recalculation'] != '') {
+            $rec = $this->EvaluateString($data[0]['Recalculation'], $val, $text, $etxt);
+        }
+        // Result
+        $msg = $this->Translate("Value of the link:\t\t\t\t%s\nText default value:\t\t\tTXT\n\nValue after calculation:\t\t%s\nEvaluation of the calculation:\t%s\n\nValue (of value):\t\t\t\t%s\nEvaluation of value:\t\t\t%s\n\nValue of caption:\t\t\t\t%s\nEvaluation of caption:\t\t\t%s\n\nValue after recalculation:\t\t%s\nEvaluation of recalculation:\t%s");
+        $this->EchoMessage(sprintf($msg, $value, $cal, $ecal, $val, $eval, $txt, $etxt, $rec, $erec));
+    }
+    
+    /**
      * Validate the passed page layout jsonl.
      *
      * @param string $value Layout as JSONL
@@ -1159,7 +1222,7 @@ class RoomDisplay extends IPSModule
      * @param mixed $value Value == {{val}}
      * @param mixed $text Text == {{txt}}
      */
-    private function EvaluateString($subject, $value, $text = '')
+    private function EvaluateString($subject, $value, $text = '', &$error='ok')
     {
         // sprintf
         if ((strlen($subject) != 0) && (strpos($subject, '{{') === false)) {
@@ -1185,6 +1248,7 @@ class RoomDisplay extends IPSModule
                 }
             } catch (ParseError $e) {
                 // Report error somehow
+                $error = $e->GetMessage();
                 $this->SendDebug(__FUNCTION__, 'RD Value: ' . $value . ',RD Type: ' . gettype($value) . ',RD Error' . $e->GetMessage() . ',RD Eval' . $eval . ',RD Subject: ' . $subject);
                 $code = '';
             }

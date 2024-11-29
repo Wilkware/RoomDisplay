@@ -351,6 +351,17 @@
                                 "foreach ($Objects as $line) { $list[] = $line;};",
                                 "IPS_RequestAction($id,'MappingSort', json_encode($list));"
                             ]
+                        },
+                        {
+                            "type": "Button",
+                            "name": "TestMapping",
+                            "caption": "Check",
+                            "width": "125px",
+                            "onClick": [
+                                "$list= [];",
+                                "foreach ($Objects as $line) { if (isset($Objects['Id']) && ($Objects['Id'] == $line['Id']) && ($Objects['Page'] == $line['Page'])) { $list[] = $line; }};",
+                                "IPS_RequestAction($id,'MappingTest', json_encode($list));"
+                            ]
                         }
                     ]
                 }
