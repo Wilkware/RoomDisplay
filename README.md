@@ -99,6 +99,7 @@ Name                        | Beschreibung
 Objekte                     | Table zur Zuordnung zwischen UI- und IPS-Objekt
 DUPLIZIEREN                 | Schalter um selektierte Zeile zu duplizieren (und gleich einzusortieren)
 NEUSORTIEREN                | Schalter um die Liste endsprechend _Seite_ und _ID_ zu sortieren
+PRÜFEN                      | Schalter um die hinterlegten Eingaben (Berechnungen) eines ausgewählten Eintrag zu prüfen.
 
 Hier eine kurze Erklärung der Spalten:
 
