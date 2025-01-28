@@ -140,7 +140,6 @@ class RoomDisplay extends IPSModule
     /**
      * This function is called when deleting the instance during operation and when updating via "Module Control".
      * The function is not called when exiting IP-Symcon.
-     *
      */
     public function Destroy()
     {
@@ -154,7 +153,6 @@ class RoomDisplay extends IPSModule
 
     /**
      * Is executed when "Apply" is pressed on the configuration page and immediately after the instance has been created.
-     *
      */
     public function ApplyChanges()
     {
@@ -461,7 +459,7 @@ class RoomDisplay extends IPSModule
      * @param mixed $topic Topic name
      * @param mixed $payload Payload data
      */
-    protected function SendMQTT($topic, $payload)
+    protected function SendMQTT(string $topic, string $payload)
     {
         $resultServer = true;
         $resultClient = true;
@@ -623,10 +621,10 @@ class RoomDisplay extends IPSModule
     /**
      * Process map data to object.
      *
-     * @param mixed $object The mapping object
+     * @param array $object The mapping object
      * @param mixed $data The passed data
      */
-    private function ProcessData($object, $data)
+    private function ProcessData(array $object, mixed $data)
     {
         $this->SendDebug(__FUNCTION__, 'Data: ' . $data . ' (' . gettype($data) . ')');
         // Calculate IPS value to object value
@@ -721,8 +719,6 @@ class RoomDisplay extends IPSModule
                 $this->SetItemProperty($object['Page'], $object['Id'], 'direction', strval(($value < 0 ? 1 : 0)));
                 // set speed, always positiv
                 $this->SetItemProperty($object['Page'], $object['Id'], 'speed', strval(abs($value)));
-            } else {
-                $this->SetItemProperty($object['Page'], $object['Id'], 'speed', strval($value));
             }
         }
         // Toggle-Button
@@ -980,9 +976,9 @@ class RoomDisplay extends IPSModule
     /**
      * Status Update - display status information.
      *
-     * @param mixed $value True to show status info, otherwise false
+     * @param bool $value True to show status info, otherwise false
      */
-    private function StatusUpdate($value)
+    private function StatusUpdate(bool $value)
     {
         $this->SendCommand('statusupdate');
         if ($value) {
@@ -994,9 +990,9 @@ class RoomDisplay extends IPSModule
     /**
      * Mood Light - display moodlight information.
      *
-     * @param mixed $value True to show moodlight info, otherwise false
+     * @param bool $value True to show moodlight info, otherwise false
      */
-    private function MoodLight($value)
+    private function MoodLight(bool $value)
     {
         $this->SendCommand('moodlight');
         if ($value) {
@@ -1007,7 +1003,6 @@ class RoomDisplay extends IPSModule
 
     /**
      * Synchronize from IPS variables to design objects.
-     *
      */
     private function Synchronize()
     {
@@ -1184,6 +1179,8 @@ class RoomDisplay extends IPSModule
      *
      * @param string $value Layout as JSONL
      * @param bool $echo If true popup message, otherwise silence
+     *
+     * @return bool True if every line is a valid JSON object; otherwise false.
      */
     private function ValidateLayout(string $value, bool $echo)
     {
@@ -1218,11 +1215,13 @@ class RoomDisplay extends IPSModule
     /**
      * Evaluate passed string as expression.
      *
-     * @param mixed $subject Expression text
+     * @param string $subject Expression text
      * @param mixed $value Value == {{val}}
-     * @param mixed $text Text == {{txt}}
+     * @param string $text Text == {{txt}}
+     * @param string $error Error message for check expression
+     * @return mixed (Re-)formated value/text.
      */
-    private function EvaluateString($subject, $value, $text = '', &$error = 'ok')
+    private function EvaluateString(string $subject, mixed $value, string $text = '', string &$error = 'ok')
     {
         // sprintf
         if ((strlen($subject) != 0) && (strpos($subject, '{{') === false)) {
@@ -1261,9 +1260,10 @@ class RoomDisplay extends IPSModule
     /**
      * Encode text to valid json format.
      *
-     * @param mixed $text Text to convert in json format
+     * @param string $text Text to convert in json format
+     * @return string Encoded json conform content
      */
-    private function EncodeText($text)
+    private function EncodeText(string $text)
     {
         // JSON encode converts special characters into Unicode sequences
         $encoded = json_encode($text);
@@ -1271,15 +1271,17 @@ class RoomDisplay extends IPSModule
         $encoded = substr($encoded, 1, -1);
         // Replace double backslashes with single backslashes
         $encoded = str_replace('\\\\', '\\', $encoded);
+        $this->SendDebug(__FUNCTION__, $encoded);
         return $encoded;
     }
 
     /**
      * Retrieve UI object type as textual representation.
      *
-     * @param mixed $type ID of the UI Object
+     * @param int $type ID of the UI Object
+     * @return string Clear name of UI element.
      */
-    private function GetType($type)
+    private function GetType(int $type)
     {
         $name = $this->Translate('Unknown');
         switch ($type) {
