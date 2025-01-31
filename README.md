@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-2.0.20241129-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-2.1.20250131-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -36,6 +36,7 @@ dem Display.
 * Label
 * LED Inicator
 * Line Meter
+* MessageBox
 * Object
 * Roller
 * Slider
@@ -197,9 +198,13 @@ void WWXRD_SendJSONL(int $InstanzID, array $data);
 Sendet JSON Lines (JSONL) via MQTT an das Display.  
 Die Funktion liefert keinerlei Rückgabewert.
 
-__Beispiel__: `WWXRD_SendJSONL(12345, ['{"comment":" --- KOMMENTAR ZEILE --- "}']);`
+__Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox','text' => 'A message box with two buttons','options' => ['Open','Close']]);`
 
 ### 8. Versionshistorie
+
+v2.1.20250131
+* _NEU_: Unterstützung für MESSAGEBOX (über Beschriftung => Text, über Wert => Buttons, über Rückrechnung => ScriptID für senden der Event-Werte)
+* _FIX_: Objektzuordnungstabelle nutzt jetzt gesamte verfügbare Breite im Konfigurationsdialog
 
 v2.0.20241129
 * _NEU_: Rudimentäres Prüfen der Umrechnungen pro Verlinkung

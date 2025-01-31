@@ -592,6 +592,7 @@ class RoomDisplay extends IPSModule
                         if (($object['Type'] == self::UI_BUTTOM) ||
                             ($object['Type'] == self::UI_CHECKBOX) ||
                             ($object['Type'] == self::UI_DROPDOWN) ||
+                            ($object['Type'] == self::UI_MESSAGE) ||
                             ($object['Type'] == self::UI_TOGGLE) ||
                             ($object['Type'] == self::UI_ROLLER) ||
                             ($object['Type'] == self::UI_SLIDER) ||
@@ -696,6 +697,20 @@ class RoomDisplay extends IPSModule
             if ($object['Caption'] != '') {
                 $text = $this->EvaluateString($object['Caption'], $value);
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
+            }
+        }
+        // Messagebox
+        if ($object['Type'] == self::UI_MESSAGE) {
+            $opt = ['OK'];
+            // Buttons for MessageBox (default: OK)
+            if ($object['Value'] != '') {
+                $opt = $this->EvaluateString($object['Value'], $value);
+            }
+            // Text for Messagebox
+            if ($object['Caption'] != '') {
+                $text = $this->EvaluateString($object['Caption'], $value);
+                $msg = ['page' => $object['Page'], 'id' => $object['Id'], 'obj' => 'msgbox', 'text' => $text, 'options' => $opt];
+                $this->SendJSONL($msg);
             }
         }
         // Slider
@@ -855,8 +870,13 @@ class RoomDisplay extends IPSModule
                     $value = $data->val;
                 }
                 // Recalculation necessary?
+                $script = -1;
                 if ($object['Recalculation'] != '') {
-                    $value = $this->EvaluateString($object['Recalculation'], $value, $text);
+                    if ($object['Type'] == self::UI_MESSAGE) {
+                        $script = $object['Recalculation'];
+                    } else {
+                        $value = $this->EvaluateString($object['Recalculation'], $value, $text);
+                    }
                 }
                 // Type & Value & Text
                 $this->SendDebug(__FUNCTION__, $this->GetType($object['Type']) . ': ' . $this->SafePrint($value) . ', ' . $text, 0);
@@ -884,6 +904,13 @@ class RoomDisplay extends IPSModule
                         else {
                             $this->SendDebug(__FUNCTION__, 'No return to object: ' . $object['Link'], 0);
                         }
+                    }
+                }
+                // Mesagebox (Button down)
+                if ($object['Type'] == self::UI_MESSAGE && $data->event == self::EH_UP) {
+                    if (IPS_ScriptExists($script)) {
+                        IPS_RunScriptEx($script, ['VALUE' => $value, 'TEXT' => $text]);
+                        $this->SendDebug(__FUNCTION__, 'IPS_RunScriptEx(' . $script . ', [VALUE=>' . $value . ',TEXT=>' . $text . '])', 0);
                     }
                 }
             }

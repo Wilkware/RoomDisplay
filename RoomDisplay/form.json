@@ -153,6 +153,10 @@
                                         "value": 12
                                     },
                                     {
+                                        "caption": "Messagebox",
+                                        "value": 13
+                                    },
+                                    {
                                         "caption": "Object",
                                         "value": 14
                                     },
@@ -315,7 +319,7 @@
                         {
                             "caption": "Link",
                             "name": "Link",
-                            "width": "200px",
+                            "width": "auto",
                             "save": true,
                             "visible": true,
                             "add": 1,
