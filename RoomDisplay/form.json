@@ -373,6 +373,39 @@
         },
         {
             "type": "ExpansionPanel",
+            "caption": "Visualisation ...",
+            "items": [
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "SelectColor",
+                            "allowTransparent": "true",
+                            "name": "VisuOnColor",
+                            "caption": "Tile background color (online):"
+                        },
+                        {
+                            "type": "SelectColor",
+                            "allowTransparent": "true",
+                            "name": "VisuOffColor",
+                            "caption": "Tile background color (offline):"
+                        }
+                    ]
+                },
+                {
+                    "type": "CheckBox",
+                    "name": "VisuNaviBar",
+                    "caption": "Show navigation bar (Prev, Back, Next)?"
+                },
+                {
+                    "type": "CheckBox",
+                    "name": "VisuActionBar",
+                    "caption": "Show action bar (Clear pages, Reload pages, Sync, Reboot)?"
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
             "caption": "Advanced settings ...",
             "items": [
                 {
@@ -451,6 +484,15 @@
                     "type": "CheckBox",
                     "name": "SyncOnIdle",
                     "caption": "No synchronization in idle!"
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "AutoClosePopup",
+                    "caption": "Close pop-up message after:",
+                    "suffix": "seconds",
+                    "minimum": 0,
+                    "maximum": 60,
+                    "width": "200px"
                 },
                 {
                     "type": "SelectScript",

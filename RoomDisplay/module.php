@@ -120,11 +120,17 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyInteger('AutoAntiburnBacklight', 0);
         $this->RegisterPropertyBoolean('PageOneOnIdle', false);
         $this->RegisterPropertyBoolean('SyncOnIdle', false);
+        $this->RegisterPropertyInteger('AutoClosePopup', 5);
         $this->RegisterPropertyInteger('ForwardMessageScript', 1);
+        $this->RegisterPropertyInteger('VisuOnColor', 0x00FF00);
+        $this->RegisterPropertyInteger('VisuOffColor', 0xFF0000);
+        $this->RegisterPropertyBoolean('VisuNaviBar', true);
+        $this->RegisterPropertyBoolean('VisuActionBar', false);
 
         // Info Attributes
         $this->RegisterAttributeString('StatusUpdate', '');
         $this->RegisterAttributeString('MoodLight', '');
+
         // Idle Attribute
         $this->RegisterAttributeBoolean('SyncData', true);
         $this->RegisterAttributeBoolean('DisableIdle', false);
@@ -135,6 +141,9 @@ class RoomDisplay extends IPSModule
 
         // Automatically connect to the MQTT server/splitter instance
         $this->ConnectParent(self::GUID_MQTT_IO);
+
+        // Set visualization type to 1, as we want to offer HTML
+        $this->SetVisualizationType(1);
     }
 
     /**
@@ -198,6 +207,9 @@ class RoomDisplay extends IPSModule
 
         // Validate object liste
         if ($this->RegisterObjects()) {
+            // Send a complete update message to the display, as parameters may have changed
+            $this->UpdateVisualizationValue($this->GetFullUpdateMessage());
+            // Status all okay
             $this->SetStatus(102);
         }
         else {
@@ -296,6 +308,24 @@ class RoomDisplay extends IPSModule
                 $this->CheckMapping($value);
                 break;
         }
+    }
+
+    /**
+     * If the HTML-SDK is to be used, this function must be overwritten in order to return the HTML content.
+     *
+     * @return String Initial display of a representation via HTML SDK
+     */
+    public function GetVisualizationTile()
+    {
+        // Add a script to set the values when loading, analogous to changes at runtime
+        // Although the return from GetFullUpdateMessage is already JSON-encoded, json_encode is still executed a second time
+        // This adds quotation marks to the string and any quotation marks within it are escaped correctly
+        $initialHandling = '<script>handleMessage(' . json_encode($this->GetFullUpdateMessage()) . ');</script>';
+        // Add static HTML from file
+        $module = file_get_contents(__DIR__ . '/module.html');
+        // Return everything
+        // Important: $initialHandling at the end, as the handleMessage function is only defined in the HTML
+        return $module . $initialHandling;
     }
 
     /**
@@ -475,6 +505,38 @@ class RoomDisplay extends IPSModule
         $resultServer = @$this->SendDataToParent($json);
 
         return $resultServer === false;
+    }
+
+    /**
+     * Generate a message that updates all elements in the HTML display.
+     *
+     * @return String JSON encoded message information
+     */
+    private function GetFullUpdateMessage()
+    {
+        // dataset variable
+        $idle = $this->GetValue('Idle');
+        $status = $this->GetValue('Status');
+        $brightness = $this->GetValue('Backlight');
+        $page = $this->GetValue('Page');
+        $online = $this->GetColorFormatted($this->ReadPropertyInteger('VisuOnColor'));
+        $offline = $this->GetColorFormatted($this->ReadPropertyInteger('VisuOffColor'));
+        $navi = $this->ReadPropertyBoolean('VisuNaviBar');
+        $action = $this->ReadPropertyBoolean('VisuActionBar');
+
+        // Data
+        $result = [
+            'status'        => ($status ? 'online' : 'offline'),
+            'idle'          => ($idle),
+            'brightness'    => ($brightness),
+            'page'          => ($page),
+            'navi'          => ($navi ? 'yes' : 'no'),
+            'action'        => ($action ? 'yes' : 'no'),
+            'online'        => ($online),
+            'offline'       => ($offline)
+        ];
+        $this->SendDebug(__FUNCTION__, $result, 0);
+        return json_encode($result);
     }
 
     /**
@@ -708,8 +770,9 @@ class RoomDisplay extends IPSModule
             }
             // Text for Messagebox
             if ($object['Caption'] != '') {
+                $close = $this->ReadPropertyInteger('AutoClosePopup') * 1000;
                 $text = $this->EvaluateString($object['Caption'], $value);
-                $msg = ['page' => $object['Page'], 'id' => $object['Id'], 'obj' => 'msgbox', 'text' => $text, 'options' => $opt];
+                $msg = ['page' => $object['Page'], 'id' => $object['Id'], 'obj' => 'msgbox', 'text' => $text, 'options' => $opt, 'auto_close' => $close];
                 $this->SendJSONL($msg);
             }
         }
@@ -1043,8 +1106,11 @@ class RoomDisplay extends IPSModule
             if (IPS_ObjectExists($object['Link']) && (IPS_GetObject($object['Link'])['ObjectType'] == 2)) {
                 // get actual value
                 $value = GetValue($object['Link']);
-                // process data to specific object
-                $this->ProcessData($object, $value);
+                $this->SendDebug(__FUNCTION__, 'ID: ' . $object['Link'] . ' => ' . $value, 0);
+                if ($object['Type'] != self::UI_MESSAGE) {
+                    // process data to specific object
+                    $this->ProcessData($object, $value);
+                }
             }
             else {
                 $this->LogMessage('Linked object with #' . $object['Link'] . ' dosent exist!', KL_ERROR);
@@ -1354,6 +1420,20 @@ class RoomDisplay extends IPSModule
                 break;
         }
         return $name;
+    }
+
+    /**
+     * Get HTML rgb formated color.
+     *
+     * @param int $color Color value or -1 for transparency
+     */
+    private function GetColorFormatted(int $color)
+    {
+        if ($color != '-1') {
+            return '#' . sprintf('%06X', $color);
+        } else {
+            return '';
+        }
     }
 
     /**

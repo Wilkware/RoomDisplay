@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-2.1.20250131-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-3.0.20250205-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -57,6 +57,7 @@ Was macht bzw. was kann das Modul?
 - Ausführung von OpenHASP System- bzw. Globalen Kommandos
 - Automatische Schaltung für Helligkeit und Einbrennschutz
 - Verwaltung, Prüfung und Sicherung des Seitenlayouts
+- Unterstützung der TileVisu via HTML-SDK
 
 ### 2. Voraussetzungen
 
@@ -112,6 +113,15 @@ Hier eine kurze Erklärung der Spalten:
 * _ Rückrechnung_ - Transformationsweg von DISPLAY zu IPS. Das Gleiche wie bei Umrechnung nur Umgekehrt, d.h. eine -1 bewirkt keine Weiterverarbeitung in IPS.
 * _Verknüpfung_ - die Verknüpfung zwischen Design-Objekt und IPS-Variable.
 
+> Visualisierung …
+
+Name                        | Beschreibung
+--------------------------- | ----------------------------------
+Kachelhintergrundfarbe (online)   | Farbauswahl für den Zustand 'ONLINE'
+Kachelhintergrundfarbe (offline)  | Farbauswahl für den Zustand 'OFFLINE'
+Navigationsleiste anzeigen (Vor, Zurück, Weiter)?  | Schaltet die Anzeige der Navigationsbuttons an bzw. aus
+Aktionsleiste anzeigen (Seiten löschen, Seiten neu laden, Synchronisieren, Neustart) | Schaltet die Anzeige der Aktionsbuttons an bzw. aus
+
 > Erweiterte Einstellungen …
 
 Name                        | Beschreibung
@@ -125,6 +135,7 @@ Zyklus                      | Zeitlicher Zyklus in Minuten in dem der Einbrennsc
 Hintergrundbeleuchtung dimmen | Schaltet die Beleuchtung während des Einbrennschutzes (30s) auf die eingestellte Beleuchtungsstärke, solange sie kleiner ist als der Wert für den langen Leerlauf und nicht Null ist!
 Im Ruhezustand auf Seite 1 wechseln! | Schaltet im kurzen Leerlauf auf Seite 1 um (idle->short)
 Keine Syncronisierung im Ruhezustand! | Schaltet die Synchrinistaion im Leerlauf ab (idle->long)
+Popup-Meldung schließen nach | Standardwert in Sekunden nachdem eine MessageBox automatisch geschlossen wird.
 Nachricht an Skript weiterleiten: | Leitet die Aktion bzw. das Ereignis direkt weiter. Die Daten können im Script mit der Variable $_IPS['Data'] empfangen und ausgewertet werden.
 
 Aktionsbereich:
@@ -201,6 +212,12 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox','text' => 'A message box with two buttons','options' => ['Open','Close']]);`
 
 ### 8. Versionshistorie
+
+v3.0.20250205
+* _NEU_: Unterstützung für TileVisu (Status, Navigation, Actions)
+* _NEU_: Zeiteinstellung für automatisches Schliessen von Messageboxen
+* _NEU_: Beispielseiten und -bilder erweitert
+* _FIX_: Beim (manuellen) Syncronisationsdurchlauf werden Messageboxen unterdrückt.
 
 v2.1.20250131
 * _NEU_: Unterstützung für MESSAGEBOX (über Beschriftung => Text, über Wert => Buttons, über Rückrechnung => ScriptID für senden der Event-Werte)
@@ -283,6 +300,7 @@ Ich möchte mich für die Unterstützung bei der Entwicklung dieses Moduls bedan
 
 * _firebuster_ : für die geniale und hervorragende Vorarbeit mit seinem __Modul openHASP__ 👍
 * _ralf_, _Helmut_, _richimaint_: für den stetigen Austausch rund um das Display und Modulfunktionlitäten 👏
+* _Norden_ : für seine sehr nette persönliche Unterstützung 👏
 
 Vielen Dank an Euch!
 

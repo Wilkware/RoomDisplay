@@ -1,0 +1,138 @@
+<html>
+<head>
+    <style>
+        html,
+        body {
+            margin: 0px;
+            width: 100%;
+            height: 100%;
+        }
+
+        #card {
+            position: absolute;
+            z-index: 1000;
+        }
+
+        #content {
+            position: absolute;
+            margin: 60px 20px 15px 20px;
+            font-size: 14px;
+            height: calc(100% - (60px + 15px));
+            width: calc(100% - (20px + 20px));
+            align-content: center;
+            text-align: center;
+        }
+
+        #content:hover {
+            filter: brightness(90%);
+        }
+
+        #button {
+            cursor: pointer;
+        }
+
+        #navi {
+            position: fixed;
+            top: calc(45px + 5vH);
+            width: 100%;
+            background-origin: padding-box;
+            display: grid;
+            grid-template-columns: auto auto auto;
+            gap: 20vH;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #actions {
+            position: fixed;
+            bottom: 5vH;
+            width: 100%;
+            background-origin: padding-box;
+            display: grid;
+            grid-template-columns: auto auto auto auto;
+            gap: 10vH;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .button {
+            height: 10vH;
+            text-align: center;
+        }
+    </style>
+    <script src="/icons.js" crossorigin="anonymous"></script>
+    <script>
+        // This is where the data is processed by the module.
+        function handleMessage(data) {
+            const decodedData = JSON.parse(data);
+            for (const parameter in decodedData) {
+                console.log(parameter + ': ' + decodedData[parameter]);
+                switch (parameter) {
+                    case 'status':
+                        var body = document.querySelector('body');
+                        var on = document.getElementById("online");
+                        var off = document.getElementById("offline");
+                        var coo = decodedData['online'];
+                        var cof = decodedData['offline'];
+                        if (decodedData[parameter] == 'online') {
+                            if (coo == '') {
+                                coo = 'var(--card-color, white)';
+                            } else {
+                                body.style.background = coo;
+                            }
+                            on.style.opacity = "100";
+                            on.style.fill = coo;
+                            off.style.opacity = "0";
+                        } else {
+                            if (cof == '') {
+                                cof = 'var(--card-color, white)';
+                            } else {
+                                body.style.background = cof;
+                            }
+                            on.style.opacity = "0";
+                            off.style.opacity = "100";
+                            off.style.stroke = cof;
+                        }
+                        break;
+                    case 'navi':
+                        var navi = document.getElementById('navi');
+                        if (decodedData[parameter] == 'no') {
+                            navi.style.visibility = 'hidden';
+                        }
+                        break;
+                    case 'action':
+                        var actions = document.getElementById('actions');
+                        if (decodedData[parameter] == 'no') {
+                            actions.style.visibility = 'hidden';
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="card">
+        <div id="navi">
+            <i class="fa-light fa-arrow-left-to-bracket button" title="Prev" onclick="requestAction('PagePrev',true)"></i>
+            <i class="fa-light fa-arrow-up-to-bracket button" title="Back" onclick="requestAction('PageBack',true)"></i>
+            <i class="fa-light fa-arrow-right-to-bracket button" title="Next" onclick="requestAction('PageNext',true)"></i>
+        </div>
+        <div id="actions">
+            <i class="fa-light fa-rotate-left button" title="Clear Pages" onclick="requestAction('ClearPages',true)"></i>
+            <i class="fa-light fa-rotate-right button" title="Reload Pages" onclick="requestAction('ReloadPages',true)"></i>
+            <i class="fa-light fa-rotate button" title="Synchronize" onclick="requestAction('Synchronize',true)"></i>
+            <i class="fa-light fa-power-off button" title="Reboot" onclick="requestAction('Restart',true)"></i>
+        </div>
+    </div>
+    <div id="content">
+        <svg fill="var(--content-color, white)" xmlns="http://www.w3.org/2000/svg" width="70%" height="70%" viewBox="0 0 52 52">
+            <path d="M48,7H4C2.9,7,2,7.9,2,9v26c0,1.1,0.9,2,2,2h16.2c1,5.7,5.9,10,11.8,10s10.9-4.3,11.8-10H48c1.1,0,2-0.9,2-2V9C50,7.9,49.1,7,48,7z M46,33h-2.2c-1-5.7-5.9-10-11.8-10s-10.9,4.3-11.8,10H6V11h40V33z" />
+            <path id="online" d="M30.5,41.3l-5.9-5.9l2.8-2.8l3.1,3.1l7.1-7.1l2.8,2.8L30.5,41.3" />
+            <path id="offline" d="M27,30l10,10m0,-10l-10,10" stroke-width="4" />
+        </svg>
+    </div>
+</body>
+</html>
