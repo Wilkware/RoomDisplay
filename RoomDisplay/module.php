@@ -45,6 +45,9 @@ class RoomDisplay extends IPSModule
     private const UI_SWITCH = 18;
     private const UI_TABS = 19;
     private const UI_TOGGLE = 20;
+    private const UI_MATRIX = 21;
+    private const UI_TAB = 22;
+    private const UI_QRCODE = 23;
 
     // Event handler
     private const EH_DOWN = 'down';         // Occurs when a button goes from depressed to pressed (the moment of touch)
@@ -191,16 +194,35 @@ class RoomDisplay extends IPSModule
         $this->RegisterProfileInteger('WWXRD.Backlight', 'Light', '', '', 1, 255, 1);
         // Profile "WWXRD.Page"
         $this->RegisterProfileInteger('WWXRD.Page', 'Book', '', '', 1, 12, 1);
+        // Profile "WWXRD.Navigate"
+        $association = [
+            ['page=prev', '< Prev ]', 'arrow-left-to-bracket', -1],
+            ['page=back', '[ Back ]', 'arrow-up-to-bracket', -1],
+            ['page=next', '[ Next >', 'arrow-right-to-bracket', -1],
+        ];
+        $this->RegisterProfileString('WWXRD.Navigate', 'square-ellipsis', '', '', $association);
+        // Profile "WWXRD.Action"
+        $association = [
+            [0, 'Clear Pages', 'rotate-left', -1],
+            [1, 'Reload Pages', 'rotate-right', -1],
+            [2, 'Synchronize', 'rotate', -1],
+            [3, 'Restart', 'power-off', -1],
+        ];
+        $this->RegisterProfileInteger('WWXRD.Action', 'rectangle-terminal', '', '', 0, 0, 0, $association);
 
         // Maintain variables
         $this->MaintainVariable('Idle', $this->Translate('Idle'), 1, 'WWXRD.Idle', 2, true);
         $this->MaintainVariable('Status', $this->Translate('Status'), 0, 'WWXRD.Status', 1, true);
         $this->MaintainVariable('Backlight', $this->Translate('Backlight'), 1, 'WWXRD.Backlight', 3, true);
         $this->MaintainVariable('Page', $this->Translate('Page'), 1, 'WWXRD.Page', 4, true);
+        $this->MaintainVariable('Navigate', $this->Translate('Navigate'), 3, 'WWXRD.Navigate', 5, true);
+        $this->MaintainVariable('Action', $this->Translate('Action'), 1, 'WWXRD.Action', 6, true);
 
         // Maintain actions
         $this->MaintainAction('Backlight', true);
         $this->MaintainAction('Page', true);
+        $this->MaintainAction('Navigate', true);
+        $this->MaintainAction('Action', true);
 
         // Reset Timer
         $this->SetTimerInterval('AntiburnTimer', 0);
@@ -235,7 +257,7 @@ class RoomDisplay extends IPSModule
             $form['elements'][3]['items'][1]['items'][0]['enabled'] = true;
             $form['elements'][3]['items'][1]['items'][1]['enabled'] = true;
             $form['elements'][3]['items'][1]['items'][2]['enabled'] = true;
-            $form['elements'][3]['items'][1]['items'][3]['enabled'] = true;
+            //$form['elements'][3]['items'][1]['items'][3]['enabled'] = true;
             $form['actions'][2]['items'][0]['items'][2]['enabled'] = true;
         }
         // return form
@@ -253,11 +275,28 @@ class RoomDisplay extends IPSModule
         // Debug output
         $this->SendDebug(__FUNCTION__, $ident . ' => ' . $value);
         switch ($ident) {
+            case 'Action':
+                $this->SetValueInteger($ident, $value);
+                switch ($value) {
+                    case 0: $this->SendCommand('clearpage=all');
+                        break;
+                    case 1: $this->SendCommand('run /pages.jsonl');
+                        break;
+                    case 2: $this->Synchronize();
+                        break;
+                    case 3: $this->SendCommand('restart');
+                        break;
+                }
+                break;
             case 'Backlight':
                 $this->SendCommand('backlight=' . $value);
                 break;
             case 'Page':
                 $this->SendCommand('page=' . $value);
+                break;
+            case 'Navigate':
+                $this->SetValueString($ident, $value);
+                $this->SendCommand($value);
                 break;
             case 'PagePrev':
                 $this->SendCommand('page=prev');
@@ -298,6 +337,9 @@ class RoomDisplay extends IPSModule
             case 'LayoutCheck':
                 $this->ValidateLayout($value, true);
                 break;
+            case 'LayoutParse':
+                $this->ParseLayout($value);
+                break;
             case 'MappingCopy':
                 $this->UpdateMapping($value, true);
                 break;
@@ -306,6 +348,9 @@ class RoomDisplay extends IPSModule
                 break;
             case 'MappingTest':
                 $this->CheckMapping($value);
+                break;
+            case 'MappingMatch':
+                $this->MatchMapping($value);
                 break;
         }
     }
@@ -373,19 +418,26 @@ class RoomDisplay extends IPSModule
      */
     public function MessageSink($timestamp, $sender, $message, $data)
     {
+        // No connection
+        $status = $this->GetValue('Status');
+        if (!$status) return;
+        // Debug
         $this->SendDebug(__FUNCTION__, 'SenderId: ' . $sender . ' Data: ' . $this->DebugPrint($data), 0);
         // React to updates
         if ($message == VM_UPDATE) {
-            if ($this->ReadAttributeBoolean('SyncData')) {
-                $objects = json_decode($this->ReadPropertyString('Objects'), true);
-                // Iterate over all objects
-                foreach ($objects as $item => $object) {
-                    if ($object['Link'] != $sender) {
-                        continue;
+            // only if values changed!
+            if ($data[1] == true) {
+                if ($this->ReadAttributeBoolean('SyncData')) {
+                    $objects = json_decode($this->ReadPropertyString('Objects'), true);
+                    // Iterate over all objects
+                    foreach ($objects as $item => $object) {
+                        if ($object['Link'] != $sender) {
+                            continue;
+                        }
+                        $this->SendDebug(__FUNCTION__, $this->DebugPrint($object), 0);
+                        // Process data to specific object
+                        $this->ProcessData($object, $data[0]);
                     }
-                    $this->SendDebug(__FUNCTION__, $this->DebugPrint($object), 0);
-                    // Process data to specific object
-                    $this->ProcessData($object, $data[0]);
                 }
             }
         }
@@ -535,7 +587,7 @@ class RoomDisplay extends IPSModule
             'online'        => ($online),
             'offline'       => ($offline)
         ];
-        $this->SendDebug(__FUNCTION__, $result, 0);
+        //$this->SendDebug(__FUNCTION__, $result, 0);
         return json_encode($result);
     }
 
@@ -1214,12 +1266,12 @@ class RoomDisplay extends IPSModule
             // otherwise, compare only the first column
             return $a['Page'] <=> $b['Page'];
         });
-        $this->SendDebug(__FUNCTION__, $list);
+        $this->SendDebug(__FUNCTION__, $this->SafePrint($list));
         $this->UpdateFormField('Objects', 'values', json_encode($list));
     }
 
     /**
-     * Try< to check the (re-)calulation eval statements
+     * Try to check the (re-)calulation eval statements
      *
      * @param string $value JSON structure of a selected object mapping
      */
@@ -1268,6 +1320,47 @@ class RoomDisplay extends IPSModule
     }
 
     /**
+     * Match all entries in the objects list agains the page definition.
+     *
+     * @param string $value json encoded list
+     */
+    private function MatchMapping(string $value)
+    {
+        $list = json_decode($value, true);
+
+        // read page layout and generate json array
+        $lines = explode("\n", trim($this->ReadPropertyString('Layout')));
+        $data = [];
+        foreach ($lines as $line) {
+            // skip empty lines if they exist in the string
+            if (trim($line) === '') {
+                continue;
+            }
+            $decoded = json_decode($line, true);
+            if ($decoded !== null) { // Skip invalid JSON lines
+                $data[] = $decoded;
+            } else {
+                $this->SendDebug(__FUNCTION__, json_last_error_msg() . ' => ' . $line);
+            }
+        }
+        // go through object and look if it exist in page layout
+        $nomatch = '';
+        foreach ($list as $obj) {
+            // search values
+            $values = ['page' => $obj['Page'], 'id' => $obj['Id']];
+            if ($this->HasSpecificValues($data, $values) == -1) {
+                $nomatch .= '[Page: ' . $obj['Page'] . ', Id: ' . $obj['Id'] . '], ';
+            }
+        }
+        $msg = 'All objects are available in the page layout!';
+        if (!empty($nomatch)) {
+            $msg = $this->Translate("The following objects do not exist in the page layout:\n\n");
+            $msg .= $nomatch;
+        }
+        $this->EchoMessage($msg);
+    }
+
+    /**
      * Validate the passed page layout jsonl.
      *
      * @param string $value Layout as JSONL
@@ -1303,6 +1396,103 @@ class RoomDisplay extends IPSModule
         }
         // return true if every line is a valid JSON object
         return true;
+    }
+
+    /**
+     * Parse the page layout and cratse the assoziated object mapping entries.
+     *
+     * @param string $value Serialised parse settings (new, exist, delete)
+     */
+    private function ParseLayout(string $value)
+    {
+        // parse option
+        $options = unserialize($value);
+        $this->SendDebug(__FUNCTION__, $this->DebugPrint($options));
+
+        // read page layout and generate json array
+        $layout = explode("\n", trim($this->ReadPropertyString('Layout')));
+        $lines = [];
+        foreach ($layout as $line) {
+            // skip empty lines if they exist in the string
+            if (trim($line) === '') {
+                continue;
+            }
+            $decoded = json_decode($line, true);
+            if ($decoded !== null) { // Skip invalid JSON lines
+                $lines[] = $decoded;
+            } else {
+                $this->SendDebug(__FUNCTION__, json_last_error_msg() . ' => ' . $line);
+            }
+        }
+
+        // object list
+        $objects = json_decode($this->ReadPropertyString('Objects'), true);
+
+        // process each line again object list
+        $unsupported = $changed = $deleted = $added = 0;
+        foreach ($lines as $line) {
+            // only object lines
+            if (!isset($line['obj'])) {
+                continue;
+            }
+            // ui-object identify
+            $type = $this->SetType($line['obj']);
+            if ($type == self::UI_BUTTOM) {
+                // Special case toggle button
+                if (isset($line['toggle']) && $line['toggle']) {
+                    $type = self::UI_TOGGLE;
+                }
+            }
+            $support = $this->SupportedType($type);
+            // Is supported?
+            if (!$support) {
+                $this->SendDebug(__FUNCTION__, 'NOT SUPPORTED: ' . $this->DebugPrint($line));
+                $unsupported++;
+                continue;
+            }
+            // Object still exists?
+            $values = ['Page' => $line['page'], 'Id' => $line['id']];
+            $index = $this->HasSpecificValues($objects, $values);
+            // new object
+            if (($index == -1) && $options['new']) {
+                // Objects with own actions?
+                if (isset($line['action'])) {
+                    continue;
+                }
+                $objects[] = ['Page' => $line['page'], 'Id' => $line['id'], 'Type' => $type];
+                $this->SendDebug(__FUNCTION__, 'NEW: ' . $this->DebugPrint($line));
+                $added++;
+            }
+            // change object
+            if (($index != -1) && $options['change']) {
+                if ($objects[$index]['Type'] != $type) {
+                    $objects[$index]['Type'] = $type;
+                    $this->SendDebug(__FUNCTION__, 'CHANGE: ' . $this->DebugPrint($line));
+                    $changed++;
+                }
+            }
+        }
+        if ($options['delete']) {
+            foreach ($objects as $key => $object) {
+                // search values
+                $values = ['page' => $object['Page'], 'id' => $object['Id']];
+                if ($this->HasSpecificValues($lines, $values) == -1) {
+                    $this->SendDebug(__FUNCTION__, 'DELETE: ' . $this->DebugPrint($object));
+                    unset($objects[$key]); // remove element
+                    $deleted++;
+                }
+            }
+        }
+        // do it really?
+        if ($options['simulate']) {
+            $this->SendDebug(__FUNCTION__, 'Simulation run!!!');
+        } else {
+            $this->SendDebug(__FUNCTION__, $this->SafePrint($objects));
+            $this->UpdateFormField('Objects', 'values', json_encode($objects));
+        }
+        // Result output
+        $msg = $this->Translate("The import ran with the following result:\n\n\tAdded:\t\t\t%d\n\tCorrected:\t\t%d\n\tDeleted:\t\t\t%d\n\tNot supported:\t%d");
+        $this->EchoMessage(sprintf($msg, $added, $changed, $deleted, $unsupported));
     }
 
     /**
@@ -1400,6 +1590,8 @@ class RoomDisplay extends IPSModule
                 break;
             case self::UI_LINE: $name = 'Line';
                 break;
+            case self::UI_MATRIX: $name = 'Button Matrix';
+                break;
             case self::UI_METER: $name = 'Line Meter';
                 break;
             case self::UI_MESSAGE: $name = 'Messagebox';
@@ -1416,10 +1608,109 @@ class RoomDisplay extends IPSModule
                 break;
             case self::UI_TABS: $name = 'Tabs';
                 break;
+            case self::UI_TAB: $name = 'Tab';
+                break;
             case self::UI_TOGGLE: $name = 'Toggle Button';
+                break;
+            case self::UI_QRCODE: $name = 'QR-Code';
                 break;
         }
         return $name;
+    }
+
+    /**
+     * Retrieve UI object id of th textual type name.
+     *
+     * @param  string Clear name of UI element.
+     * @return int ID of the UI Object.
+     */
+    private function SetType(string $name)
+    {
+        $name = strtolower($name);
+        $id = -1;
+        switch ($name) {
+            case 'arc': $id = self::UI_ARC;
+                break;
+            case 'bar': $id = self::UI_BAR;
+                break;
+            case 'btn': $id = self::UI_BUTTOM;
+                break;
+            case 'btnmatrix': $id = self::UI_MATRIX;
+                break;
+            case 'checkbox': $id = self::UI_CHECKBOX;
+                break;
+            case 'cpicker': $id = self::UI_COLOR;
+                break;
+            case 'dropdown': $id = self::UI_DROPDOWN;
+                break;
+            case 'gauge': $id = self::UI_GAUGE;
+                break;
+            case 'img': $id = self::UI_IMAGE;
+                break;
+            case 'label': $id = self::UI_LABEL;
+                break;
+            case 'led': $id = self::UI_LED;
+                break;
+            case 'line': $id = self::UI_LINE;
+                break;
+            case 'linemeter': $id = self::UI_METER;
+                break;
+            case 'msgbox': $id = self::UI_MESSAGE;
+                break;
+            case 'obj': $id = self::UI_OBJECT;
+                break;
+            case 'roller': $id = self::UI_ROLLER;
+                break;
+            case 'slider': $id = self::UI_SLIDER;
+                break;
+            case 'spinner': $id = self::UI_SPINNER;
+                break;
+            case 'switch': $id = self::UI_SWITCH;
+                break;
+            case 'tabview': $id = self::UI_TABS;
+                break;
+            case 'tab': $id = self::UI_TAB;
+                break;
+            case 'toggle': $id = self::UI_TOGGLE;
+                break;
+            case 'qrcode': $id = self::UI_QRCODE;
+                break;
+        }
+        return $id;
+    }
+
+    /**
+     * Retrieve the support state of UI object type.
+     *
+     * @param int $type ID of the UI Object
+     * @return bool If supported type true, otherwise false.
+     */
+    private function SupportedType(int $type)
+    {
+        $support = false;
+        switch ($type) {
+            case self::UI_ARC:
+            case self::UI_BAR:
+            case self::UI_BUTTOM:
+            case self::UI_CHECKBOX:
+            case self::UI_DROPDOWN:
+            case self::UI_GAUGE:
+            case self::UI_IMAGE:
+            case self::UI_LABEL:
+            case self::UI_LED:
+            case self::UI_LINE:
+            case self::UI_METER:
+            case self::UI_MESSAGE:
+            case self::UI_OBJECT:
+            case self::UI_ROLLER:
+            case self::UI_SLIDER:
+            case self::UI_SPINNER:
+            case self::UI_SWITCH:
+            case self::UI_TOGGLE:
+                $support = true;
+                break;
+        }
+        return $support;
     }
 
     /**
@@ -1434,6 +1725,34 @@ class RoomDisplay extends IPSModule
         } else {
             return '';
         }
+    }
+
+    /**
+     * Function to check whether an array with certain key-value pairs exists
+     *
+     * @param array $array Array with all page lines
+     * @param array $values Array of search values
+     * @return int Index if values found, otherwise -1.
+     */
+    private function HasSpecificValues(array $array, array $values)
+    {
+        $index = 0;
+        foreach ($array as $item) {
+            $match = true;
+            // check each key-value pair in values
+            foreach ($values as $key => $value) {
+                if (!isset($item[$key]) || $item[$key] !== $value) {
+                    $match = false;
+                    break;
+                }
+            }
+            // if all key-value pairs match, return true
+            if ($match) {
+                return $index;
+            }
+            $index++;
+        }
+        return -1;
     }
 
     /**

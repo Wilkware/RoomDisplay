@@ -61,25 +61,13 @@
                         {
                             "type": "Button",
                             "caption": "Download",
-                            "onClick": [
-                                "IPS_RequestAction($id,'LayoutLoad', $Layout);"
-                            ],
+                            "onClick": "IPS_RequestAction($id,'LayoutLoad', $Layout);",
                             "enabled": false
                         },
                         {
                             "type": "Button",
                             "caption": "Upload",
-                            "onClick": [
-                                "IPS_RequestAction($id,'LayoutSave', $Layout);"
-                            ],
-                            "enabled": false
-                        },
-                        {
-                            "type": "Button",
-                            "caption": "Validate",
-                            "onClick": [
-                                "IPS_RequestAction($id,'LayoutCheck', $Layout);"
-                            ],
+                            "onClick": "IPS_RequestAction($id,'LayoutSave', $Layout);",
                             "enabled": false
                         },
                         {
@@ -88,6 +76,50 @@
                             "onClick": "echo \"../hook/plate$id?file=pages\";",
                             "link": true,
                             "enabled": false
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "Validate",
+                            "onClick": "IPS_RequestAction($id,'LayoutCheck', $Layout);",
+                            "enabled": true
+                        },
+                        {
+                            "type": "PopupButton",
+                            "name": "AskPopup",
+                            "caption": "Parse",
+                            "popup": {
+                                "caption": "Parse",
+                                "items": [
+                                    {
+                                        "type": "CheckBox",
+                                        "name": "CheckParseNew",
+                                        "caption": "Only create new objects",
+                                        "value": true
+                                    },
+                                    {
+                                        "type": "CheckBox",
+                                        "name": "CheckParseChange",
+                                        "caption": "Overwrite existing objects (correct type)",
+                                        "value": true
+                                    },
+                                    {
+                                        "type": "CheckBox",
+                                        "name": "CheckParseDelete",
+                                        "caption": "Delete all non-existing objects",
+                                        "value": false
+                                    }
+                                ],
+                                "buttons": [
+                                    {
+                                        "caption": "Simulate",
+                                        "onClick": "IPS_RequestAction($id,'LayoutParse', serialize(['new'=>$CheckParseNew,'change'=>$CheckParseChange,'delete'=>$CheckParseDelete, 'simulate' => true]));"
+                                    },
+                                    {
+                                        "caption": "Start",
+                                        "onClick": "IPS_RequestAction($id,'LayoutParse', serialize(['new'=>$CheckParseNew,'change'=>$CheckParseChange,'delete'=>$CheckParseDelete, 'simulate' => false]));"
+                                    }
+                                ]
+                            }
                         }
                     ]
                 }
@@ -365,6 +397,17 @@
                                 "$list= [];",
                                 "foreach ($Objects as $line) { if (isset($Objects['Id']) && ($Objects['Id'] == $line['Id']) && ($Objects['Page'] == $line['Page'])) { $list[] = $line; }};",
                                 "IPS_RequestAction($id,'MappingTest', json_encode($list));"
+                            ]
+                        },
+                        {
+                            "type": "Button",
+                            "name": "MatchMapping",
+                            "caption": "Match",
+                            "width": "125px",
+                            "onClick": [
+                                "$list= [];",
+                                "foreach ($Objects as $line) { $list[] = $line;};",
+                                "IPS_RequestAction($id,'MappingMatch', json_encode($list));"
                             ]
                         }
                     ]

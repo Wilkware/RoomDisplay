@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.0.20250205-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-3.1.20250214-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -57,6 +57,7 @@ Was macht bzw. was kann das Modul?
 - Ausführung von OpenHASP System- bzw. Globalen Kommandos
 - Automatische Schaltung für Helligkeit und Einbrennschutz
 - Verwaltung, Prüfung und Sicherung des Seitenlayouts
+- Automatische Umwandlung von Seitenlayout in Objektliste
 - Unterstützung der TileVisu via HTML-SDK
 
 ### 2. Voraussetzungen
@@ -91,8 +92,9 @@ Name                        | Beschreibung
 Datei (pages.jsonl)         | JSONL formatierter Inhalt zur Syncronisierung des Seitenaufbaus
 HERUNTERLADEN               | Schalter um den Seitenaufbau vom Gerät herunterzuladen
 HOCHRLADEN                  | Schalter um den Seitenaufbau zum Gerät senden.
-PRÜFEN                      | Schalter um den Inhalt des Seitenaufbaus auf JSONL Konformität zu prüfen.
 SICHERN                     | Schalter um den Seitenaufbau vom Gerät herunterzuladen und in eine Datei zu schreiben.
+PRÜFEN                      | Schalter um den Inhalt des Seitenaufbaus auf JSONL Konformität zu prüfen.
+EINLESEN                    | Startet den Prozess zum Einlesen und Umwandeln des Seitenaufbaus in eine Objektzuordnung.
 
 > Objektzuordnung …
 
@@ -102,6 +104,7 @@ Objekte                     | Table zur Zuordnung zwischen UI- und IPS-Objekt
 DUPLIZIEREN                 | Schalter um selektierte Zeile zu duplizieren (und gleich einzusortieren)
 NEUSORTIEREN                | Schalter um die Liste endsprechend _Seite_ und _ID_ zu sortieren
 PRÜFEN                      | Schalter um die hinterlegten Eingaben (Berechnungen) eines ausgewählten Eintrag zu prüfen.
+ABGLEICHEN                  | Schalter um die hinterlegten Objekte mit dem Inhalt des Seitenaufbaus gegen zu prüfen.
 
 Hier eine kurze Erklärung der Spalten:
 
@@ -212,6 +215,15 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox','text' => 'A message box with two buttons','options' => ['Open','Close']]);`
 
 ### 8. Versionshistorie
+
+v3.1.20250214
+* _NEU_: Definierte Objekte mit dem Inhalt des Seitenaufbaus abgleichen (Ausgabe: Liste der nicht definierten UI-Elemente).
+* _NEU_: Einlesen und Umwandeln des Seitenaufbaus in die Objektzuordnung (Neue anlegen, Fehlerhafte korrigieren und nicht vorhandene löschen).
+* _FIX_: Variablenupdates werden jetzt nur verarbeitet wenn eine wirkliche Änderung vorliegt (neuer Wert).
+* _FIX_: Variablenupdates werden jetzt nur im Status Online verarbeitet.
+* _FIX_: Übersetzungen in TileVisu korrigiert.
+* _FIX_: Übersetzungen in TileVisu korrigiert.
+* _FIX_: Fehler in Debugausgabe korrigiert.
 
 v3.0.20250205
 * _NEU_: Unterstützung für TileVisu (Status, Navigation, Actions)
