@@ -219,6 +219,7 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox'
 v3.1.20250214
 * _NEU_: Definierte Objekte mit dem Inhalt des Seitenaufbaus abgleichen (Ausgabe: Liste der nicht definierten UI-Elemente).
 * _NEU_: Einlesen und Umwandeln des Seitenaufbaus in die Objektzuordnung (Neue anlegen, Fehlerhafte korrigieren und nicht vorhandene löschen).
+* _NEU_: Statusvariablen für Navigation und Aktionen (bessere Unterstützung von IPSView)
 * _FIX_: Variablenupdates werden jetzt nur verarbeitet wenn eine wirkliche Änderung vorliegt (neuer Wert).
 * _FIX_: Variablenupdates werden jetzt nur im Status Online verarbeitet.
 * _FIX_: Übersetzungen in TileVisu korrigiert.
