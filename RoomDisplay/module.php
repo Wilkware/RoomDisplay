@@ -352,6 +352,9 @@ class RoomDisplay extends IPSModule
             case 'MappingMatch':
                 $this->MatchMapping($value);
                 break;
+            case 'MappingTransfer':
+                $this->TransferMapping($value);
+                break;
         }
     }
 
@@ -486,13 +489,20 @@ class RoomDisplay extends IPSModule
         $file = isset($_GET['file']) ? $_GET['file'] : '';
         $filename = '';
         $contenttype = '';
+        $download = '';
         $ip = $this->ReadPropertyString('IP');
         // Download the file
-        if (empty($ip)) {
+        if (empty($ip) && ($file != 'objects')) {
             $this->EchoMessage('No IP adress filed!');
             return;
         }
+        // Prepeare file output
         switch ($file) {
+            case 'objects':
+                $filename = 'objects.json';
+                $contenttype = 'Content-Type: application/json; charset=utf-8';
+                $download = isset($_GET['list']) ? $_GET['list'] : '';
+                break;
             case 'pages':
                 $filename = 'pages.jsonl';
                 $contenttype = 'Content-Type: application/json; charset=utf-8';
@@ -505,13 +515,15 @@ class RoomDisplay extends IPSModule
             default:
                 return;
         }
-
-        $url = 'http://' . $ip . '/' . $filename . '?download=true';
-        $this->SendDebug(__FUNCTION__, $url);
-        $download = file_get_contents($url);
-        if ($download === false) {
-            $this->EchoMessage('Error during download file!');
-            return;
+        // Download it
+        if ($file != 'objects') {
+            $url = 'http://' . $ip . '/' . $filename . '?download=true';
+            $this->SendDebug(__FUNCTION__, $url);
+            $download = file_get_contents($url);
+            if ($download === false) {
+                $this->EchoMessage('Error during download file!');
+                return;
+            }
         }
         // Output headers so that the file is downloaded rather than displayed
         header($contenttype);
@@ -1358,6 +1370,25 @@ class RoomDisplay extends IPSModule
             $msg .= $nomatch;
         }
         $this->EchoMessage($msg);
+    }
+
+    /**
+     * Transfer a list of entries between instances.
+     *
+     * @param string $value json encoded list (file content)
+     */
+    private function TransferMapping(string $value)
+    {
+        $json = base64_decode($value);
+        $list = json_decode($json, true);
+        $this->SendDebug(__FUNCTION__, json_last_error_msg());
+        $this->SendDebug(__FUNCTION__, $this->SafePrint($list));
+
+        if (!empty($list)) {
+            $objects = json_decode($this->ReadPropertyString('Objects'), true);
+            $list = array_merge($objects, $list);
+            $this->UpdateFormField('Objects', 'values', json_encode($list));
+        }
     }
 
     /**

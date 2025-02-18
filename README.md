@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.1.20250214-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-3.2.20250218-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -58,6 +58,7 @@ Was macht bzw. was kann das Modul?
 - Automatische Schaltung für Helligkeit und Einbrennschutz
 - Verwaltung, Prüfung und Sicherung des Seitenlayouts
 - Automatische Umwandlung von Seitenlayout in Objektliste
+- Import und Export von Objektkonfigurationen
 - Unterstützung der TileVisu via HTML-SDK
 
 ### 2. Voraussetzungen
@@ -105,9 +106,11 @@ DUPLIZIEREN                 | Schalter um selektierte Zeile zu duplizieren (und 
 NEUSORTIEREN                | Schalter um die Liste endsprechend _Seite_ und _ID_ zu sortieren
 PRÜFEN                      | Schalter um die hinterlegten Eingaben (Berechnungen) eines ausgewählten Eintrag zu prüfen.
 ABGLEICHEN                  | Schalter um die hinterlegten Objekte mit dem Inhalt des Seitenaufbaus gegen zu prüfen.
+ÜBERTRAGEN                  | Öffnet ein Dialog um die zuvor selektierten Zeilen in eine Datei zu exportieren, oder eine abgespeicherte Konfiguration aus einer Datei zu importieren.
 
 Hier eine kurze Erklärung der Spalten:
 
+* Spalte mit Checkboxen für die Auswahl der Objekte für ein Export (Schalter: Übertragen)
 * _Typ_, _Seite_ und _ID_ - sollten selbsterklärend sein und identifizieren das UI-Object
 * _Kommentar_ - auch klar, aber nicht ganz unwichtig um sich bei der Vielzahl von Mappings zurecht zu finden. Ich habe es extra eingeführt, weil ich zum Teil die Übersicht zu behalten. Empfind es es als sehr hilfreich.
 * _Beschriftung_ - eigentlich alles was man bei der Visu an Text sieht. Also bei Buttons die Icons oder Titel, bei Labels die Beschriftung usw.
@@ -216,13 +219,15 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox'
 
 ### 8. Versionshistorie
 
+v3.2.20250218
+* _NEU_: Import und Export von Objektkonfigurationen zum Austausch zwischen verschiedenen Instanzen.
+
 v3.1.20250214
 * _NEU_: Definierte Objekte mit dem Inhalt des Seitenaufbaus abgleichen (Ausgabe: Liste der nicht definierten UI-Elemente).
 * _NEU_: Einlesen und Umwandeln des Seitenaufbaus in die Objektzuordnung (Neue anlegen, Fehlerhafte korrigieren und nicht vorhandene löschen).
 * _NEU_: Statusvariablen für Navigation und Aktionen (bessere Unterstützung von IPSView)
 * _FIX_: Variablenupdates werden jetzt nur verarbeitet wenn eine wirkliche Änderung vorliegt (neuer Wert).
 * _FIX_: Variablenupdates werden jetzt nur im Status Online verarbeitet.
-* _FIX_: Übersetzungen in TileVisu korrigiert.
 * _FIX_: Übersetzungen in TileVisu korrigiert.
 * _FIX_: Fehler in Debugausgabe korrigiert.
 

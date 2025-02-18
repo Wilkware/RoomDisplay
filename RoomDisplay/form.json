@@ -85,7 +85,6 @@
                         },
                         {
                             "type": "PopupButton",
-                            "name": "AskPopup",
                             "caption": "Parse",
                             "popup": {
                                 "caption": "Parse",
@@ -138,6 +137,17 @@
                     "delete": true,
                     "changeOrder": true,
                     "columns": [
+                        {
+                            "caption": " ",
+                            "align": "left",
+                            "name": "_",
+                            "add": false,
+                            "save": false,
+                            "width": "30px",
+                            "edit": {
+                                "type": "CheckBox"
+                            }
+                        },
                         {
                             "caption": "Type",
                             "name": "Type",
@@ -409,6 +419,46 @@
                                 "foreach ($Objects as $line) { $list[] = $line;};",
                                 "IPS_RequestAction($id,'MappingMatch', json_encode($list));"
                             ]
+                        },
+                        {
+                            "type": "PopupButton",
+                            "caption": "Transfer",
+                            "width": "125px",
+                            "popup": {
+                                "caption": "Transfer",
+                                "items": [
+                                    {
+                                        "type": "RowLayout",
+                                        "items": [
+                                            {
+                                                "type": "SelectFile",
+                                                "name": "FileObjects",
+                                                "caption": "File:",
+                                                "extensions": ".json"
+                                            },
+                                            {
+                                                "type": "Button",
+                                                "caption": "Import",
+                                                "onClick": "IPS_RequestAction($id,'MappingTransfer',$FileObjects);"
+                                            },
+                                            {
+                                                "type": "Button",
+                                                "caption": "Export",
+                                                "link": true,
+                                                "onClick": [
+                                                    "$list= [];",
+                                                    "foreach ($Objects as $line) { if($line['_']) $list[] = $line;};",
+                                                    "echo \"../hook/plate$id?\" . http_build_query(['file'=> 'objects', 'list' => json_encode($list)]);"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "Label",
+                                        "caption": "NOTE: No file needs to be selected for export!"
+                                    }
+                                ]
+                            }
                         }
                     ]
                 }
