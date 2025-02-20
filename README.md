@@ -107,6 +107,7 @@ NEUSORTIEREN                | Schalter um die Liste endsprechend _Seite_ und _ID
 PRÜFEN                      | Schalter um die hinterlegten Eingaben (Berechnungen) eines ausgewählten Eintrag zu prüfen.
 ABGLEICHEN                  | Schalter um die hinterlegten Objekte mit dem Inhalt des Seitenaufbaus gegen zu prüfen.
 ÜBERTRAGEN                  | Öffnet ein Dialog um die zuvor selektierten Zeilen in eine Datei zu exportieren, oder eine abgespeicherte Konfiguration aus einer Datei zu importieren.
+⧉                          | Schalter um den Zustand der Auswahlboxen umzukehren, der Zustand verwendet die Checkbox des ersten Elementes für den (Umkehr-)Folgezustand.
 
 Hier eine kurze Erklärung der Spalten:
 
