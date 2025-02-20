@@ -459,6 +459,15 @@
                                     }
                                 ]
                             }
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "⧉",
+                            "onClick": [
+                                "$list= [];",
+                                "foreach ($Objects as $line) { $list[] = $line;};",
+                                "IPS_RequestAction($id,'MappingSelect', json_encode($list));"
+                            ]
                         }
                     ]
                 }

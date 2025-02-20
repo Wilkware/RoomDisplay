@@ -355,6 +355,9 @@ class RoomDisplay extends IPSModule
             case 'MappingTransfer':
                 $this->TransferMapping($value);
                 break;
+            case 'MappingSelect':
+                $this->SelectMapping($value);
+                break;
         }
     }
 
@@ -1389,6 +1392,27 @@ class RoomDisplay extends IPSModule
             $list = array_merge($objects, $list);
             $this->UpdateFormField('Objects', 'values', json_encode($list));
         }
+    }
+
+    /**
+     * Re-invert selection of all entries in the objects list.
+     *
+     * @param string $value json encoded list
+     */
+    private function SelectMapping(string $value)
+    {
+        $list = json_decode($value, true);
+
+        $select = true;
+        if (!empty($list)) {
+            $select = !$list[0]['_'];
+        }
+        foreach ($list as &$object) {
+            $object['_'] = $select;
+        }
+        unset($object);
+        //$this->SendDebug(__FUNCTION__, $this->SafePrint($list));
+        $this->UpdateFormField('Objects', 'values', json_encode($list));
     }
 
     /**
