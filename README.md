@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.3.20250220-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-3.4.20250303-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -28,6 +28,7 @@ dem Display.
 <summary>Derzeit werden folgende UI-Objekte unterstützt:</summary>
 
 * Arc
+* Bar
 * Button
 * Checkbox
 * Dropdown
@@ -122,28 +123,31 @@ Hier eine kurze Erklärung der Spalten:
 
 > Visualisierung …
 
-Name                        | Beschreibung
---------------------------- | ----------------------------------
-Kachelhintergrundfarbe (online)   | Farbauswahl für den Zustand 'ONLINE'
-Kachelhintergrundfarbe (offline)  | Farbauswahl für den Zustand 'OFFLINE'
+Name                                   | Beschreibung
+-------------------------------------- | ----------------------------------
+Kachelhintergrundfarbe (online)        | Farbauswahl für den Zustand 'ONLINE'
+Kachelhintergrundfarbe (offline)       | Farbauswahl für den Zustand 'OFFLINE'
 Navigationsleiste anzeigen (Vor, Zurück, Weiter)?  | Schaltet die Anzeige der Navigationsbuttons an bzw. aus
 Aktionsleiste anzeigen (Seiten löschen, Seiten neu laden, Synchronisieren, Neustart) | Schaltet die Anzeige der Aktionsbuttons an bzw. aus
 
 > Erweiterte Einstellungen …
 
-Name                        | Beschreibung
---------------------------- | ----------------------------------
+Name                                   | Beschreibung
+-------------------------------------- | ----------------------------------
 Hintergrundbeleuchtung automatisch schalten! | Schaltet die Beleuchtung in Abhängigkeit der zeitlichen Nutzung
-Normal (kein Leerlauf)      | Wert der Helligkeit bei normaler Nutzung des Displays
-Kurzer Leerlauf             | Wert der Helligkeit nach kürzeren Nicht-Nutzung des Displays
-Langer Leerlauf             | Wert der Helligkeit nach längerer Nicht-Nutzung des Displays
-Einbrennschutz automatisch aktivieren! | Schaltet die Beleuchtung im Leerlauf (idle->long) automatisch ab
-Zyklus                      | Zeitlicher Zyklus in Minuten in dem der Einbrennschutz für 30 Sekunden eingeschaltet wird.
-Hintergrundbeleuchtung dimmen | Schaltet die Beleuchtung während des Einbrennschutzes (30s) auf die eingestellte Beleuchtungsstärke, solange sie kleiner ist als der Wert für den langen Leerlauf und nicht Null ist!
-Im Ruhezustand auf Seite 1 wechseln! | Schaltet im kurzen Leerlauf auf Seite 1 um (idle->short)
-Keine Syncronisierung im Ruhezustand! | Schaltet die Synchrinistaion im Leerlauf ab (idle->long)
-Popup-Meldung schließen nach | Standardwert in Sekunden nachdem eine MessageBox automatisch geschlossen wird.
-Nachricht an Skript weiterleiten: | Leitet die Aktion bzw. das Ereignis direkt weiter. Die Daten können im Script mit der Variable $_IPS['Data'] empfangen und ausgewertet werden.
+Normal (kein Leerlauf)                 | Wert der Helligkeit bei normaler Nutzung des Displays
+Kurzer Leerlauf                        | Wert der Helligkeit nach kürzeren Nicht-Nutzung des Displays
+Langer Leerlauf                        | Wert der Helligkeit nach längerer Nicht-Nutzung des Displays
+Einbrennschutz automatisch aktivieren! | Schalter, ob der Einbrennschutz automatisch im definierten Zyklus gestartet werden soll!
+Zyklus                                 | Zeitlicher Zyklus in Minuten in dem der Einbrennschutz für 30 Sekunden eingeschaltet wird.
+Hintergrundbeleuchtung dimmen          | Schaltet die Beleuchtung während des Einbrennschutzes (30s) auf die eingestellte Beleuchtungsstärke, solange sie kleiner ist als der Wert für den langen Leerlauf und nicht Null ist!
+Im Ruhezustand keine Syncronisierung!  | Schaltet die Synchrinistaion im Leerlauf ab (idle->long)
+Im Ruhezustand auf eine bestimmte Seite wechseln!   | Schalter,  ob im langen Leerlauf eine bestimmte Seite angezeigt werden soll!
+Seite                                  | Seite auf welche gewechselt werden soll im langen Leerlauf-Modus
+Im Ruhezustand durch die Seiten blättern!   | Schalter, ob im langem Leerlauf die Seiten durchgeblättert werden sollen!
+Intervall                              | Zeitspanne zwischen den einzelnen Seitenwechseln in Minuten (1-60)
+Popup-Meldung schließen nach           | Standardwert in Sekunden nachdem eine MessageBox automatisch geschlossen wird.
+Nachricht an Skript weiterleiten:      | Leitet die Aktion bzw. das Ereignis direkt weiter. Die Daten können im Script mit der Variable $_IPS['Data'] empfangen und ausgewertet werden.
 
 Aktionsbereich:
 
@@ -219,6 +223,11 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox','text' => 'A message box with two buttons','options' => ['Open','Close']]);`
 
 ### 8. Versionshistorie
+
+v3.4.20250303
+* _NEU_: Auswahl der zu aktivierenden Seite im Leerlauf
+* _NEU_: Automatisches durchblättern der Seiten im Leerlauf
+* _FIX_: Bei Aktivierung der Löschfunktion beim Einlesen des Seitenlayouts wurden alle Zurodnungen gelöscht
 
 v3.3.20250220
 * _NEU_: Auswahl(umkehr) für Objektkonfiguration

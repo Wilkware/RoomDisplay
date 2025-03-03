@@ -579,13 +579,47 @@
                 },
                 {
                     "type": "CheckBox",
-                    "name": "PageOneOnIdle",
-                    "caption": "Page 1 on Idle!"
-                },
-                {
-                    "type": "CheckBox",
                     "name": "SyncOnIdle",
                     "caption": "No synchronization in idle!"
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "CheckBox",
+                            "name": "PageOneOnIdle",
+                            "caption": "Switch to a specific page in idle mode!",
+                            "width": "408px"
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "PageOnIdle",
+                            "caption": "Page:",
+                            "minimum": 1,
+                            "maximum": 12,
+                            "width": "200px"
+                        }
+                    ]
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "CheckBox",
+                            "name": "AutoSwitchPage",
+                            "caption": "Scroll through the pages in idle mode!",
+                            "width": "408px"
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "AutoSwitchInterval",
+                            "caption": "Interval:",
+                            "minimum": 1,
+                            "maximum": 60,
+                            "suffix": "minutes",
+                            "width": "200px"
+                        }
+                    ]
                 },
                 {
                     "type": "NumberSpinner",

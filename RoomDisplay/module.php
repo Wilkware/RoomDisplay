@@ -122,6 +122,9 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyInteger('AutoAntiburnCycle', 60);
         $this->RegisterPropertyInteger('AutoAntiburnBacklight', 0);
         $this->RegisterPropertyBoolean('PageOneOnIdle', false);
+        $this->RegisterPropertyInteger('PageOnIdle', 1);
+        $this->RegisterPropertyBoolean('AutoSwitchPage', false);
+        $this->RegisterPropertyInteger('AutoSwitchInterval', 1);
         $this->RegisterPropertyBoolean('SyncOnIdle', false);
         $this->RegisterPropertyInteger('AutoClosePopup', 5);
         $this->RegisterPropertyInteger('ForwardMessageScript', 1);
@@ -141,6 +144,7 @@ class RoomDisplay extends IPSModule
         // Register Timer
         $this->RegisterTimer('AntiburnTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", true);');
         $this->RegisterTimer('AntiburnLight', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", false);');
+        $this->RegisterTimer('SwitchPageTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "PageNext", true);');
 
         // Automatically connect to the MQTT server/splitter instance
         $this->ConnectParent(self::GUID_MQTT_IO);
@@ -936,6 +940,7 @@ class RoomDisplay extends IPSModule
                 default: // off
                     $this->SetValue('Idle', 0);
                     $this->SetTimerInterval('AntiburnTimer', 0);
+                    $this->SetTimerInterval('SwitchPageTimer', 0);
                     if (!$this->ReadAttributeBoolean('SyncData')) {
                         $this->SendDebug(__FUNCTION__, 'Synchronize()');
                         $this->Synchronize();
@@ -951,6 +956,9 @@ class RoomDisplay extends IPSModule
             }
             if ($this->ReadPropertyBoolean('PageOneOnIdle') && $data == 'long') {
                 $this->SendCommand('page 1');
+            }
+            if ($this->ReadPropertyBoolean('AutoSwitchPage') && $data == 'long') {
+                $this->SetTimerInterval('SwitchPageTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoSwitchInterval'));
             }
             if ($this->ReadPropertyBoolean('SyncOnIdle') && $data == 'long') {
                 $this->WriteAttributeBoolean('SyncData', false);
@@ -1482,6 +1490,7 @@ class RoomDisplay extends IPSModule
 
         // object list
         $objects = json_decode($this->ReadPropertyString('Objects'), true);
+        $this->SendDebug(__FUNCTION__, $this->SafePrint($objects));
 
         // process each line again object list
         $unsupported = $changed = $deleted = $added = 0;
@@ -1536,6 +1545,10 @@ class RoomDisplay extends IPSModule
                     unset($objects[$key]); // remove element
                     $deleted++;
                 }
+            }
+            // restore complete numerical indexing
+            if ($deleted != 0) {
+                $objects = array_values($objects);
             }
         }
         // do it really?
