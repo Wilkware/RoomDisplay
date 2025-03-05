@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.4.20250303-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-3.5.20250305-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -223,6 +223,12 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox','text' => 'A message box with two buttons','options' => ['Open','Close']]);`
 
 ### 8. Versionshistorie
+
+v3.5.20250305
+* _NEU_: Neuer Platzhalter {{fmt}} für profilformatierte Werte wird jetzt auch bei Wert und Beschriftung unterstützt
+* _NEU_: Seiten(bereichs)angabe für automatisches Durchblättern der Seiten im Leerlauf
+* _NEU_: Freie Definition einer Seite, welche beim Seitenwechsel im Leerlauf dargestellt/geschaltet werden soll
+* _FIX_: Veraltete Konfigurationsangaben ersetzt
 
 v3.4.20250303
 * _NEU_: Auswahl der zu aktivierenden Seite im Leerlauf

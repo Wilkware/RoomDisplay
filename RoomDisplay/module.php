@@ -60,6 +60,7 @@ class RoomDisplay extends IPSModule
     // Placeholder
     private const PH_VALUE = '{{val}}';
     private const PH_TEXT = '{{txt}}';
+    private const PH_FORMAT = '{{fmt}}';
 
     // Constants
     private const RD_HOST_NAME = 'plate';
@@ -124,6 +125,7 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyBoolean('PageOneOnIdle', false);
         $this->RegisterPropertyInteger('PageOnIdle', 1);
         $this->RegisterPropertyBoolean('AutoSwitchPage', false);
+        $this->RegisterPropertyString('AutoSwitchSelection', '1-12');
         $this->RegisterPropertyInteger('AutoSwitchInterval', 1);
         $this->RegisterPropertyBoolean('SyncOnIdle', false);
         $this->RegisterPropertyInteger('AutoClosePopup', 5);
@@ -144,7 +146,7 @@ class RoomDisplay extends IPSModule
         // Register Timer
         $this->RegisterTimer('AntiburnTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", true);');
         $this->RegisterTimer('AntiburnLight', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", false);');
-        $this->RegisterTimer('SwitchPageTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "PageNext", true);');
+        $this->RegisterTimer('SwitchPageTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "SwitchPage", true);');
 
         // Automatically connect to the MQTT server/splitter instance
         $this->ConnectParent(self::GUID_MQTT_IO);
@@ -361,6 +363,9 @@ class RoomDisplay extends IPSModule
                 break;
             case 'MappingSelect':
                 $this->SelectMapping($value);
+                break;
+            case 'SwitchPage':
+                $this->PageSwitch();
                 break;
         }
     }
@@ -761,8 +766,9 @@ class RoomDisplay extends IPSModule
     private function ProcessData(array $object, mixed $data)
     {
         $this->SendDebug(__FUNCTION__, 'Data: ' . $data . ' (' . gettype($data) . ')');
+        $formatted = @GetValueFormatted($object['Link']);
         // Calculate IPS value to object value
-        $value = $this->EvaluateString($object['Calculation'], $data);
+        $value = $this->EvaluateString($object['Calculation'], $data, $formatted);
         // Debug
         $this->SendDebug(__FUNCTION__, $this->GetType($object['Type']) . ' :' . $this->SafePrint($value));
         // Arc || LineMeter
@@ -771,14 +777,14 @@ class RoomDisplay extends IPSModule
                 // If the caption is empty, the value is written directly.
                 $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText(strval($value)));
             } else {
-                $text = $this->EvaluateString($object['Caption'], $value);
+                $text = $this->EvaluateString($object['Caption'], $value, $formatted);
                 $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText(strval($text)));
             }
             if ($object['Value'] == '') {
                 // If the caption is empty, the value is written directly.
                 $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             } else {
-                $value = $this->EvaluateString($object['Value'], $value);
+                $value = $this->EvaluateString($object['Value'], $value, $formatted);
                 $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             }
         }
@@ -788,7 +794,7 @@ class RoomDisplay extends IPSModule
             ($object['Type'] == self::UI_SWITCH)) {
             // Write "val" property
             if ($object['Value'] != '') {
-                $value = $this->EvaluateString($object['Value'], $value);
+                $value = $this->EvaluateString($object['Value'], $value, $formatted);
                 $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             } else {
                 // If the caption is empty, the value is written directly.
@@ -799,7 +805,7 @@ class RoomDisplay extends IPSModule
         if ($object['Type'] == self::UI_IMAGE) {
             // Write "src" property
             if ($object['Value'] != '') {
-                $text = $this->EvaluateString($object['Value'], $value);
+                $text = $this->EvaluateString($object['Value'], $value, $formatted);
                 $this->SetItemSrc($object['Page'], $object['Id'], $text);
             } else {
                 $this->SetItemSrc($object['Page'], $object['Id'], $value);
@@ -811,7 +817,7 @@ class RoomDisplay extends IPSModule
                 // If the caption is empty, the value is written directly.
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText(strval($value)));
             } else {
-                $text = $this->EvaluateString($object['Caption'], $value);
+                $text = $this->EvaluateString($object['Caption'], $value, $formatted);
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
             }
         }
@@ -819,7 +825,7 @@ class RoomDisplay extends IPSModule
         if ($object['Type'] == self::UI_BUTTOM) {
             // Text for Button
             if ($object['Caption'] != '') {
-                $text = $this->EvaluateString($object['Caption'], $value);
+                $text = $this->EvaluateString($object['Caption'], $value, $formatted);
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
             }
         }
@@ -828,7 +834,7 @@ class RoomDisplay extends IPSModule
             $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             // Text for Checkbox
             if ($object['Caption'] != '') {
-                $text = $this->EvaluateString($object['Caption'], $value);
+                $text = $this->EvaluateString($object['Caption'], $value, $formatted);
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
             }
         }
@@ -837,12 +843,12 @@ class RoomDisplay extends IPSModule
             $opt = ['OK'];
             // Buttons for MessageBox (default: OK)
             if ($object['Value'] != '') {
-                $opt = $this->EvaluateString($object['Value'], $value);
+                $opt = $this->EvaluateString($object['Value'], $value, $formatted);
             }
             // Text for Messagebox
             if ($object['Caption'] != '') {
                 $close = $this->ReadPropertyInteger('AutoClosePopup') * 1000;
-                $text = $this->EvaluateString($object['Caption'], $value);
+                $text = $this->EvaluateString($object['Caption'], $value, $formatted);
                 $msg = ['page' => $object['Page'], 'id' => $object['Id'], 'obj' => 'msgbox', 'text' => $text, 'options' => $opt, 'auto_close' => $close];
                 $this->SendJSONL($msg);
             }
@@ -852,18 +858,18 @@ class RoomDisplay extends IPSModule
             $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             // Text for Slider
             if ($object['Caption'] != '') {
-                $text = $this->EvaluateString($object['Caption'], $value);
+                $text = $this->EvaluateString($object['Caption'], $value, $formatted);
                 $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText($text));
             }
         }
         // Spinner
         if ($object['Type'] == self::UI_SPINNER) {
             if ($object['Caption'] != '') {
-                $text = $this->EvaluateString($object['Caption'], $value);
+                $text = $this->EvaluateString($object['Caption'], $value, $formatted);
                 $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText($text));
             }
             if ($object['Value'] != '') {
-                $value = intval($this->EvaluateString($object['Value'], $value));
+                $value = intval($this->EvaluateString($object['Value'], $value, $formatted));
                 // set direction (-/+)  0 = clockwise, 1 = counter-clockwise
                 $this->SetItemProperty($object['Page'], $object['Id'], 'direction', strval(($value < 0 ? 1 : 0)));
                 // set speed, always positiv
@@ -875,7 +881,7 @@ class RoomDisplay extends IPSModule
             $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             // Toogle Text for Button
             if ($object['Caption'] != '') {
-                $text = $this->EvaluateString($object['Caption'], $value);
+                $text = $this->EvaluateString($object['Caption'], $value, $formatted);
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
             }
         }
@@ -898,18 +904,18 @@ class RoomDisplay extends IPSModule
         // Object
         if ($object['Type'] == self::UI_OBJECT) {
             if ($object['Caption'] != '') {
-                $text = $this->EvaluateString($object['Caption'], $value);
+                $text = $this->EvaluateString($object['Caption'], $value, $formatted);
                 $this->SetItemValStr($object['Page'], $object['Id'], $this->EncodeText($text));
             }
             if ($object['Value'] != '') {
-                $text = $this->EvaluateString($object['Value'], $value);
+                $text = $this->EvaluateString($object['Value'], $value, $formatted);
                 $this->SetItemProperty($object['Page'], $object['Id'], 'bg_color', $text);
             }
         }
         // Roller
         if ($object['Type'] == self::UI_ROLLER) {
             if ($object['Value'] != '') {
-                $value = $this->EvaluateString($object['Value'], $value);
+                $value = $this->EvaluateString($object['Value'], $value, $formatted);
                 $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             }
         }
@@ -955,7 +961,7 @@ class RoomDisplay extends IPSModule
                 $this->SetTimerInterval('AntiburnTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoAntiburnCycle'));
             }
             if ($this->ReadPropertyBoolean('PageOneOnIdle') && $data == 'long') {
-                $this->SendCommand('page 1');
+                $this->SendCommand('page=' . $this->ReadPropertyInteger('PageOnIdle'));
             }
             if ($this->ReadPropertyBoolean('AutoSwitchPage') && $data == 'long') {
                 $this->SetTimerInterval('SwitchPageTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoSwitchInterval'));
@@ -1013,7 +1019,7 @@ class RoomDisplay extends IPSModule
                     if ($object['Type'] == self::UI_MESSAGE) {
                         $script = $object['Recalculation'];
                     } else {
-                        $value = $this->EvaluateString($object['Recalculation'], $value, $text);
+                        $value = $this->EvaluateString($object['Recalculation'], $value, '', $text);
                     }
                 }
                 // Type & Value & Text
@@ -1311,35 +1317,37 @@ class RoomDisplay extends IPSModule
         }
         // Value für {{val}}
         $value = GetValue($data[0]['Link']);
+        // Value für {{fmt}}
+        $formatted = GetValueFormatted($data[0]['Link']);
         // Text für {{txt}}
         $text = 'TXT';
         // Calculation
         $ecal = 'ok';
         $cal = $value;
         if ($data[0]['Calculation'] != '') {
-            $cal = $this->EvaluateString($data[0]['Calculation'], $value, $text, $ecal);
+            $cal = $this->EvaluateString($data[0]['Calculation'], $value, $formatted, $text, $ecal);
         }
         // Value
         $eval = 'ok';
         $val = $cal;
         if ($data[0]['Value'] != '') {
-            $val = $this->EvaluateString($data[0]['Value'], $cal, $text, $eval);
+            $val = $this->EvaluateString($data[0]['Value'], $cal, $formatted, $text, $eval);
         }
         // Caption
         $etxt = 'ok';
         $txt = '';
         if ($data[0]['Caption'] != '') {
-            $txt = $this->EvaluateString($data[0]['Caption'], $cal, $text, $etxt);
+            $txt = $this->EvaluateString($data[0]['Caption'], $cal, $formatted, $text, $etxt);
         }
         // Recalculation
         $erec = 'ok';
         $rec = $val;
         if ($data[0]['Recalculation'] != '') {
-            $rec = $this->EvaluateString($data[0]['Recalculation'], $val, $text, $etxt);
+            $rec = $this->EvaluateString($data[0]['Recalculation'], $val, $formatted, $text, $etxt);
         }
         // Result
-        $msg = $this->Translate("Value of the link:\t\t\t\t%s\nText default value:\t\t\tTXT\n\nValue after calculation:\t\t%s\nEvaluation of the calculation:\t%s\n\nValue (of value):\t\t\t\t%s\nEvaluation of value:\t\t\t%s\n\nValue of caption:\t\t\t\t%s\nEvaluation of caption:\t\t\t%s\n\nValue after recalculation:\t\t%s\nEvaluation of recalculation:\t%s");
-        $this->EchoMessage(sprintf($msg, $value, $cal, $ecal, $val, $eval, $txt, $etxt, $rec, $erec));
+        $msg = $this->Translate("Value of the link:\t\t\t\t%s\nFormatted value:\t\t\t\t%s\nText default value:\t\t\tTXT\n\nValue after calculation:\t\t%s\nEvaluation of the calculation:\t%s\n\nValue (of value):\t\t\t\t%s\nEvaluation of value:\t\t\t%s\n\nValue of caption:\t\t\t\t%s\nEvaluation of caption:\t\t\t%s\n\nValue after recalculation:\t\t%s\nEvaluation of recalculation:\t%s");
+        $this->EchoMessage(sprintf($msg, $value, $formatted, $cal, $ecal, $val, $eval, $txt, $etxt, $rec, $erec));
     }
 
     /**
@@ -1572,7 +1580,7 @@ class RoomDisplay extends IPSModule
      * @param string $error Error message for check expression
      * @return mixed (Re-)formated value/text.
      */
-    private function EvaluateString(string $subject, mixed $value, string $text = '', string &$error = 'ok')
+    private function EvaluateString(string $subject, mixed $value, string $formatted = '', string $text = '', string &$error = 'ok')
     {
         // sprintf
         if ((strlen($subject) != 0) && (strpos($subject, '{{') === false)) {
@@ -1588,7 +1596,8 @@ class RoomDisplay extends IPSModule
         // eval - empty(0) is true :(
         if (strlen($subject) != 0) {
             $eval = str_replace(self::PH_VALUE, strval($value), $subject);
-            $eval = str_replace(self::PH_TEXT, strval($text), $eval);
+            $eval = str_replace(self::PH_TEXT, $text, $eval);
+            $eval = str_replace(self::PH_FORMAT, $formatted, $eval);
             $eval = 'return (' . $eval . ');';
             $this->SendDebug(__FUNCTION__, 'eval: ' . $eval);
             try {
@@ -1821,6 +1830,54 @@ class RoomDisplay extends IPSModule
             $index++;
         }
         return -1;
+    }
+
+    /**
+     * Parse page selection string into a integer array and switch then to the next page.
+     */
+    private function PageSwitch()
+    {
+        $pages = [];
+        // Remove spaces and divide the input at the commas
+        $input = str_replace(' ', '', $this->ReadPropertyString('AutoSwitchSelection'));
+        $parts = explode(',', $input);
+
+        foreach ($parts as $part) {
+            // Check whether there is a range (e.g. 3-5)
+            if (preg_match('/^(\d+)-(\d+)$/', $part, $matches)) {
+                $start = (int) $matches[1];
+                $end = (int) $matches[2];
+                if ($start <= $end) {
+                    $pages = array_merge($pages, range($start, $end));
+                } else {
+                    $this->SendDebug(__FUNCTION__, 'Invalid range: ' . $part);
+                    return;
+                }
+            } elseif (ctype_digit($part)) {
+                // Add a single page
+                $pages[] = (int) $part;
+            } else {
+                $this->SendDebug(__FUNCTION__, 'Invalid format: ' . $part);
+                return;
+            }
+        }
+        if (!empty($pages)) {
+            // Remove and sort duplicates
+            $pages = array_unique($pages);
+            sort($pages);
+            $current = $this->GetValue('Page');
+            foreach ($pages as $page) {
+                if ($page > $current) {
+                    // First page that is larger than the current page
+                    $this->SendCommand('page=' . $page);
+                    return;
+                }
+            }
+            // If no larger page was found, return to the first page
+            $this->SendCommand('page=' . $pages[0]);
+        } else {
+            $this->SendCommand('page=next');
+        }
     }
 
     /**
