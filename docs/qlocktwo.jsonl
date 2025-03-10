@@ -1,0 +1,13 @@
+{"comment":" ---------------------- Page 09 - QLOCKTWO ----------------------- "}
+{"page":9,"id":4,"obj":"img","src":"L:/bg10.png","auto_size":0,"w":480}
+{"page":9,"id":10,"obj":"label","x":20, "y":60,"w":40,"h":440,"text":"E\nZ\nD\nT\nH\nZ\nK\nE\nW\nB\n.","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}
+{"page":9,"id":11,"obj":"label","x":60, "y":60,"w":40,"h":440,"text":"S\nE\nR\nG\nA\nW\nD\nL\nA\nS\n.","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}
+{"page":9,"id":12,"obj":"label","x":100,"y":60,"w":40,"h":440,"text":"K\nH\nE\nN\nL\nE\nR\nF\nC\nE\n.","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}
+{"page":9,"id":13,"obj":"label","x":140,"y":60,"w":40,"h":440,"text":"I\nN\nI\nA\nB\nI\nE\nN\nH\nC\n.","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}
+{"page":9,"id":14,"obj":"label","x":180,"y":60,"w":40,"h":440,"text":"S\nZ\nV\nC\nQ\nN\nI\nE\nT\nH\n ","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}
+{"page":9,"id":15,"obj":"label","x":220,"y":60,"w":40,"h":440,"text":"T\nW\nI\nH\nZ\nS\nR\nU\nZ\nS\n ","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}
+{"page":9,"id":16,"obj":"label","x":260,"y":60,"w":40,"h":440,"text":"L\nA\nE\nV\nW\nI\nH\nN\nE\nF\n ","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}
+{"page":9,"id":17,"obj":"label","x":300,"y":60,"w":40,"h":440,"text":"F\nN\nR\nO\n\u00d6\nE\nF\nV\nH\nM\n ","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}
+{"page":9,"id":18,"obj":"label","x":340,"y":60,"w":40,"h":440,"text":"\u00dc\nZ\nT\nR\nL\nB\n\u00dc\nI\nN\nU\n ","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}
+{"page":9,"id":19,"obj":"label","x":380,"y":60,"w":40,"h":440,"text":"N\nI\nE\nJ\nF\nE\nN\nE\nR\nH\n ","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}
+{"page":9,"id":20,"obj":"label","x":420,"y":60,"w":40,"h":440,"text":"F\nG\nL\nM\nP\nN\nF\nR\nS\nR\n ","text_color":"#A0A0A0","align":"center","enabled":1,"text_font":30,"action":{"down": "page back"}}

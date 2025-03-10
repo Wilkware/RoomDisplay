@@ -184,3 +184,4 @@ require_once __DIR__ . '/../libs/FormatHelper.php';
 require_once __DIR__ . '/../libs/ProfileHelper.php';
 require_once __DIR__ . '/../libs/VariableHelper.php';
 require_once __DIR__ . '/../libs/WebhookHelper.php';
+require_once __DIR__ . '/../libs/WidgetHelper.php';

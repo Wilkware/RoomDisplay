@@ -1,14 +1,12 @@
 {"comment":" ---------------------- Page 08 - ANALOG CLOCK ----------------------- "}
 {"page":8,"id":4,"obj":"img","src":"L:/bg10.png","auto_size":0,"w":480}
-{"page":8,"comment":" --- Stundenzeiger ---"}
+{"comment":" --- Stundenzeiger ---"}
 {"page":8,"id":10,"obj":"gauge","x":115,"y":135,"w":250,"h":250,"min":0,"max":720,"val":413,"critical_value":400,"label_count":0,"line_count":0,"border_width":0,"bg_opa":0,"line_width10":15,"line_rounded10":1,"pad_inner":-30,"text_font":30,"angle":360,"rotation":180,"line_width60":0,"line_color10":"#FFFFFF","bg_opa10":0}
-{"page":8,"comment":" --- Minutenzeiger ---"}
+{"comment":" --- Minutenzeiger ---"}
 {"page":8,"id":11,"obj":"gauge","x":65,"y":85,"w":350,"h":350,"min":0,"max":60,"val":52,"critical_value":80,"label_count":0,"line_count":0,"border_width":0,"bg_opa":0,"line_width10":10,"line_rounded10":1,"pad_inner":-10,"text_font":30,"angle":360,"rotation":180,"line_width60":0,"line_color10":"#FFFFFF","bg_opa10":0}
-{"page":8,"comment":" --- Sekundenzeiger ---"}
-{"page":8,"id":12,"obj":"gauge","x":65,"y":85,"w":350,"h":350,"min":0,"max":60,"val":0,"label_count":0,"line_count":0,"border_width":0,"bg_opa":0,"line_width10":5,"line_rounded10":1,"pad_inner":-10,"text_font":30,"angle":360,"rotation":180,"line_width60":0,"line_color10":"#FF0000","bg_opa10":0}
-{"page":8,"comment":" --- Stunden Skala ---"}
-{"page":8,"id":13,"obj":"linemeter","x":40,"y":60,"w":400,"h":400,"min":1,"max":12,"val":0,"line_count":13,"angle":360,"bg_opa":0,"scale_width":20,"border_width":0,"scale_end_color60":"#FFFFFF"}
-{"page":8,"comment":" --- Minuten Skala ---"}
-{"page":8,"id":14,"obj":"linemeter","x":40,"y":60,"w":400,"h":400,"min":1,"max":36,"val":0,"line_count":49,"angle":360,"bg_opa":0,"scale_width":8,"border_width":0,"scale_end_color60":"#FFFFFF"}
-{"page":8,"comment":" --- Zahlen ---"}
-{"page":8,"id":15,"obj":"gauge","x":70,"y":90,"w":340,"h":340,"min":1,"max":12,"val":1,"critical_value":30,"label_count":12,"line_count":0,"border_width":0,"bg_opa":0,"line_width10":0,"line_rounded10":1,"pad_inner":0,"text_font":20,"angle":330,"rotation":195,"hidden":0,"line_width60":0,"bg_opa10":255,"action":{"down": "page back"}}
+{"comment":" --- Stunden Skala ---"}
+{"page":8,"id":20,"obj":"linemeter","x":40,"y":60,"w":400,"h":400,"min":1,"max":12,"val":0,"line_count":13,"angle":360,"bg_opa":0,"scale_width":20,"border_width":0,"scale_end_color60":"#FFFFFF"}
+{"comment":" --- Minuten Skala ---"}
+{"page":8,"id":21,"obj":"linemeter","x":40,"y":60,"w":400,"h":400,"min":1,"max":36,"val":0,"line_count":49,"angle":360,"bg_opa":0,"scale_width":8,"border_width":0,"scale_end_color60":"#FFFFFF"}
+{"comment":" --- Zahlen ---"}
+{"page":8,"id":22,"obj":"gauge","x":70,"y":90,"w":340,"h":340,"min":1,"max":12,"val":1,"critical_value":30,"label_count":12,"line_count":0,"border_width":0,"bg_opa":0,"line_width10":0,"line_rounded10":1,"pad_inner":0,"text_font":20,"angle":330,"rotation":195,"hidden":0,"line_width60":0,"bg_opa10":255,"action":{"down": "page back"}}

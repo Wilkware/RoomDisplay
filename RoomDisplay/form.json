@@ -482,15 +482,15 @@
                     "items": [
                         {
                             "type": "SelectColor",
-                            "allowTransparent": "true",
                             "name": "VisuOnColor",
-                            "caption": "Tile background color (online):"
+                            "caption": "Tile background color (online):",
+                            "allowTransparent": true
                         },
                         {
                             "type": "SelectColor",
-                            "allowTransparent": "true",
                             "name": "VisuOffColor",
-                            "caption": "Tile background color (offline):"
+                            "caption": "Tile background color (offline):",
+                            "allowTransparent": true
                         }
                     ]
                 },
@@ -503,6 +503,330 @@
                     "type": "CheckBox",
                     "name": "VisuActionBar",
                     "caption": "Show action bar (Clear pages, Reload pages, Sync, Reboot)?"
+                }
+            ]
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "Widgets ...",
+            "items": [
+                {
+                    "type": "Label",
+                    "caption": "--- Analogue clock ---",
+                    "bold": true
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Label",
+                            "caption": "    "
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "Off"
+                        },
+                        {
+                            "type": "CheckBox",
+                            "name": "ClockCheck",
+                            "caption": "On"
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "      "
+                        },
+                        {
+                            "type": "Select",
+                            "name": "ClockPage",
+                            "caption": "Page:",
+                            "width": "150px",
+                            "options": [
+                                {
+                                    "caption": "1",
+                                    "value": 1
+                                },
+                                {
+                                    "caption": "2",
+                                    "value": 2
+                                },
+                                {
+                                    "caption": "3",
+                                    "value": 3
+                                },
+                                {
+                                    "caption": "4",
+                                    "value": 4
+                                },
+                                {
+                                    "caption": "5",
+                                    "value": 5
+                                },
+                                {
+                                    "caption": "6",
+                                    "value": 6
+                                },
+                                {
+                                    "caption": "7",
+                                    "value": 7
+                                },
+                                {
+                                    "caption": "8",
+                                    "value": 8
+                                },
+                                {
+                                    "caption": "9",
+                                    "value": 9
+                                },
+                                {
+                                    "caption": "10",
+                                    "value": 10
+                                },
+                                {
+                                    "caption": "11",
+                                    "value": 11
+                                },
+                                {
+                                    "caption": "12",
+                                    "value": 12
+                                }
+                            ]
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "ClockHour",
+                            "caption": "Hour hand (ID):",
+                            "width": "150px",
+                            "minimum": 1,
+                            "maximum": 254
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "ClockMinute",
+                            "caption": "Minute hand (ID):",
+                            "width": "150px",
+                            "minimum": 1,
+                            "maximum": 254
+                        }
+                    ]
+                },
+                {
+                    "type": "Label",
+                    "caption": "--- Qlocktwo Earth ---",
+                    "bold": true
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Label",
+                            "caption": "    "
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "Off"
+                        },
+                        {
+                            "type": "CheckBox",
+                            "name": "EarthCheck",
+                            "caption": "On"
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "      "
+                        },
+                        {
+                            "type": "Select",
+                            "name": "EarthPage",
+                            "caption": "Page:",
+                            "width": "150px",
+                            "options": [
+                                {
+                                    "caption": "1",
+                                    "value": 1
+                                },
+                                {
+                                    "caption": "2",
+                                    "value": 2
+                                },
+                                {
+                                    "caption": "3",
+                                    "value": 3
+                                },
+                                {
+                                    "caption": "4",
+                                    "value": 4
+                                },
+                                {
+                                    "caption": "5",
+                                    "value": 5
+                                },
+                                {
+                                    "caption": "6",
+                                    "value": 6
+                                },
+                                {
+                                    "caption": "7",
+                                    "value": 7
+                                },
+                                {
+                                    "caption": "8",
+                                    "value": 8
+                                },
+                                {
+                                    "caption": "9",
+                                    "value": 9
+                                },
+                                {
+                                    "caption": "10",
+                                    "value": 10
+                                },
+                                {
+                                    "caption": "11",
+                                    "value": 11
+                                },
+                                {
+                                    "caption": "12",
+                                    "value": 12
+                                }
+                            ]
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "EarthStart",
+                            "caption": "Starting row (ID):",
+                            "width": "150px",
+                            "minimum": 1,
+                            "maximum": 254
+                        },
+                        {
+                            "type": "SelectColor",
+                            "name": "EarthColor",
+                            "caption": "Highlight color:",
+                            "allowTransparent": false,
+                            "width": "150px"
+                        }
+                    ]
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Label",
+                            "caption": "      ",
+                            "width": "146px"
+                        },
+                        {
+                            "type": "CheckBox",
+                            "name": "EarthPrefix",
+                            "caption": "Display prefix ('ES IST')?",
+                            "width": "250px"
+                        },
+                        {
+                            "type": "CheckBox",
+                            "name": "EarthSuffix",
+                            "caption": "Display suffix ('UHR')?",
+                            "width": "250px"
+                        }
+                    ]
+                },
+                {
+                    "type": "Label",
+                    "caption": "--- Flip clock ---",
+                    "bold": true
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Label",
+                            "caption": "    "
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "Off"
+                        },
+                        {
+                            "type": "CheckBox",
+                            "name": "FlipCheck",
+                            "caption": "On"
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "      "
+                        },
+                        {
+                            "type": "Select",
+                            "name": "FlipPage",
+                            "caption": "Page:",
+                            "width": "150px",
+                            "options": [
+                                {
+                                    "caption": "1",
+                                    "value": 1
+                                },
+                                {
+                                    "caption": "2",
+                                    "value": 2
+                                },
+                                {
+                                    "caption": "3",
+                                    "value": 3
+                                },
+                                {
+                                    "caption": "4",
+                                    "value": 4
+                                },
+                                {
+                                    "caption": "5",
+                                    "value": 5
+                                },
+                                {
+                                    "caption": "6",
+                                    "value": 6
+                                },
+                                {
+                                    "caption": "7",
+                                    "value": 7
+                                },
+                                {
+                                    "caption": "8",
+                                    "value": 8
+                                },
+                                {
+                                    "caption": "9",
+                                    "value": 9
+                                },
+                                {
+                                    "caption": "10",
+                                    "value": 10
+                                },
+                                {
+                                    "caption": "11",
+                                    "value": 11
+                                },
+                                {
+                                    "caption": "12",
+                                    "value": 12
+                                }
+                            ]
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "FlipHour",
+                            "caption": "Hour flip (ID):",
+                            "width": "150px",
+                            "minimum": 1,
+                            "maximum": 254
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "FlipMinute",
+                            "caption": "Minute flip (ID):",
+                            "width": "150px",
+                            "minimum": 1,
+                            "maximum": 254
+                        }
+                    ]
                 }
             ]
         },

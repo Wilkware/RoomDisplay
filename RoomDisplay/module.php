@@ -15,6 +15,7 @@ class RoomDisplay extends IPSModule
     use ProfileHelper;
     use VariableHelper;
     use WebhookHelper;
+    use WidgetHelper;
 
     // Min IPS Object ID
     private const IPS_MIN_ID = 10000;
@@ -113,7 +114,21 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyString('Layout', '');
         // Design Objects
         $this->RegisterPropertyString('Objects', '[]');
-
+        // Widgets
+        $this->RegisterPropertyBoolean('ClockCheck', false);
+        $this->RegisterPropertyInteger('ClockPage', 8);
+        $this->RegisterPropertyInteger('ClockHour', 10);
+        $this->RegisterPropertyInteger('ClockMinute', 11);
+        $this->RegisterPropertyBoolean('EarthCheck', false);
+        $this->RegisterPropertyInteger('EarthPage', 9);
+        $this->RegisterPropertyInteger('EarthStart', 10);
+        $this->RegisterPropertyInteger('EarthColor', 0x00FF00);
+        $this->RegisterPropertyBoolean('EarthPrefix', true);
+        $this->RegisterPropertyBoolean('EarthSuffix', false);
+        $this->RegisterPropertyBoolean('FlipCheck', false);
+        $this->RegisterPropertyInteger('FlipPage', 10);
+        $this->RegisterPropertyInteger('FlipHour', 15);
+        $this->RegisterPropertyInteger('FlipMinute', 25);
         // Settings
         $this->RegisterPropertyBoolean('AutoDimBacklight', false);
         $this->RegisterPropertyInteger('AutoOffIdle', 255);
@@ -147,6 +162,7 @@ class RoomDisplay extends IPSModule
         $this->RegisterTimer('AntiburnTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", true);');
         $this->RegisterTimer('AntiburnLight', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "Antiburn", false);');
         $this->RegisterTimer('SwitchPageTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "SwitchPage", true);');
+        $this->RegisterTimer('ClockTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "ClockTick", false);');
 
         // Automatically connect to the MQTT server/splitter instance
         $this->ConnectParent(self::GUID_MQTT_IO);
@@ -192,8 +208,8 @@ class RoomDisplay extends IPSModule
         $this->RegisterProfileInteger('WWXRD.Idle', 'Hourglass', '', '', 0, 0, 0, $association);
         // Profile "WWXRD.Status"
         $association = [
-            [0, 'Offline', 'display-slash', 0x00FF00],
-            [1, 'Online', 'display', 0xFF0000],
+            [0, 'Offline', 'display-slash', 0xFF0000],
+            [1, 'Online', 'display', 0x00FF00],
         ];
         $this->RegisterProfileBoolean('WWXRD.Status', 'Display', '', '', $association);
         // Profile "WWXRD.Backlight"
@@ -366,6 +382,9 @@ class RoomDisplay extends IPSModule
                 break;
             case 'SwitchPage':
                 $this->PageSwitch();
+                break;
+            case 'ClockTick':
+                $this->TickClock($value);
                 break;
         }
     }
@@ -947,6 +966,7 @@ class RoomDisplay extends IPSModule
                     $this->SetValue('Idle', 0);
                     $this->SetTimerInterval('AntiburnTimer', 0);
                     $this->SetTimerInterval('SwitchPageTimer', 0);
+                    $this->SetTimerInterval('ClockTimer', 0);
                     if (!$this->ReadAttributeBoolean('SyncData')) {
                         $this->SendDebug(__FUNCTION__, 'Synchronize()');
                         $this->Synchronize();
@@ -957,17 +977,22 @@ class RoomDisplay extends IPSModule
                 $this->SendDebug(__FUNCTION__, 'SetBacklight($data)');
                 $this->SetBacklight($data);
             }
-            if ($this->ReadPropertyBoolean('AutoShutdownBacklight') && $data == 'long') {
-                $this->SetTimerInterval('AntiburnTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoAntiburnCycle'));
-            }
-            if ($this->ReadPropertyBoolean('PageOneOnIdle') && $data == 'long') {
-                $this->SendCommand('page=' . $this->ReadPropertyInteger('PageOnIdle'));
-            }
-            if ($this->ReadPropertyBoolean('AutoSwitchPage') && $data == 'long') {
-                $this->SetTimerInterval('SwitchPageTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoSwitchInterval'));
-            }
-            if ($this->ReadPropertyBoolean('SyncOnIdle') && $data == 'long') {
-                $this->WriteAttributeBoolean('SyncData', false);
+            if ($data == 'long') {
+                if ($this->ReadPropertyBoolean('AutoShutdownBacklight')) {
+                    $this->SetTimerInterval('AntiburnTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoAntiburnCycle'));
+                }
+                if ($this->ReadPropertyBoolean('PageOneOnIdle')) {
+                    $this->SendCommand('page=' . $this->ReadPropertyInteger('PageOnIdle'));
+                }
+                if ($this->ReadPropertyBoolean('AutoSwitchPage')) {
+                    $this->SetTimerInterval('SwitchPageTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoSwitchInterval'));
+                }
+                if ($this->ReadPropertyBoolean('SyncOnIdle')) {
+                    $this->WriteAttributeBoolean('SyncData', false);
+                }
+                if ($this->ReadPropertyBoolean('ClockCheck') || $this->ReadPropertyBoolean('EarthCheck') || $this->ReadPropertyBoolean('FlipCheck')) {
+                    $this->TickClock(true);
+                }
             }
         }
 
@@ -1878,6 +1903,43 @@ class RoomDisplay extends IPSModule
         } else {
             $this->SendCommand('page=next');
         }
+    }
+
+    /**
+     * Update time of the widget clock(s) if enabled.
+     *
+     * @param bool $interval Indicator if to calcolate the seconds to the next minute or not.
+     */
+    private function TickClock(bool $interval)
+    {
+        $this->SendDebug(__FUNCTION__, 'Interval: ' . boolval($interval), 0);
+
+        if ($this->ReadPropertyBoolean('ClockCheck')) {
+            $page = $this->ReadPropertyInteger('ClockPage');
+            $hour = $this->ReadPropertyInteger('ClockHour');
+            $minute = $this->ReadPropertyInteger('ClockMinute');
+            $this->AnalougeClock($page, $hour, $minute);
+        }
+        if ($this->ReadPropertyBoolean('EarthCheck')) {
+            $page = $this->ReadPropertyInteger('EarthPage');
+            $start = $this->ReadPropertyInteger('EarthStart');
+            $color = $this->ReadPropertyInteger('EarthColor');
+            $prefix = $this->ReadPropertyBoolean('EarthPrefix');
+            $suffix = $this->ReadPropertyBoolean('EarthSuffix');
+            $this->QlocktwoEarth($page, $start, $color, $prefix, $suffix);
+        }
+        if ($this->ReadPropertyBoolean('FlipCheck')) {
+            $page = $this->ReadPropertyInteger('FlipPage');
+            $hour = $this->ReadPropertyInteger('FlipHour');
+            $minute = $this->ReadPropertyInteger('FlipMinute');
+            $this->FlipClock($page, $hour, $minute);
+        }
+
+        $sec1min = 60;  // base 1 minute = 60 seconds
+        if ($interval) {
+            $sec1min = $sec1min - (int) date('s');
+        }
+        $this->SetTimerInterval('ClockTimer', $sec1min * 1000);
     }
 
     /**

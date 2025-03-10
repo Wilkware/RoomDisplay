@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.5.20250305-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-3.5.20250310-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -130,6 +130,25 @@ Kachelhintergrundfarbe (offline)       | Farbauswahl für den Zustand 'OFFLINE'
 Navigationsleiste anzeigen (Vor, Zurück, Weiter)?  | Schaltet die Anzeige der Navigationsbuttons an bzw. aus
 Aktionsleiste anzeigen (Seiten löschen, Seiten neu laden, Synchronisieren, Neustart) | Schaltet die Anzeige der Aktionsbuttons an bzw. aus
 
+> Widgets …
+
+Name                                   | Beschreibung
+-------------------------------------- | ----------------------------------
+An / Aus (Analoguhr)                   | Aktualisierung der Uhrzeit an bzw-ausschalten
+Seite (Analoguhr)                      | Seiten ID, auf welche sich die Uhr befindet
+Stundenzeiger (Analoguhr)              | Gauge ID des Stundenzeigers
+Minutenzeiger (Analoguhr)              | Gauge ID des Minutenzeigers
+An / Aus  (Qlocktwo Earth)             | Aktualisierung der Uhrzeit an bzw-ausschalten
+Seite (Qlocktwo Earth)                 | Seiten ID, auf welche sich die Uhr befindet
+Startreihe (Qlocktwo Earth)            | Label ID der ersten durchnummerierten Textreihe
+Hervorhebungsfarbe (Qlocktwo Earth)    | Farbe, welche zur hervorhebung der Uhrzeit genutzt werden soll
+Präfix anzeigen (Qlocktwo Earth)       | Schalter, ob die Wörter "ES IST" immer hervorgehoben werden sollen
+Suffix anzeigen (Qlocktwo Earth)       | Schalter, ob das Wort "UHR" immer hervorgehoben werden sollen (sonst nur wenn notwendig)
+An / Aus (Fallblattuhr)                | Aktualisierung der Uhrzeit an bzw-ausschalten
+Seite (Fallblattuhr)                   | Seiten ID, auf welche sich die Uhr befindet
+Stundenfallblatt (Fallblattuhr)        | Start ID des Labels, welches die Stunden darstellt
+Minutenfallblatt (Fallblattuhr)        | Start ID des Labels, welches die Minuten darstellt
+
 > Erweiterte Einstellungen …
 
 Name                                   | Beschreibung
@@ -223,6 +242,11 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox','text' => 'A message box with two buttons','options' => ['Open','Close']]);`
 
 ### 8. Versionshistorie
+
+v3.6.20250310
+* _NEU_: Unterstützung von Uhren-Widgets für Leerlaufzeiten
+* _NEU_: Vorlagen für die Widgets Analoguhr, Qlocktwo Earth und Fallblattuhr (docs Verzeichnis)
+* _FIX_: Status Profil - vertauschte Farben - korriegiert
 
 v3.5.20250305
 * _NEU_: Neuer Platzhalter {{fmt}} für profilformatierte Werte wird jetzt auch bei Wert und Beschriftung unterstützt
