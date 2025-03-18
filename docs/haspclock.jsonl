@@ -1,0 +1,8 @@
+{"comment":" ---------------------- Page 11 - HASP CLOCK ----------------------- "}
+{"page":11,"id":4,"obj":"img","src":"L:/bg10.png","auto_size":0,"w":480,"action":{"down": "page back"}}
+{"comment":" --- Minutenkreis ---"}
+{"page":11,"id":10,"obj":"arc","x":70,"y":90,"w":340,"h":340,"min":0,"max":100,"enabled":0,"type":0,"rotation":270,"start_angle":0,"end_angle":360,"adjustable":false,"val":75,"bg_opa":130,"line_width":12,"line_width10":12,"line_color1":"#FF9800","line_color":"#FFFFFF","line_opa":90,"border_side":0}
+{"page":11,"id":11,"obj":"line","points":[[240,165],[240,355]],"auto_size":1,"y_invert":0,"line_color":"#B0B0B0","line_width":2}
+{"comment":" --- Minutenkreis ---"}
+{"page":11,"id":20,"obj":"label","x":90,"y":185,"w":300,"h":150,"text":"00 00","template":"%H  %M","text_color":"#FFFFFF","align":"center","text_font":96}
+{"page":11,"id":21,"obj":"label","x":100,"y":305,"w":300,"h":120,"text":"01 Mon","template":"%d      %a","text_color":"#FFFFFF","align":"center","text_opa":100, "text_font":42}

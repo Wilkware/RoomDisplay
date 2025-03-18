@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.5.20250310-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-3.7.20250318-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -92,25 +92,33 @@ Geräteadresse               | IP ist optional , aber ohne gehen Downloads von S
 Name                        | Beschreibung
 --------------------------- | ----------------------------------
 Datei (pages.jsonl)         | JSONL formatierter Inhalt zur Syncronisierung des Seitenaufbaus
-HERUNTERLADEN               | Schalter um den Seitenaufbau vom Gerät herunterzuladen
-HOCHRLADEN                  | Schalter um den Seitenaufbau zum Gerät senden.
-SICHERN                     | Schalter um den Seitenaufbau vom Gerät herunterzuladen und in eine Datei zu schreiben.
-PRÜFEN                      | Schalter um den Inhalt des Seitenaufbaus auf JSONL Konformität zu prüfen.
-EINLESEN                    | Startet den Prozess zum Einlesen und Umwandeln des Seitenaufbaus in eine Objektzuordnung.
+HERUNTERLADEN¹              | Schalter um den Seitenaufbau vom Gerät herunterzuladen
+HOCHRLADEN²                 | Schalter um den Seitenaufbau zum Gerät senden.
+SICHERN¹                    | Schalter um den Seitenaufbau vom Gerät herunterzuladen und in eine Datei zu schreiben.
+PRÜFEN²                     | Schalter um den Inhalt des Seitenaufbaus auf JSONL Konformität zu prüfen.
+EINLESEN³                   | Startet den Prozess zum Einlesen und Umwandeln des Seitenaufbaus in eine Objektzuordnung.
+
+¹) Bei dieser Aktion werden die Daten direkt vom Gerät (Display) heruntergeladen und weiterverarbeitet.  
+²) Bei dieser Aktion werden die aktuell im Konfigurationsformular angezeigten Daten verwendet, ungeachtet ihres Speicherstatus.  
+³) Bei dieser Aktion werden die aktuell gespeicherten Daten der Instanz verwendet (müssen nicht mit den aktuell angezeigten Daten übereinstimmen).  
 
 > Objektzuordnung …
 
 Name                        | Beschreibung
 --------------------------- | ----------------------------------
 Objekte                     | Table zur Zuordnung zwischen UI- und IPS-Objekt
-DUPLIZIEREN                 | Schalter um selektierte Zeile zu duplizieren (und gleich einzusortieren)
-NEUSORTIEREN                | Schalter um die Liste endsprechend _Seite_ und _ID_ zu sortieren
-PRÜFEN                      | Schalter um die hinterlegten Eingaben (Berechnungen) eines ausgewählten Eintrag zu prüfen.
-ABGLEICHEN                  | Schalter um die hinterlegten Objekte mit dem Inhalt des Seitenaufbaus gegen zu prüfen.
-ÜBERTRAGEN                  | Öffnet ein Dialog um die zuvor selektierten Zeilen in eine Datei zu exportieren, oder eine abgespeicherte Konfiguration aus einer Datei zu importieren.
-⧉                          | Schalter um den Zustand der Auswahlboxen umzukehren, der Zustand verwendet die Checkbox des ersten Elementes für den (Umkehr-)Folgezustand.
+AUSWAHL¹                    | Schalter um den Zustand der Auswahlboxen umzukehren, Basis ist die Checkbox des ersten Elementes
+LÖSCHEN¹                    | Schalter um selektierte Zeile zu löschen
+DUPLIZIEREN¹                | Schalter um selektierte Zeile zu duplizieren (und gleich einzusortieren)
+PRÜFEN¹                     | Schalter um die hinterlegten Eingaben (Berechnungen) eines ausgewählten Eintrag zu prüfen.
+ÜBERTRAGEN¹                 | Öffnet ein Dialog um die zuvor selektierten Zeilen in eine Datei zu exportieren, oder eine abgespeicherte Konfiguration aus einer Datei zu importieren.
+NEUSORTIEREN²               | Schalter um die Liste endsprechend _Seite_ und _ID_ zu sortieren
+ABGLEICHEN²                 | Schalter um die hinterlegten Objekte mit dem Inhalt des Seitenaufbaus gegen zu prüfen. den (Umkehr-)Folgezustand.
 
-Hier eine kurze Erklärung der Spalten:
+¹) Diese Aktionen verwenden die aktuell ausgewählten Daten aus der Objektliste.  
+²) Diese Aktionen verwenden alle Daten aus der Objektliste, unabhängig von ihrem Auswahlstatus.  
+
+__Hier eine kurze Erklärung der Spalten:__
 
 * Spalte mit Checkboxen für die Auswahl der Objekte für ein Export (Schalter: Übertragen)
 * _Typ_, _Seite_ und _ID_ - sollten selbsterklärend sein und identifizieren das UI-Object
@@ -148,6 +156,9 @@ An / Aus (Fallblattuhr)                | Aktualisierung der Uhrzeit an bzw-aussc
 Seite (Fallblattuhr)                   | Seiten ID, auf welche sich die Uhr befindet
 Stundenfallblatt (Fallblattuhr)        | Start ID des Labels, welches die Stunden darstellt
 Minutenfallblatt (Fallblattuhr)        | Start ID des Labels, welches die Minuten darstellt
+An / Aus (HASP-Uhr)                    | Aktualisierung der Uhrzeit an bzw-ausschalten
+Seite (HASP-Uhr)                       | Seiten ID, auf welche sich die Uhr befindet
+Minutenkreis (HASP-Uhr)                | Objekt ID des Kreises(Arc), welches die Minuten darstellt
 
 > Erweiterte Einstellungen …
 
@@ -243,10 +254,21 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox'
 
 ### 8. Versionshistorie
 
+v3.7.20250318
+* _NEU_: Konfigurationsformular überarbeitet (Aktionshinweise, Anordnung uvm.)
+* _NEU_: Löschen von ausgewählten Objektmappings (Mehrfachauswahl)
+* _NEU_: Duplizierung von ausgewählten Objektmappings (Mehrfachauswahl)
+* _NEU_: Neue Prüfungsmethodik eingeführt (nur noch über Checkbox); Mehrfachauswahl listet fehlerbehaftete Mappings auf; Einfachauswahl zeigt einzelne Verarbeitungsergebnise an
+* _NEU_: Neues Uhren-Widgets HASP
+* _NEU_: Vorlagen für die Widgets können jetzt direkt angezeigt werden (Button) und dadurch einfaches Kopieren ermöglicht
+* _FIX_: Fehler in Prüfung korrigiert
+* _FIX_: Aufwachen beschleunigt (Hintergrundlicht vor Synchronisierung)
+* _FIX_: Einige Übersetzungsfehler korrigiert
+
 v3.6.20250310
 * _NEU_: Unterstützung von Uhren-Widgets für Leerlaufzeiten
 * _NEU_: Vorlagen für die Widgets Analoguhr, Qlocktwo Earth und Fallblattuhr (docs Verzeichnis)
-* _FIX_: Status Profil - vertauschte Farben - korriegiert
+* _FIX_: Status Profil - vertauschte Farben - korrigiert
 
 v3.5.20250305
 * _NEU_: Neuer Platzhalter {{fmt}} für profilformatierte Werte wird jetzt auch bei Wert und Beschriftung unterstützt

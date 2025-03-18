@@ -129,6 +129,9 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyInteger('FlipPage', 10);
         $this->RegisterPropertyInteger('FlipHour', 15);
         $this->RegisterPropertyInteger('FlipMinute', 25);
+        $this->RegisterPropertyBoolean('HaspCheck', false);
+        $this->RegisterPropertyInteger('HaspPage', 11);
+        $this->RegisterPropertyInteger('HaspMinute', 10);
         // Settings
         $this->RegisterPropertyBoolean('AutoDimBacklight', false);
         $this->RegisterPropertyInteger('AutoOffIdle', 255);
@@ -362,6 +365,12 @@ class RoomDisplay extends IPSModule
             case 'LayoutParse':
                 $this->ParseLayout($value);
                 break;
+            case 'MappingSelect':
+                $this->SelectMapping($value);
+                break;
+            case 'MappingDelete':
+                $this->DeleteMapping($value);
+                break;
             case 'MappingCopy':
                 $this->UpdateMapping($value, true);
                 break;
@@ -377,11 +386,11 @@ class RoomDisplay extends IPSModule
             case 'MappingTransfer':
                 $this->TransferMapping($value);
                 break;
-            case 'MappingSelect':
-                $this->SelectMapping($value);
-                break;
             case 'SwitchPage':
                 $this->PageSwitch();
+                break;
+            case 'ShowPage':
+                $this->PageShow($value);
                 break;
             case 'ClockTick':
                 $this->TickClock($value);
@@ -952,6 +961,10 @@ class RoomDisplay extends IPSModule
         $objects = json_decode($this->ReadPropertyString('Objects'), true);
         // Is idle?
         if ($topic == 'idle') {
+            if ($this->ReadPropertyBoolean('AutoDimBacklight')) {
+                $this->SendDebug(__FUNCTION__, 'SetBacklight($data)');
+                $this->SetBacklight($data);
+            }
             switch ($data) {
                 case 'short':
                     if ($this->ProcessIdle()) {
@@ -973,10 +986,6 @@ class RoomDisplay extends IPSModule
                     }
                     $this->WriteAttributeBoolean('SyncData', true);
             }
-            if ($this->ReadPropertyBoolean('AutoDimBacklight')) {
-                $this->SendDebug(__FUNCTION__, 'SetBacklight($data)');
-                $this->SetBacklight($data);
-            }
             if ($data == 'long') {
                 if ($this->ReadPropertyBoolean('AutoShutdownBacklight')) {
                     $this->SetTimerInterval('AntiburnTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoAntiburnCycle'));
@@ -990,7 +999,7 @@ class RoomDisplay extends IPSModule
                 if ($this->ReadPropertyBoolean('SyncOnIdle')) {
                     $this->WriteAttributeBoolean('SyncData', false);
                 }
-                if ($this->ReadPropertyBoolean('ClockCheck') || $this->ReadPropertyBoolean('EarthCheck') || $this->ReadPropertyBoolean('FlipCheck')) {
+                if ($this->ReadPropertyBoolean('ClockCheck') || $this->ReadPropertyBoolean('EarthCheck') || $this->ReadPropertyBoolean('FlipCheck') || $this->ReadPropertyBoolean('HaspCheck')) {
                     $this->TickClock(true);
                 }
             }
@@ -1298,15 +1307,21 @@ class RoomDisplay extends IPSModule
         // duplicate/copy
         if ($copy) {
             // how many lines in the list?
-            $last = count($list);
-            // last line has copy page & id
-            sscanf($list[$last - 1], 'p%db%d', $page, $id);
-            // copy line to last
-            for ($index = 0; $index < $last; $index++) {
-                if (($list[$index]['Page'] == $page) && ($list[$index]['Id'] == $id)) {
-                    $list[$last - 1] = $list[$index];
-                    break;
+            $count = count($list);
+            $dup = 0;
+            for ($index = 0; $index < $count; $index++) {
+                if ($list[$index]['_']) {
+                    $object = $list[$index];
+                    // delete selection flag from original
+                    $list[$index]['_'] = false;
+                    // copy to the end
+                    $list[] = $object;
+                    $dup++;
                 }
+            }
+            if ($dup == 0) {
+                $this->EchoMessage('No entry selected from the object list!');
+                return;
             }
         }
         // sort
@@ -1331,48 +1346,77 @@ class RoomDisplay extends IPSModule
      */
     private function CheckMapping(string $value)
     {
-        $data = json_decode($value, true);
-        if (empty($data)) {
+        $lines = json_decode($value, true);
+        if (empty($lines)) {
             $this->EchoMessage('No entry selected from the object list!');
             return;
         }
-        if ($data[0]['Link'] < self::IPS_MIN_ID) {
-            $this->EchoMessage('Entry does not contain a linked variable!');
-            return;
-        }
-        // Value für {{val}}
-        $value = GetValue($data[0]['Link']);
-        // Value für {{fmt}}
-        $formatted = GetValueFormatted($data[0]['Link']);
-        // Text für {{txt}}
-        $text = 'TXT';
-        // Calculation
-        $ecal = 'ok';
-        $cal = $value;
-        if ($data[0]['Calculation'] != '') {
-            $cal = $this->EvaluateString($data[0]['Calculation'], $value, $formatted, $text, $ecal);
-        }
-        // Value
-        $eval = 'ok';
-        $val = $cal;
-        if ($data[0]['Value'] != '') {
-            $val = $this->EvaluateString($data[0]['Value'], $cal, $formatted, $text, $eval);
-        }
-        // Caption
-        $etxt = 'ok';
-        $txt = '';
-        if ($data[0]['Caption'] != '') {
-            $txt = $this->EvaluateString($data[0]['Caption'], $cal, $formatted, $text, $etxt);
-        }
-        // Recalculation
-        $erec = 'ok';
-        $rec = $val;
-        if ($data[0]['Recalculation'] != '') {
-            $rec = $this->EvaluateString($data[0]['Recalculation'], $val, $formatted, $text, $etxt);
+        $count = count($lines);
+        // run over the entries
+        $msg = $this->Translate("Value of the link:\t\t\t\t%s\nFormatted value:\t\t\t\t%s\nText default value:\t\t\tTXT\n\nValue after calculation:\t\t%s\nEvaluation of the calculation:\t%s\n\nValue (of value):\t\t\t\t%s\nEvaluation of value:\t\t\t%s\n\nValue of caption:\t\t\t\t%s\nEvaluation of caption:\t\t\t%s\n\nValue after recalculation:\t\t%s\nEvaluation of recalculation:\t%s");
+        $lastmsg = '';
+        $listmsg = '';
+        foreach ($lines as $line) {
+            if ($line['Link'] < self::IPS_MIN_ID) {
+                $lastmsg = 'Hint (Entry does not contain a linked variable!)';
+                $listmsg = $listmsg . $this->StringPrint($line, $this->Translate('Hint (No linked object!)'));
+                continue;
+            }
+            if (IPS_ObjectExists($line['Link'])) {
+                // 3(Script)
+                if (IPS_GetObject($line['Link'])['ObjectType'] == 3) {
+                    $lastmsg = 'Hint (The linked object is a script!)';
+                    $listmsg = $listmsg . $this->StringPrint($line, $this->Translate('Hint (Object is of type script!)'));
+                    continue;
+                }
+            } else {
+                $lastmsg = 'Hint (The linked object no longer exists!)';
+                $listmsg = $listmsg . $this->StringPrint($line, $this->Translate('Hint (Object no longer exists!)'));
+                continue;
+            }
+            // Value für {{val}}
+            $value = GetValue($line['Link']);
+            // Value für {{fmt}}
+            $formatted = GetValueFormatted($line['Link']);
+            // Text für {{txt}}
+            $text = 'TXT';
+            // Calculation
+            $ecal = 'ok';
+            $cal = $value;
+            if ($line['Calculation'] != '') {
+                $cal = $this->EvaluateString($line['Calculation'], $value, $formatted, $text, $ecal);
+            }
+            // Value
+            $eval = 'ok';
+            $val = $cal;
+            if ($line['Value'] != '') {
+                $val = $this->EvaluateString($line['Value'], $cal, $formatted, $text, $eval);
+            }
+            // Caption
+            $etxt = 'ok';
+            $txt = '';
+            if ($line['Caption'] != '') {
+                $txt = $this->EvaluateString($line['Caption'], $cal, $formatted, $text, $etxt);
+            }
+            // Recalculation
+            $erec = 'ok';
+            $rec = $val;
+            if ($line['Recalculation'] != '') {
+                $rec = $this->EvaluateString($line['Recalculation'], $val, $formatted, $text, $erec);
+            }
+            $lastmsg = sprintf($msg, $value, $formatted, $cal, $ecal, $val, $eval, $txt, $etxt, $rec, $erec);
+            if (stripos($lastmsg, 'error') !== false) {
+                $listmsg = $listmsg . $this->StringPrint($line, $this->Translate('Error'));
+            }
         }
         // Result
-        $msg = $this->Translate("Value of the link:\t\t\t\t%s\nFormatted value:\t\t\t\t%s\nText default value:\t\t\tTXT\n\nValue after calculation:\t\t%s\nEvaluation of the calculation:\t%s\n\nValue (of value):\t\t\t\t%s\nEvaluation of value:\t\t\t%s\n\nValue of caption:\t\t\t\t%s\nEvaluation of caption:\t\t\t%s\n\nValue after recalculation:\t\t%s\nEvaluation of recalculation:\t%s");
-        $this->EchoMessage(sprintf($msg, $value, $formatted, $cal, $ecal, $val, $eval, $txt, $etxt, $rec, $erec));
+        if ($count == 1) {
+            $listmsg = $lastmsg;
+        } elseif (empty($listmsg)) {
+            $listmsg = 'Successful (No errors found!)';
+        }
+        $this->SendDebug(__FUNCTION__, $listmsg);
+        $this->EchoMessage($listmsg);
     }
 
     /**
@@ -1453,6 +1497,29 @@ class RoomDisplay extends IPSModule
         }
         unset($object);
         //$this->SendDebug(__FUNCTION__, $this->SafePrint($list));
+        $this->UpdateFormField('Objects', 'values', json_encode($list));
+    }
+
+    /**
+     * Deletes selection of all entries in the objects list.
+     *
+     * @param string $value json encoded list
+     */
+    private function DeleteMapping(string $value)
+    {
+        $list = json_decode($value, true);
+        $del = 0;
+        foreach ($list as $key => $object) {
+            if ($object['_']) {
+                unset($list[$key]); // remove element
+                $del++;
+            }
+        }
+        if ($del == 0) {
+            $this->EchoMessage('No entry selected from the object list!');
+            return;
+        }
+        $list = array_values($list);
         $this->UpdateFormField('Objects', 'values', json_encode($list));
     }
 
@@ -1626,14 +1693,19 @@ class RoomDisplay extends IPSModule
             $eval = 'return (' . $eval . ');';
             $this->SendDebug(__FUNCTION__, 'eval: ' . $eval);
             try {
-                $code = eval($eval);
+                $code = @eval($eval);
                 if ($code === false) {
                     $code = '';
                 }
             } catch (ParseError $e) {
                 // Report error somehow
-                $error = $e->GetMessage();
-                $this->SendDebug(__FUNCTION__, 'RD Value: ' . $value . ',RD Type: ' . gettype($value) . ',RD Error' . $e->GetMessage() . ',RD Eval' . $eval . ',RD Subject: ' . $subject);
+                $error = 'Error (' . $e->GetMessage() . ')';
+                $this->SendDebug(__FUNCTION__, 'RD Value: ' . $value . ',RD Type: ' . gettype($value) . ',RD Error: ' . $e->GetMessage() . ',RD Eval: ' . $eval . ',RD Subject: ' . $subject);
+                $code = '';
+            } catch (Throwable $t) {
+                // Report error somehow
+                $error = 'Error (' . $t->GetMessage() . ')';
+                $this->SendDebug(__FUNCTION__, 'RD Value: ' . $value . ',RD Type: ' . gettype($value) . ',RD Error: ' . $t->GetMessage() . ',RD Eval: ' . $eval . ',RD Subject: ' . $subject);
                 $code = '';
             }
             return $code;
@@ -1658,6 +1730,39 @@ class RoomDisplay extends IPSModule
         $encoded = str_replace('\\\\', '\\', $encoded);
         $this->SendDebug(__FUNCTION__, $encoded);
         return $encoded;
+    }
+
+    private function StringPrint(array $data, string $result)
+    {
+        $line = '[' . $data['Page'] . ',' . $data['Id'] . ']';
+        $len = strlen($line);
+        switch ($len) {
+            case 5: $line .= "\t\t\t";
+                break;
+            case 6:
+            case 7: $line .= "\t\t";
+                break;
+            default:
+                $line .= "\t\t";
+        }
+        $mid = $this->GetType($data['Type']);
+        $len = strlen($mid);
+        switch ($len) {
+            case 3:
+            case 4: $mid .= "\t\t\t\t";
+                break;
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9: $mid .= "\t\t\t";
+                break;
+            case 10: $mid .= "\t\t";
+                break;
+            default:
+                $mid .= "\t";
+        }
+        return $line . $mid . $result . "\n";
     }
 
     /**
@@ -1935,6 +2040,12 @@ class RoomDisplay extends IPSModule
             $this->FlipClock($page, $hour, $minute);
         }
 
+        if ($this->ReadPropertyBoolean('HaspCheck')) {
+            $page = $this->ReadPropertyInteger('HaspPage');
+            $minute = $this->ReadPropertyInteger('HaspMinute');
+            $this->HaspClock($page, $minute);
+        }
+
         $sec1min = 60;  // base 1 minute = 60 seconds
         if ($interval) {
             $sec1min = $sec1min - (int) date('s');
@@ -1947,9 +2058,22 @@ class RoomDisplay extends IPSModule
      *
      * @param string $caption Echo message text
      */
+    private function PageShow(string $file)
+    {
+        $text = file_get_contents(__DIR__ . '/../docs/' . $file . '.jsonl');
+        $this->UpdateFormField('JSONL', 'value', $text);
+        $this->UpdateFormField('EchoText', 'visible', true);
+    }
+
+    /**
+     * Show message via popup.
+     *
+     * @param string $caption Echo message text
+     */
     private function EchoMessage(string $caption)
     {
         $this->UpdateFormField('EchoMessage', 'caption', $this->Translate($caption));
         $this->UpdateFormField('EchoPopup', 'visible', true);
     }
+
 }

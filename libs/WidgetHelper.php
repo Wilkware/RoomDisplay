@@ -66,6 +66,31 @@ trait WidgetHelper
         $this->SetItemText($page, $minute++, $m[1]);
     }
 
+    /**
+     * Sets the time of an hasp circle clock.
+     *
+     * @param int $page Page ID
+     * @param int $minute Minute circle arc ID
+     */
+    protected function HaspClock(int $page, int $minute)
+    {
+        // Current time
+        $m = date('i');    // Actual minute (00 - 59)
+        $val = intval(($m * 100) / 60);
+        // minute flip
+        $this->SetItemValue($page, $minute++, $val);
+    }
+
+    /**
+     * Sets the time of an Qlocktwo eartch clock.
+     *
+     * @param int $page Page ID
+     * @param int $row Start row ID
+     * @param int $color Color of the marked words
+     * @param bool $prefix Show prefix if true, otherwise not.
+     * @param bool $suffix Show sufffix if true, otherwise not.
+     * @param bool $clock Show always the word 'UHRÄ if true, otherwise not.
+     */
     protected function QlocktwoEarth(int $page, int $row, int $color, bool $prefix = true, $suffix = true, $clock = true)
     {
         // Die 10 horizontalen Reihen der QLOCKTWO

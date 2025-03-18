@@ -51,7 +51,7 @@
                 {
                     "type": "ValidationTextBox",
                     "name": "Layout",
-                    "caption": "File (page.jsonl):",
+                    "caption": "File (pages.jsonl):",
                     "width": "90%",
                     "multiline": true
                 },
@@ -60,32 +60,32 @@
                     "items": [
                         {
                             "type": "Button",
-                            "caption": "Download",
+                            "caption": "Download¹",
                             "onClick": "IPS_RequestAction($id,'LayoutLoad', $Layout);",
                             "enabled": false
                         },
                         {
                             "type": "Button",
-                            "caption": "Upload",
+                            "caption": "Upload²",
                             "onClick": "IPS_RequestAction($id,'LayoutSave', $Layout);",
                             "enabled": false
                         },
                         {
                             "type": "Button",
-                            "caption": "Backup",
+                            "caption": "Backup¹",
                             "onClick": "echo \"../hook/plate$id?file=pages\";",
                             "link": true,
                             "enabled": false
                         },
                         {
                             "type": "Button",
-                            "caption": "Validate",
+                            "caption": "Validate²",
                             "onClick": "IPS_RequestAction($id,'LayoutCheck', $Layout);",
                             "enabled": true
                         },
                         {
                             "type": "PopupButton",
-                            "caption": "Parse",
+                            "caption": "Parse³",
                             "popup": {
                                 "caption": "Parse",
                                 "items": [
@@ -121,6 +121,18 @@
                             }
                         }
                     ]
+                },
+                {
+                    "type": "Label",
+                    "caption": "¹) With this action, the data is downloaded directly from the device (display) and processed further."
+                },
+                {
+                    "type": "Label",
+                    "caption": "²) This action uses the data currently displayed in the configuration form, regardless of its memory status."
+                },
+                {
+                    "type": "Label",
+                    "caption": "³) This action uses the currently saved data of the instance (does not have to match the currently displayed data)."
                 }
             ]
         },
@@ -376,26 +388,33 @@
                     "items": [
                         {
                             "type": "Button",
-                            "name": "CopyMapping",
-                            "caption": "Duplicate",
+                            "caption": "Selection",
                             "width": "125px",
                             "onClick": [
-                                "if (!isset($Objects['Id'])) { return; };",
                                 "$list= [];",
                                 "foreach ($Objects as $line) { $list[] = $line;};",
-                                "$list[] = 'p' . $Objects['Page'] . 'b' . $Objects['Id'];",
-                                "IPS_RequestAction($id,'MappingCopy', json_encode($list));"
+                                "IPS_RequestAction($id,'MappingSelect', json_encode($list));"
                             ]
                         },
                         {
                             "type": "Button",
-                            "name": "SortMapping",
-                            "caption": "Re-Sort",
+                            "caption": "Delete",
                             "width": "125px",
                             "onClick": [
                                 "$list= [];",
                                 "foreach ($Objects as $line) { $list[] = $line;};",
-                                "IPS_RequestAction($id,'MappingSort', json_encode($list));"
+                                "IPS_RequestAction($id,'MappingDelete', json_encode($list));"
+                            ]
+                        },
+                        {
+                            "type": "Button",
+                            "name": "CopyMapping",
+                            "caption": "Duplicate",
+                            "width": "125px",
+                            "onClick": [
+                                "$list= [];",
+                                "foreach ($Objects as $line) { $list[] = $line;};",
+                                "IPS_RequestAction($id,'MappingCopy', json_encode($list));"
                             ]
                         },
                         {
@@ -405,25 +424,13 @@
                             "width": "125px",
                             "onClick": [
                                 "$list= [];",
-                                "foreach ($Objects as $line) { if (isset($Objects['Id']) && ($Objects['Id'] == $line['Id']) && ($Objects['Page'] == $line['Page'])) { $list[] = $line; }};",
+                                "foreach ($Objects as $line) { if ($line['_']) $list[] = $line;};",
                                 "IPS_RequestAction($id,'MappingTest', json_encode($list));"
-                            ]
-                        },
-                        {
-                            "type": "Button",
-                            "name": "MatchMapping",
-                            "caption": "Match",
-                            "width": "125px",
-                            "onClick": [
-                                "$list= [];",
-                                "foreach ($Objects as $line) { $list[] = $line;};",
-                                "IPS_RequestAction($id,'MappingMatch', json_encode($list));"
                             ]
                         },
                         {
                             "type": "PopupButton",
                             "caption": "Transfer",
-                            "width": "125px",
                             "popup": {
                                 "caption": "Transfer",
                                 "items": [
@@ -461,15 +468,40 @@
                             }
                         },
                         {
+                            "type": "Label",
+                            "label": "   ¹|²   "
+                        },
+                        {
                             "type": "Button",
-                            "caption": "⧉",
+                            "name": "SortMapping",
+                            "caption": "Re-Sort",
+                            "width": "125px",
                             "onClick": [
                                 "$list= [];",
                                 "foreach ($Objects as $line) { $list[] = $line;};",
-                                "IPS_RequestAction($id,'MappingSelect', json_encode($list));"
+                                "IPS_RequestAction($id,'MappingSort', json_encode($list));"
+                            ]
+                        },
+                        {
+                            "type": "Button",
+                            "name": "MatchMapping",
+                            "caption": "Match",
+                            "width": "125px",
+                            "onClick": [
+                                "$list= [];",
+                                "foreach ($Objects as $line) { $list[] = $line;};",
+                                "IPS_RequestAction($id,'MappingMatch', json_encode($list));"
                             ]
                         }
                     ]
+                },
+                {
+                    "type": "Label",
+                    "caption": "¹) These actions use the currently selected data from the object list."
+                },
+                {
+                    "type": "Label",
+                    "caption": "²) These actions use all data from the object list, regardless of their selection status."
                 }
             ]
         },
@@ -606,6 +638,16 @@
                             "width": "150px",
                             "minimum": 1,
                             "maximum": 254
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "    "
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "Page layout",
+                            "onClick": "IPS_RequestAction($id,'ShowPage','clock');",
+                            "enabled": true
                         }
                     ]
                 },
@@ -704,6 +746,16 @@
                             "caption": "Highlight color:",
                             "allowTransparent": false,
                             "width": "150px"
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "    "
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "Page layout",
+                            "onClick": "IPS_RequestAction($id,'ShowPage','qlocktwo');",
+                            "enabled": true
                         }
                     ]
                 },
@@ -825,6 +877,122 @@
                             "width": "150px",
                             "minimum": 1,
                             "maximum": 254
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "    "
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "Page layout",
+                            "onClick": "IPS_RequestAction($id,'ShowPage','flipclock');",
+                            "enabled": true
+                        }
+                    ]
+                },
+                {
+                    "type": "Label",
+                    "caption": "--- Hasp clock ---",
+                    "bold": true
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Label",
+                            "caption": "    "
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "Off"
+                        },
+                        {
+                            "type": "CheckBox",
+                            "name": "HaspCheck",
+                            "caption": "On"
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "      "
+                        },
+                        {
+                            "type": "Select",
+                            "name": "HaspPage",
+                            "caption": "Page:",
+                            "width": "150px",
+                            "options": [
+                                {
+                                    "caption": "1",
+                                    "value": 1
+                                },
+                                {
+                                    "caption": "2",
+                                    "value": 2
+                                },
+                                {
+                                    "caption": "3",
+                                    "value": 3
+                                },
+                                {
+                                    "caption": "4",
+                                    "value": 4
+                                },
+                                {
+                                    "caption": "5",
+                                    "value": 5
+                                },
+                                {
+                                    "caption": "6",
+                                    "value": 6
+                                },
+                                {
+                                    "caption": "7",
+                                    "value": 7
+                                },
+                                {
+                                    "caption": "8",
+                                    "value": 8
+                                },
+                                {
+                                    "caption": "9",
+                                    "value": 9
+                                },
+                                {
+                                    "caption": "10",
+                                    "value": 10
+                                },
+                                {
+                                    "caption": "11",
+                                    "value": 11
+                                },
+                                {
+                                    "caption": "12",
+                                    "value": 12
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "      ",
+                            "width": "150px"
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "HaspMinute",
+                            "caption": "Minute circle (ID):",
+                            "width": "150px",
+                            "minimum": 1,
+                            "maximum": 254
+                        },
+                        {
+                            "type": "Label",
+                            "caption": "    "
+                        },
+                        {
+                            "type": "Button",
+                            "caption": "Page layout",
+                            "onClick": "IPS_RequestAction($id,'ShowPage','haspclock');",
+                            "enabled": true
                         }
                     ]
                 }
@@ -1113,6 +1281,22 @@
                         "type": "Label",
                         "name": "EchoMessage",
                         "caption": ""
+                    }
+                ]
+            }
+        },
+        {
+            "name": "EchoText",
+            "type": "PopupAlert",
+            "visible": false,
+            "popup": {
+                "items": [
+                    {
+                        "type": "ValidationTextBox",
+                        "name": "JSONL",
+                        "caption": "Definition:",
+                        "multiline": true,
+                        "width": "900px"
                     }
                 ]
             }
