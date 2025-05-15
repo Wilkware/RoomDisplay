@@ -1011,6 +1011,11 @@
                     "type": "RowLayout",
                     "items": [
                         {
+                            "type": "Label",
+                            "caption": " ",
+                            "width": "40px"
+                        },
+                        {
                             "type": "NumberSpinner",
                             "name": "AutoOffIdle",
                             "caption": "Normal (no idle):",
@@ -1037,6 +1042,59 @@
                     ]
                 },
                 {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Label",
+                            "caption": " ",
+                            "width": "40px"
+                        },
+                        {
+                            "type": "SelectVariable",
+                            "name": "AutoDarkModeVariable",
+                            "caption": "Dark mode variable:",
+                            "validVariableTypes": [
+                                0
+                            ],
+                            "width": "408px"
+                        }
+                    ]
+                },
+                {
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Label",
+                            "caption": " ",
+                            "width": "40px"
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "AutoDarkOffIdle",
+                            "caption": "Normal (dark mode):",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "width": "200px"
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "AutoDarkShortIdle",
+                            "caption": "Short idle (dark mode):",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "width": "200px"
+                        },
+                        {
+                            "type": "NumberSpinner",
+                            "name": "AutoDarkLongIdle",
+                            "caption": "Long idle (dark mode):",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "width": "200px"
+                        }
+                    ]
+                },
+                {
                     "type": "CheckBox",
                     "name": "AutoShutdownBacklight",
                     "caption": "Activate burn-in protection automatically!"
@@ -1044,6 +1102,11 @@
                 {
                     "type": "RowLayout",
                     "items": [
+                        {
+                            "type": "Label",
+                            "caption": " ",
+                            "width": "40px"
+                        },
                         {
                             "type": "NumberSpinner",
                             "name": "AutoAntiburnCycle",
@@ -1055,8 +1118,7 @@
                         },
                         {
                             "type": "Label",
-                            "name": "AutoAntiburnLabel",
-                            "caption": "",
+                            "caption": " ",
                             "width": "200px"
                         },
                         {
@@ -1071,17 +1133,17 @@
                 },
                 {
                     "type": "CheckBox",
-                    "name": "SyncOnIdle",
-                    "caption": "No synchronization in idle!"
+                    "name": "PageOneOnIdle",
+                    "caption": "Switch to a specific page in idle mode!",
+                    "width": "408px"
                 },
                 {
                     "type": "RowLayout",
                     "items": [
                         {
-                            "type": "CheckBox",
-                            "name": "PageOneOnIdle",
-                            "caption": "Switch to a specific page in idle mode!",
-                            "width": "408px"
+                            "type": "Label",
+                            "caption": " ",
+                            "width": "40px"
                         },
                         {
                             "type": "NumberSpinner",
@@ -1102,6 +1164,11 @@
                 {
                     "type": "RowLayout",
                     "items": [
+                        {
+                            "type": "Label",
+                            "caption": " ",
+                            "width": "40px"
+                        },
                         {
                             "type": "ValidationTextBox",
                             "name": "AutoSwitchSelection",
@@ -1125,6 +1192,11 @@
                             "width": "200px"
                         }
                     ]
+                },
+                {
+                    "type": "CheckBox",
+                    "name": "SyncOnIdle",
+                    "caption": "No synchronization in idle!"
                 },
                 {
                     "type": "NumberSpinner",

@@ -137,6 +137,10 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyInteger('AutoOffIdle', 255);
         $this->RegisterPropertyInteger('AutoShortIdle', 50);
         $this->RegisterPropertyInteger('AutoLongIdle', 0);
+        $this->RegisterPropertyInteger('AutoDarkModeVariable', 1);
+        $this->RegisterPropertyInteger('AutoDarkOffIdle', 50);
+        $this->RegisterPropertyInteger('AutoDarkShortIdle', 10);
+        $this->RegisterPropertyInteger('AutoDarkLongIdle', 0);
         $this->RegisterPropertyBoolean('AutoShutdownBacklight', false);
         $this->RegisterPropertyInteger('AutoAntiburnCycle', 60);
         $this->RegisterPropertyInteger('AutoAntiburnBacklight', 0);
@@ -470,6 +474,11 @@ class RoomDisplay extends IPSModule
         if ($message == VM_UPDATE) {
             // only if values changed!
             if ($data[1] == true) {
+                // Dark Mode activation
+                if ($this->ReadPropertyInteger('AutoDarkModeVariable') == $sender) {
+                    $idle = GetValue($this->GetIDForIdent('Idle'));
+                    $this->SetBacklight(($idle == 0) ? 'off' : (($idle == 1) ? 'short' : 'long'));
+                }
                 if ($this->ReadAttributeBoolean('SyncData')) {
                     $objects = json_decode($this->ReadPropertyString('Objects'), true);
                     // Iterate over all objects
@@ -712,7 +721,14 @@ class RoomDisplay extends IPSModule
     private function SetBacklight(string $data)
     {
         $state = 'on';
-        $brightness = $this->ReadPropertyInteger('Auto' . ucfirst($data) . 'Idle');
+        $prefix = 'Auto';
+        $dmv = $this->ReadPropertyInteger('AutoDarkModeVariable');
+        if ($dmv >= self::IPS_MIN_ID) {
+            if (!GetValue($dmv)) {
+                $prefix .= 'Dark';
+            }
+        }
+        $brightness = $this->ReadPropertyInteger($prefix . ucfirst($data) . 'Idle');
         // adjust state & brigthness
         if ($brightness == 0) {
             $state = 'off';
@@ -754,6 +770,7 @@ class RoomDisplay extends IPSModule
                     // only 2(Variable) and 3(Script)
                     if ($type == 2) {
                         // Variables is supported for everyone
+                        $this->RegisterMessage($object['Link'], VM_UPDATE);
                     } elseif ($type == 3) {
                         if (($object['Type'] == self::UI_BUTTOM) ||
                             ($object['Type'] == self::UI_CHECKBOX) ||
@@ -772,7 +789,6 @@ class RoomDisplay extends IPSModule
                         }
                     }
                     $this->RegisterReference($object['Link']);
-                    $this->RegisterMessage($object['Link'], VM_UPDATE);
                 }
                 else {
                     $msg = $this->Translate('The assigned object #%d for page %d with id %d does not exist!');
@@ -782,6 +798,17 @@ class RoomDisplay extends IPSModule
                 }
             }
         }
+        // Register Script & DarkMode
+        $script = $this->ReadPropertyInteger('ForwardMessageScript');
+        if (IPS_ScriptExists($script)) {
+            $this->RegisterReference($script);
+        }
+        $variable = $this->ReadPropertyInteger('AutoDarkModeVariable');
+        if (IPS_VariableExists($variable)) {
+            $this->RegisterReference($variable);
+            $this->RegisterMessage($variable, VM_UPDATE);
+        }
+        // Return status
         return $state;
     }
 
@@ -1105,7 +1132,7 @@ class RoomDisplay extends IPSModule
                         $this->SendDebug(__FUNCTION__, 'SetValue(' . $object['Link'] . ', ' . $value . ')', 0);
                     }
                     else {
-                        $this->SendDebug(__FUNCTION__, 'No return toobject: ' . $object['Link'], 0);
+                        $this->SendDebug(__FUNCTION__, 'No return to object: ' . $object['Link'], 0);
                     }
                 }
             }
@@ -1595,8 +1622,10 @@ class RoomDisplay extends IPSModule
         // process each line again object list
         $unsupported = $changed = $deleted = $added = 0;
         foreach ($lines as $line) {
+            $this->SendDebug(__FUNCTION__, 'LINE: ' . $this->DebugPrint($line));
             // only object lines
             if (!isset($line['obj'])) {
+                $this->SendDebug(__FUNCTION__, 'SKIP: ' . $this->DebugPrint($line));
                 continue;
             }
             // ui-object identify
@@ -1617,6 +1646,7 @@ class RoomDisplay extends IPSModule
             // Object still exists?
             $values = ['Page' => $line['page'], 'Id' => $line['id']];
             $index = $this->HasSpecificValues($objects, $values);
+            $this->SendDebug(__FUNCTION__, 'Index: ' . $index);
             // new object
             if (($index == -1) && $options['new']) {
                 // Objects with own actions?
@@ -1905,7 +1935,6 @@ class RoomDisplay extends IPSModule
             case self::UI_IMAGE:
             case self::UI_LABEL:
             case self::UI_LED:
-            case self::UI_LINE:
             case self::UI_METER:
             case self::UI_MESSAGE:
             case self::UI_OBJECT:

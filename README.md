@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.7.20250318-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-3.8.20250515-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -168,6 +168,10 @@ Hintergrundbeleuchtung automatisch schalten! | Schaltet die Beleuchtung in Abhä
 Normal (kein Leerlauf)                 | Wert der Helligkeit bei normaler Nutzung des Displays
 Kurzer Leerlauf                        | Wert der Helligkeit nach kürzeren Nicht-Nutzung des Displays
 Langer Leerlauf                        | Wert der Helligkeit nach längerer Nicht-Nutzung des Displays
+Variable für den dunklen Modus         | Variable (bool), welche den Dunkelmodus steuert (WAHR = AUS| FALSCH = AN)
+Normal (Dunkelmodus)                   | Wert der Helligkeit bei normaler Nutzung des Displays
+Kurzer Leerlauf (Dunkelmodus)          | Wert der Helligkeit nach kürzeren Nicht-Nutzung des Displays
+Langer Leerlauf (Dunkelmodus)          | Wert der Helligkeit nach längerer Nicht-Nutzung des Displays
 Einbrennschutz automatisch aktivieren! | Schalter, ob der Einbrennschutz automatisch im definierten Zyklus gestartet werden soll!
 Zyklus                                 | Zeitlicher Zyklus in Minuten in dem der Einbrennschutz für 30 Sekunden eingeschaltet wird.
 Hintergrundbeleuchtung dimmen          | Schaltet die Beleuchtung während des Einbrennschutzes (30s) auf die eingestellte Beleuchtungsstärke, solange sie kleiner ist als der Wert für den langen Leerlauf und nicht Null ist!
@@ -253,6 +257,10 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox','text' => 'A message box with two buttons','options' => ['Open','Close']]);`
 
 ### 8. Versionshistorie
+
+v3.8.20250515
+* _NEU_: DarkMode für Leerlauf
+* _FIX_: Register/Unregister von Objekten korrigiert
 
 v3.7.20250318
 * _NEU_: Konfigurationsformular überarbeitet (Aktionshinweise, Anordnung uvm.)
