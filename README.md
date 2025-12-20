@@ -1,8 +1,8 @@
 # Raumdisplay (Room Display)
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Product](https://img.shields.io/badge/Symcon%20Version-7.0-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-3.8.20250515-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Product](https://img.shields.io/badge/Symcon%20Version-8.1-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
+[![Version](https://img.shields.io/badge/Modul%20Version-4.0.20251220-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -64,7 +64,7 @@ Was macht bzw. was kann das Modul?
 
 ### 2. Voraussetzungen
 
-* IP-Symcon ab Version 7.0
+* IP-Symcon ab Version 8.1
 
 ### 3. Installation
 
@@ -177,7 +177,11 @@ Zyklus                                 | Zeitlicher Zyklus in Minuten in dem der
 Hintergrundbeleuchtung dimmen          | Schaltet die Beleuchtung während des Einbrennschutzes (30s) auf die eingestellte Beleuchtungsstärke, solange sie kleiner ist als der Wert für den langen Leerlauf und nicht Null ist!
 Im Ruhezustand keine Syncronisierung!  | Schaltet die Synchrinistaion im Leerlauf ab (idle->long)
 Im Ruhezustand auf eine bestimmte Seite wechseln!   | Schalter,  ob im langen Leerlauf eine bestimmte Seite angezeigt werden soll!
-Seite                                  | Seite auf welche gewechselt werden soll im langen Leerlauf-Modus
+Feste Seite                            | Statische Seitenummer auf welche gewechselt werden soll im langen Leerlauf-Modus
+Dynmische Seite                        | Variable, welche die Seitenummer enthält auf welche gewechselt werden soll im langen Leerlauf-Modus
+Seitenverzweigung                      | Boolsche Variable, welche entscheidet auf welche Seite gewechselt werden soll im langen Leerlauf-Modus
+Seite (Wahr)                           | Seite im Zustand wahr
+Seite (Flasch)                         | Seite im Zustand falsch
 Im Ruhezustand durch die Seiten blättern!   | Schalter, ob im langem Leerlauf die Seiten durchgeblättert werden sollen!
 Intervall                              | Zeitspanne zwischen den einzelnen Seitenwechseln in Minuten (1-60)
 Popup-Meldung schließen nach           | Standardwert in Sekunden nachdem eine MessageBox automatisch geschlossen wird.
@@ -257,6 +261,15 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox','text' => 'A message box with two buttons','options' => ['Open','Close']]);`
 
 ### 8. Versionshistorie
+
+v4.0.20251220
+* _NEU_: Projektumstrukturierung hin zu einer globalen CI/CD-Pipeline
+* _NEU_: Kompatibilität auf IPS 8.1 hoch gesetzt
+* _NEU_: Umstellung auf IPSModuleStrict
+* _NEU_: Umschalten im Leerlauf unterstützt jetzt 3 Modi (Fix, Dynamisch und Verzweigung)
+* _FIX_: DarkMode wird nach Antiburn wieder korrekt hergestellt
+* _FIX_: SendJSONL behandelt Backslash's jetzt korrekt
+* _FIX_: Bibliotheksfunktionen angeglichen
 
 v3.8.20250515
 * _NEU_: DarkMode für Leerlauf

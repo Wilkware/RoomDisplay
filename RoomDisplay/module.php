@@ -8,7 +8,7 @@ require_once __DIR__ . '/../libs/_traits.php';
 /**
  * CLASS RoomDisplay
  */
-class RoomDisplay extends IPSModule
+class RoomDisplay extends IPSModuleStrict
 {
     use DebugHelper;
     use FormatHelper;
@@ -23,7 +23,8 @@ class RoomDisplay extends IPSModule
     // Modul IDs
     private const GUID_MQTT_IO = '{C6D2AEB3-6E1F-4B2E-8E69-3A1A00246850}';  // Splitter
     private const GUID_MQTT_TX = '{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}';  // from module to server
-    private const GUID_MQTT_RX = '{7F7632D9-FA40-4F38-8DEA-C83CD4325A32}';  // from server to module
+    // from server to module
+    // private const GUID_MQTT_RX = '{7F7632D9-FA40-4F38-8DEA-C83CD4325A32}';
 
     // UI Objects
     private const UI_ARC = 1;
@@ -53,10 +54,12 @@ class RoomDisplay extends IPSModule
     // Event handler
     private const EH_DOWN = 'down';         // Occurs when a button goes from depressed to pressed (the moment of touch)
     private const EH_UP = 'up';             // The button was released within a short time i.e. a short press has occurred
+    private const EH_CHANGED = 'changed';   // Event is sent when the value of the object has changed during the event
+    /*
     private const EH_RELEASE = 'release';   // The button is released after being pressed for over the threshold time
     private const EH_LONG = 'long';         // Event is sent when the button is still being pressed after the threshold time of 400ms
     private const EH_HOLD = 'hold';         // The HOLD event is repeated every 200ms while the button is still pressed
-    private const EH_CHANGED = 'changed';   // Event is sent when the value of the object has changed during the event
+     */
 
     // Placeholder
     private const PH_VALUE = '{{val}}';
@@ -70,39 +73,40 @@ class RoomDisplay extends IPSModule
 
     // Echo maps
     private const RD_STATUS_INFO = [
-        ['node', 'Node', 3],
-        ['idle', 'Idle', 3],
-        ['version', 'Version', 3],
-        ['uptime', 'Uptime', 1],
-        ['ssid', 'WiFi', 3],
-        ['rssi', 'RSSI', 1],
-        ['ip', 'IP', 3],
-        ['mac', 'MAC', 3],
-        ['heapFree', 'Heap Free', 1],
-        ['heapFrag', 'Heap Frag', 1],
-        ['core', 'Core', 3],
-        ['canUpdate', 'Updateable', 0],
-        ['page', 'Page', 1],
-        ['numPages', 'Pages', 1],
-        ['tftDriver', 'TFT Driver', 3],
-        ['tftWidth', 'TFT Width', 1],
-        ['tftHeight', 'TFT Height', 1],
+        ['node', 'Node', 3, null],
+        ['idle', 'Idle', 3, null],
+        ['version', 'Version', 3, null],
+        ['uptime', 'Uptime', 1, null],
+        ['ssid', 'WiFi', 3, null],
+        ['rssi', 'RSSI', 1, null],
+        ['ip', 'IP', 3, null],
+        ['mac', 'MAC', 3, null],
+        ['heapFree', 'Heap Free', 1, null],
+        ['heapFrag', 'Heap Frag', 1, null],
+        ['core', 'Core', 3, null],
+        ['canUpdate', 'Updateable', 0, null],
+        ['page', 'Page', 1, null],
+        ['numPages', 'Pages', 1, null],
+        ['tftDriver', 'TFT Driver', 3, null],
+        ['tftWidth', 'TFT Width', 1, null],
+        ['tftHeight', 'TFT Height', 1, null],
     ];
     private const RD_MOOD_LIGHT = [
-        ['state', 'Status', 5],
-        ['brightness', 'Brightness', 3],
-        ['color', 'Color', 3],
-        ['r', '(R)ed', 1],
-        ['g', '(G)reen', 1],
-        ['b', '(B)lue', 1],
+        ['state', 'Status', 5, null],
+        ['brightness', 'Brightness', 3, null],
+        ['color', 'Color', 3, null],
+        ['r', '(R)ed', 1, null],
+        ['g', '(G)reen', 1, null],
+        ['b', '(B)lue', 1, null],
     ];
 
     /**
      * In contrast to Construct, this function is called only once when creating the instance and starting IP-Symcon.
      * Therefore, status variables and module properties which the module requires permanently should be created here.
      *
+     * @return void
      */
-    public function Create()
+    public function Create(): void
     {
         // Never delete this line!
         parent::Create();
@@ -146,6 +150,10 @@ class RoomDisplay extends IPSModule
         $this->RegisterPropertyInteger('AutoAntiburnBacklight', 0);
         $this->RegisterPropertyBoolean('PageOneOnIdle', false);
         $this->RegisterPropertyInteger('PageOnIdle', 1);
+        $this->RegisterPropertyInteger('PageOnIdleDynamic', 1);
+        $this->RegisterPropertyInteger('PageOnIdleBranch', 1);
+        $this->RegisterPropertyInteger('PageOnIdleTrue', 11);
+        $this->RegisterPropertyInteger('PageOnIdleFalse', 12);
         $this->RegisterPropertyBoolean('AutoSwitchPage', false);
         $this->RegisterPropertyString('AutoSwitchSelection', '1-12');
         $this->RegisterPropertyInteger('AutoSwitchInterval', 1);
@@ -181,8 +189,10 @@ class RoomDisplay extends IPSModule
     /**
      * This function is called when deleting the instance during operation and when updating via "Module Control".
      * The function is not called when exiting IP-Symcon.
+     *
+     * @return void
      */
-    public function Destroy()
+    public function Destroy(): void
     {
         // Unregister Hook
         if (!IPS_InstanceExists($this->InstanceID)) {
@@ -193,15 +203,47 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Is executed when "Apply" is pressed on the configuration page and immediately after the instance has been created.
+     * The content can be overwritten in order to transfer a self-created configuration page.
+     * This way, content can be generated dynamically.
+     * In this case, the "form.json" on the file system is completely ignored.
+     *
+     * @return string Content of the configuration page.
      */
-    public function ApplyChanges()
+    public function GetConfigurationForm(): string
+    {
+        // Get form
+        $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+
+        $ip = $this->ReadPropertyString('IP');
+        // Layout Buttons & Status Buttons
+        if ($ip != '') {
+            $form['elements'][3]['items'][1]['items'][0]['enabled'] = true;
+            $form['elements'][3]['items'][1]['items'][1]['enabled'] = true;
+            $form['elements'][3]['items'][1]['items'][2]['enabled'] = true;
+            //$form['elements'][3]['items'][1]['items'][3]['enabled'] = true;
+            $form['actions'][2]['items'][0]['items'][2]['enabled'] = true;
+        }
+        // Extract Version
+        $ins = IPS_GetInstance($this->InstanceID);
+        $mod = IPS_GetModule($ins['ModuleInfo']['ModuleID']);
+        $lib = IPS_GetLibrary($mod['LibraryID']);
+        $form['actions'][3]['items'][2]['caption'] = sprintf('v%s.%d', $lib['Version'], $lib['Build']);
+        // return form
+        return json_encode($form);
+    }
+
+    /**
+     * Is executed when "Apply" is pressed on the configuration page and immediately after the instance has been created.
+     *
+     * @return void
+     */
+    public function ApplyChanges(): void
     {
         // Never delete this line!
         parent::ApplyChanges();
         $mqttTopic = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/';
         $this->SetReceiveDataFilter('.*' . $mqttTopic . '.*');
-        $this->SendDebug(__FUNCTION__, 'SetReceiveDataFilter(\'.*' . $mqttTopic . '.*\')', 0);
+        $this->LogDebug(__FUNCTION__, 'SetReceiveDataFilter(\'.*' . $mqttTopic . '.*\')');
 
         // Webhook for backup
         $this->RegisterHook(self::RD_PREFIX_HOOK . $this->InstanceID);
@@ -215,8 +257,8 @@ class RoomDisplay extends IPSModule
         $this->RegisterProfileInteger('WWXRD.Idle', 'Hourglass', '', '', 0, 0, 0, $association);
         // Profile "WWXRD.Status"
         $association = [
-            [0, 'Offline', 'display-slash', 0xFF0000],
-            [1, 'Online', 'display', 0x00FF00],
+            [false, 'Offline', 'display-slash', 0xFF0000],
+            [true, 'Online', 'display', 0x00FF00],
         ];
         $this->RegisterProfileBoolean('WWXRD.Status', 'Display', '', '', $association);
         // Profile "WWXRD.Backlight"
@@ -269,40 +311,16 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * The content can be overwritten in order to transfer a self-created configuration page.
-     * This way, content can be generated dynamically.
-     * In this case, the "form.json" on the file system is completely ignored.
-     *
-     * @return JSON Content of the configuration page
-     */
-    public function GetConfigurationForm()
-    {
-        // Get form
-        $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
-
-        $ip = $this->ReadPropertyString('IP');
-        // Layout Buttons & Status Buttons
-        if ($ip != '') {
-            $form['elements'][3]['items'][1]['items'][0]['enabled'] = true;
-            $form['elements'][3]['items'][1]['items'][1]['enabled'] = true;
-            $form['elements'][3]['items'][1]['items'][2]['enabled'] = true;
-            //$form['elements'][3]['items'][1]['items'][3]['enabled'] = true;
-            $form['actions'][2]['items'][0]['items'][2]['enabled'] = true;
-        }
-        // return form
-        return json_encode($form);
-    }
-
-    /**
      * Is called when, for example, a button is clicked in the visualization.
      *
-     *  @param string $ident Ident of the variable
-     *  @param string $value The value to be set
+     * @param string $ident Ident of the variable
+     * @param mixed $value The value to be set
+     * @return void
      */
-    public function RequestAction($ident, $value)
+    public function RequestAction(string $ident, mixed $value): void
     {
         // Debug output
-        $this->SendDebug(__FUNCTION__, $ident . ' => ' . $value);
+        $this->LogDebug(__FUNCTION__, $ident . ' => ' . $value);
         switch ($ident) {
             case 'Action':
                 $this->SetValueInteger($ident, $value);
@@ -405,9 +423,9 @@ class RoomDisplay extends IPSModule
     /**
      * If the HTML-SDK is to be used, this function must be overwritten in order to return the HTML content.
      *
-     * @return String Initial display of a representation via HTML SDK
+     * @return string Initial display of a representation via HTML SDK
      */
-    public function GetVisualizationTile()
+    public function GetVisualizationTile(): string
     {
         // Add a script to set the values when loading, analogous to changes at runtime
         // Although the return from GetFullUpdateMessage is already JSON-encoded, json_encode is still executed a second time
@@ -421,32 +439,36 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * This function is called by IP-Symcon and processes sent data and, if necessary, forwards it to all child instances.
+     * This function is called by IP-Symcon and processes sent data and, if necessary, forwards it to
+     * all child instances. Data can be sent using the SendDataToChildren function.
      *
      * @param string $json Data package in JSON format
+     *
+     * @return string Optional response to the parent instance
      */
-    public function ReceiveData($json)
+    public function ReceiveData(string $json): string
     {
         $data = json_decode($json);
 
         $topic = $data->Topic;
-        $payload = $data->Payload;
-        $this->SendDebug(__FUNCTION__, 'Received Topic: ' . $topic . ' Payload: ' . $payload, 0);
+        $payload = hex2bin($data->Payload);
+        $this->LogDebug(__FUNCTION__, 'Received Topic: ' . $topic . ' Payload: ' . $payload);
         // Check whether the topic begins with a specific prefix
         $prefix = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/LWT';
         if (stripos($topic, $prefix) !== false) {
             $this->HandleData('LWT', $payload);
-            return;
+            return '';
         }
         // Check whether the topic begins with a specific prefix
         $prefix = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/state/';
         if (stripos($topic, $prefix) === false) {
-            $this->SendDebug(__FUNCTION__, 'Topic does not match', 0);
-            return;
+            $this->LogDebug(__FUNCTION__, 'Topic does not match');
+            return '';
         }
         // Truncate prefix of the topic
         $topic = substr($topic, strlen($prefix));
         $this->HandleData($topic, $payload);
+        return '';
     }
 
     /**
@@ -458,18 +480,19 @@ class RoomDisplay extends IPSModule
      * data[2] = old value
      * data[3] = timestamp.
      *
-     * @param mixed $timestamp Continuous counter timestamp
-     * @param mixed $sender Sender ID
-     * @param mixed $message ID of the message
-     * @param mixed $data Data of the message
+     * @param int   $timestamp Continuous counter timestamp
+     * @param int   $sender    Sender ID
+     * @param int   $message   ID of the message
+     * @param array{0:mixed,1:bool,2:mixed,3:int} $data Data of the message
+     * @return void
      */
-    public function MessageSink($timestamp, $sender, $message, $data)
+    public function MessageSink(int $timestamp, int $sender, int $message, array $data): void
     {
         // No connection
         $status = $this->GetValue('Status');
         if (!$status) return;
         // Debug
-        $this->SendDebug(__FUNCTION__, 'SenderId: ' . $sender . ' Data: ' . $this->DebugPrint($data), 0);
+        $this->LogDebug(__FUNCTION__, 'SenderId: ' . $sender . ' Data: ' . $this->Stringify($data));
         // React to updates
         if ($message == VM_UPDATE) {
             // only if values changed!
@@ -486,7 +509,7 @@ class RoomDisplay extends IPSModule
                         if ($object['Link'] != $sender) {
                             continue;
                         }
-                        $this->SendDebug(__FUNCTION__, $this->DebugPrint($object), 0);
+                        $this->LogDebug(__FUNCTION__, $this->Stringify($object));
                         // Process data to specific object
                         $this->ProcessData($object, $data[0]);
                     }
@@ -499,30 +522,38 @@ class RoomDisplay extends IPSModule
      * Send Command to display.
      *
      * @param string $command Command name/data
+     *
+     * @return void
      */
-    public function SendCommand(string $command)
+    public function SendCommand(string $command): void
     {
         $mqttTopic = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/command/';
-        $this->SendDebug(__FUNCTION__, 'Topic: ' . $mqttTopic . ' Command: ' . $command, 0);
+        $this->LogDebug(__FUNCTION__, 'Topic: ' . $mqttTopic . ' Command: ' . $command);
         $this->SendMQTT($mqttTopic, $command);
     }
 
     /**
      * Send JSON Lines to display.
      *
-     * @param array $data JSONL array
+     * @param array<string,mixed> $data JSONL array
+     *
+     * @return void
      */
-    public function SendJSONL(array $data)
+    public function SendJSONL(array $data): void
     {
-        $this->SendCommand('jsonl ' . json_encode($data, JSON_UNESCAPED_SLASHES));
+        $json = str_replace('\\\\', '\\', json_encode($data, JSON_UNESCAPED_SLASHES));
+        $this->SendDebug(__FUNCTION__, $json, 0);
+        $this->SendCommand('jsonl ' . $json);
     }
 
     /**
-     * Send JSON Lines to display.
+     * Disable idle mode.
      *
-     * @param array $data JSONL array
+     * @param bool $disable Disable idle mode
+     *
+     * @return void
      */
-    public function DisableIdle(bool $disable)
+    public function DisableIdle(bool $disable): void
     {
         $this->WriteAttributeBoolean('DisableIdle', $disable);
         $this->ProcessIdle();
@@ -531,10 +562,11 @@ class RoomDisplay extends IPSModule
     /**
      * This function will be called by the hook control. Visibility should be protected!
      *
+     * @return void
      */
-    protected function ProcessHookData()
+    protected function ProcessHookData(): void
     {
-        $this->SendDebug(__FUNCTION__, $_GET);
+        $this->LogDebug(__FUNCTION__, $_GET);
         $file = isset($_GET['file']) ? $_GET['file'] : '';
         $filename = '';
         $contenttype = '';
@@ -567,7 +599,7 @@ class RoomDisplay extends IPSModule
         // Download it
         if ($file != 'objects') {
             $url = 'http://' . $ip . '/' . $filename . '?download=true';
-            $this->SendDebug(__FUNCTION__, $url);
+            $this->LogDebug(__FUNCTION__, $url);
             $download = file_get_contents($url);
             if ($download === false) {
                 $this->EchoMessage('Error during download file!');
@@ -586,8 +618,9 @@ class RoomDisplay extends IPSModule
     /**
      * Check whether idle process is allowed.
      *
+     * @return bool true = disabled, false = enabled
      */
-    protected function ProcessIdle()
+    protected function ProcessIdle(): bool
     {
         $disable = $this->ReadAttributeBoolean('DisableIdle');
         if ($disable) {
@@ -599,10 +632,12 @@ class RoomDisplay extends IPSModule
     /**
      * Send command to MQTT server.
      *
-     * @param mixed $topic Topic name
-     * @param mixed $payload Payload data
+     * @param string $topic Topic name
+     * @param string $payload Payload data
+     *
+     * @return string Result of the call
      */
-    protected function SendMQTT(string $topic, string $payload)
+    protected function SendMQTT(string $topic, string $payload): string
     {
         $resultServer = true;
         $resultClient = true;
@@ -612,20 +647,20 @@ class RoomDisplay extends IPSModule
         $server['QualityOfService'] = 0;
         $server['Retain'] = false;
         $server['Topic'] = $topic;
-        $server['Payload'] = $payload;
+        $server['Payload'] = bin2hex($payload);
         $json = json_encode($server, JSON_UNESCAPED_SLASHES);
-        //$this->SendDebug(__FUNCTION__.'MQTT Server', $json, 0);
+        //$this->LogDebug(__FUNCTION__.'MQTT Server', $json, 0);
         $resultServer = @$this->SendDataToParent($json);
 
-        return $resultServer === false;
+        return $resultServer;
     }
 
     /**
      * Generate a message that updates all elements in the HTML display.
      *
-     * @return String JSON encoded message information
+     * @return string JSON encoded message information
      */
-    private function GetFullUpdateMessage()
+    private function GetFullUpdateMessage(): string
     {
         // dataset variable
         $idle = $this->GetValue('Idle');
@@ -648,7 +683,7 @@ class RoomDisplay extends IPSModule
             'online'        => ($online),
             'offline'       => ($offline)
         ];
-        //$this->SendDebug(__FUNCTION__, $result, 0);
+        //$this->LogDebug(__FUNCTION__, $result, 0);
         return json_encode($result);
     }
 
@@ -659,8 +694,10 @@ class RoomDisplay extends IPSModule
      * @param int $objectId UI Object ID
      * @param string $property Property name
      * @param string $value Property value
+     *
+     * @return void
      */
-    private function SetItemProperty(int $page, int $objectId, string $property, string $value)
+    private function SetItemProperty(int $page, int $objectId, string $property, string $value): void
     {
         $this->SendCommand('p' . $page . 'b' . $objectId . '.' . $property . '=' . $value);
     }
@@ -671,8 +708,10 @@ class RoomDisplay extends IPSModule
      * @param int $page Page Number (1..12)
      * @param int $objectId UI Object ID
      * @param int $value Property Value
+     *
+     * @return void
      */
-    private function SetItemValue(int $page, int $objectId, int $value)
+    private function SetItemValue(int $page, int $objectId, int $value): void
     {
         $this->SendCommand('p' . $page . 'b' . $objectId . '.val=' . $value);
     }
@@ -683,8 +722,10 @@ class RoomDisplay extends IPSModule
      * @param int $page Page Number (1..12)
      * @param int $objectId UI Object ID
      * @param string $value Property Value
+     *
+     * @return void
      */
-    private function SetItemText(int $page, int $objectId, string $value)
+    private function SetItemText(int $page, int $objectId, string $value): void
     {
         $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.text=' . $value . '"]');
     }
@@ -695,8 +736,10 @@ class RoomDisplay extends IPSModule
      * @param int $page Page Number (1..12)
      * @param int $objectId UI Object ID
      * @param string $value Property Value
+     *
+     * @return void
      */
-    private function SetItemValStr(int $page, int $objectId, string $value)
+    private function SetItemValStr(int $page, int $objectId, string $value): void
     {
         $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.value_str=' . $value . '"]');
     }
@@ -707,8 +750,10 @@ class RoomDisplay extends IPSModule
      * @param int $page Page Number (1..12)
      * @param int $objectId UI Object ID
      * @param string $value Property Value
+     *
+     * @return void
      */
-    private function SetItemSrc(int $page, int $objectId, string $value)
+    private function SetItemSrc(int $page, int $objectId, string $value): void
     {
         $this->SendCommand('["' . 'p' . $page . 'b' . $objectId . '.src=' . $value . '"]');
     }
@@ -717,8 +762,10 @@ class RoomDisplay extends IPSModule
      * Set display backlight via staet and brightness.
      *
      * @param string $data idle state (short, long or off)
+     *
+     * @return void
      */
-    private function SetBacklight(string $data)
+    private function SetBacklight(string $data): void
     {
         $state = 'on';
         $prefix = 'Auto';
@@ -737,16 +784,44 @@ class RoomDisplay extends IPSModule
     }
 
     /**
+     * Switch to page on idle
+     *
+     * @return void
+     */
+    private function SetIdle(): void
+    {
+        // Default fixed page
+        $page = $this->ReadPropertyInteger('PageOnIdle');
+        // Dynamic page
+        $var = $this->ReadPropertyInteger('PageOnIdleDynamic');
+        if ($var >= self::IPS_MIN_ID) {
+            $page = GetValue($var);
+        }
+        // Branch page
+        $var = $this->ReadPropertyInteger('PageOnIdleBranch');
+        if ($var >= self::IPS_MIN_ID) {
+            $switch = GetValue($var);
+            if ($switch) {
+                $page = $this->ReadPropertyInteger('PageOnIdleTrue');
+            } else {
+                $page = $this->ReadPropertyInteger('PageOnIdleFalse');
+            }
+        }
+        $this->SendCommand('page=' . $page);
+    }
+
+    /**
      * Check all register objects.
      *
+     * @return bool true = all ok, false = problems
      */
-    private function RegisterObjects()
+    private function RegisterObjects(): bool
     {
         $objects = json_decode($this->ReadPropertyString('Objects'), true);
         if ($objects == null) {
             $objects = [];
         }
-        //$this->SendDebug(__FUNCTION__, $this->DebugPrint($objects));
+        //$this->LogDebug(__FUNCTION__, $this->DebugPrint($objects));
 
         // Unregister reference
         foreach ($this->GetReferenceList() as $id) {
@@ -762,7 +837,7 @@ class RoomDisplay extends IPSModule
         $state = true;
         // Check linked object
         foreach ($objects as $item => $object) {
-            //$this->SendDebug(__FUNCTION__, $this->DebugPrint($object));
+            //$this->LogDebug(__FUNCTION__, $this->DebugPrint($object));
             if ($object['Link'] != 1) {
                 // Objekt muss existiert!
                 if (IPS_ObjectExists($object['Link'])) {
@@ -815,17 +890,19 @@ class RoomDisplay extends IPSModule
     /**
      * Process map data to object.
      *
-     * @param array $object The mapping object
+     * @param array<string, mixed> $object The mapping object
      * @param mixed $data The passed data
+     *
+     * @return void
      */
-    private function ProcessData(array $object, mixed $data)
+    private function ProcessData(array $object, mixed $data): void
     {
-        $this->SendDebug(__FUNCTION__, 'Data: ' . $data . ' (' . gettype($data) . ')');
+        $this->LogDebug(__FUNCTION__, 'Data: ' . $data . ' (' . gettype($data) . ')');
         $formatted = @GetValueFormatted($object['Link']);
         // Calculate IPS value to object value
         $value = $this->EvaluateString($object['Calculation'], $data, $formatted);
         // Debug
-        $this->SendDebug(__FUNCTION__, $this->GetType($object['Type']) . ' :' . $this->SafePrint($value));
+        $this->LogDebug(__FUNCTION__, $this->GetType($object['Type']) . ' :' . $this->Stringify($value));
         // Arc || LineMeter
         if (($object['Type'] == self::UI_ARC) || ($object['Type'] == self::UI_METER)) {
             if ($object['Caption'] == '') {
@@ -942,7 +1019,7 @@ class RoomDisplay extends IPSModule
         }
         // LED Indicator
         if ($object['Type'] == self::UI_LED) {
-            $var = IPS_GetVariable($sender);
+            $var = IPS_GetVariable($object['Link']);
             // bool variable ?
             if ($var['VariableType'] == 0) {
                 // LEDInidactor on/off
@@ -981,15 +1058,17 @@ class RoomDisplay extends IPSModule
      *
      * @param string $topic Topic ID
      * @param string $data Payload data
+     *
+     * @return void
      */
-    private function HandleData(string $topic, string $data)
+    private function HandleData(string $topic, string $data): void
     {
-        $this->SendDebug(__FUNCTION__, 'Topic: ' . $topic . ' ,Payload: ' . $data);
+        $this->LogDebug(__FUNCTION__, 'Topic: ' . $topic . ' ,Payload: ' . $data);
         $objects = json_decode($this->ReadPropertyString('Objects'), true);
         // Is idle?
         if ($topic == 'idle') {
             if ($this->ReadPropertyBoolean('AutoDimBacklight')) {
-                $this->SendDebug(__FUNCTION__, 'SetBacklight($data)');
+                $this->LogDebug(__FUNCTION__, 'SetBacklight');
                 $this->SetBacklight($data);
             }
             switch ($data) {
@@ -1008,7 +1087,7 @@ class RoomDisplay extends IPSModule
                     $this->SetTimerInterval('SwitchPageTimer', 0);
                     $this->SetTimerInterval('ClockTimer', 0);
                     if (!$this->ReadAttributeBoolean('SyncData')) {
-                        $this->SendDebug(__FUNCTION__, 'Synchronize()');
+                        $this->LogDebug(__FUNCTION__, 'Synchronize()');
                         $this->Synchronize();
                     }
                     $this->WriteAttributeBoolean('SyncData', true);
@@ -1018,7 +1097,7 @@ class RoomDisplay extends IPSModule
                     $this->SetTimerInterval('AntiburnTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoAntiburnCycle'));
                 }
                 if ($this->ReadPropertyBoolean('PageOneOnIdle')) {
-                    $this->SendCommand('page=' . $this->ReadPropertyInteger('PageOnIdle'));
+                    $this->SetIdle();
                 }
                 if ($this->ReadPropertyBoolean('AutoSwitchPage')) {
                     $this->SetTimerInterval('SwitchPageTimer', 60 * 1000 * $this->ReadPropertyInteger('AutoSwitchInterval'));
@@ -1059,7 +1138,7 @@ class RoomDisplay extends IPSModule
                 }
             }
             if ($index < 0) {
-                $this->SendDebug(__FUNCTION__, 'No registered object!', 0);
+                $this->LogDebug(__FUNCTION__, 'No registered object!');
                 return;
             }
             $object = $objects[$index];
@@ -1084,7 +1163,7 @@ class RoomDisplay extends IPSModule
                     }
                 }
                 // Type & Value & Text
-                $this->SendDebug(__FUNCTION__, $this->GetType($object['Type']) . ': ' . $this->SafePrint($value) . ', ' . $text, 0);
+                $this->LogDebug(__FUNCTION__, $this->GetType($object['Type']) . ': ' . $this->Stringify($value) . ', ' . $text);
                 // Button down || Dropdown changed || Toggle Button, Roller, Slider or Switch up
                 if (($object['Type'] == self::UI_BUTTOM && $data->event == self::EH_DOWN) ||
                     ($object['Type'] == self::UI_CHECKBOX && $data->event == self::EH_UP) ||
@@ -1095,19 +1174,19 @@ class RoomDisplay extends IPSModule
                     ($object['Type'] == self::UI_SWITCH && $data->event == self::EH_UP)) {
                     if (IPS_GetObject($object['Link'])['ObjectType'] == 3) {
                         IPS_RunScriptEx($object['Link'], ['VALUE' => $value, 'TEXT' => $text]);
-                        $this->SendDebug(__FUNCTION__, 'IPS_RunScriptEx(' . $object['Link'] . ', [VALUE=>' . $value . ',TEXT=>' . $text . '])', 0);
+                        $this->LogDebug(__FUNCTION__, 'IPS_RunScriptEx(' . $object['Link'] . ', [VALUE=>' . $value . ',TEXT=>' . $text . '])');
                     }
                     else {
                         if (HasAction($object['Link']) && $value != -1) {
                             RequestAction($object['Link'], $value);
-                            $this->SendDebug(__FUNCTION__, 'RequestAction(' . $object['Link'] . ', ' . $value . ')', 0);
+                            $this->LogDebug(__FUNCTION__, 'RequestAction(' . $object['Link'] . ', ' . $value . ')');
                         }
                         elseif ($value != -1) {
                             SetValue($object['Link'], $value);
-                            $this->SendDebug(__FUNCTION__, 'SetValue(' . $object['Link'] . ', ' . $value . ')', 0);
+                            $this->LogDebug(__FUNCTION__, 'SetValue(' . $object['Link'] . ', ' . $value . ')');
                         }
                         else {
-                            $this->SendDebug(__FUNCTION__, 'No return to object: ' . $object['Link'], 0);
+                            $this->LogDebug(__FUNCTION__, 'No return to object: ' . $object['Link']);
                         }
                     }
                 }
@@ -1115,27 +1194,29 @@ class RoomDisplay extends IPSModule
                 if ($object['Type'] == self::UI_MESSAGE && $data->event == self::EH_UP) {
                     if (IPS_ScriptExists($script)) {
                         IPS_RunScriptEx($script, ['VALUE' => $value, 'TEXT' => $text]);
-                        $this->SendDebug(__FUNCTION__, 'IPS_RunScriptEx(' . $script . ', [VALUE=>' . $value . ',TEXT=>' . $text . '])', 0);
+                        $this->LogDebug(__FUNCTION__, 'IPS_RunScriptEx(' . $script . ', [VALUE=>' . $value . ',TEXT=>' . $text . '])');
                     }
                 }
             }
 
             if (property_exists($data, 'val') && ($object['Link'] != 1)) {
+                $value = $data->val;
                 // Received Typ = Arc & Value
                 if ($object['Type'] == self::UI_ARC) {
                     if (HasAction($object['Link']) && $value != -1) {
-                        RequestAction($object['Link'], $data->val);
-                        $this->SendDebug(__FUNCTION__, 'RequestAction():' . $object['Link'] . ' Value: ' . $data->val, 0);
+                        RequestAction($object['Link'], $value);
+                        $this->LogDebug(__FUNCTION__, 'RequestAction():' . $object['Link'] . ' Value: ' . $value);
                     }
                     elseif ($value != -1) {
                         SetValue($object['Link'], $value);
-                        $this->SendDebug(__FUNCTION__, 'SetValue(' . $object['Link'] . ', ' . $value . ')', 0);
+                        $this->LogDebug(__FUNCTION__, 'SetValue(' . $object['Link'] . ', ' . $value . ')');
                     }
                     else {
-                        $this->SendDebug(__FUNCTION__, 'No return to object: ' . $object['Link'], 0);
+                        $this->LogDebug(__FUNCTION__, 'No return to object: ' . $object['Link']);
                     }
                 }
             }
+
             $scriptid = $this->ReadPropertyInteger('ForwardMessageScript');
             if ($scriptid != 1) {
                 IPS_RunScriptEx($scriptid, ['Data' => json_encode(['Topic' => $topic, 'Data' => $data])]);
@@ -1144,13 +1225,13 @@ class RoomDisplay extends IPSModule
 
         if ($topic == 'statusupdate') {
             $this->WriteAttributeString('StatusUpdate', $data);
-            $this->SendDebug(__FUNCTION__, 'Status: ' . $data);
+            $this->LogDebug(__FUNCTION__, 'Status: ' . $data);
             //$this->StatusUpdate(false);
         }
 
         if ($topic == 'moodlight') {
             $this->WriteAttributeString('MoodLight', $data);
-            $this->SendDebug(__FUNCTION__, 'Moodlight: ' . $data);
+            $this->LogDebug(__FUNCTION__, 'Moodlight: ' . $data);
             //$this->MoodLight(false);
         }
 
@@ -1171,22 +1252,31 @@ class RoomDisplay extends IPSModule
      * Switch antiburn on or off.
      *
      * @param bool $value True for on, otherwise false
+     *
+     * @return void
      */
-    private function Antiburn(bool $value)
+    private function Antiburn(bool $value): void
     {
         // Backlights
-        $long = $this->ReadPropertyInteger('AutoLongIdle');
+        $prefix = 'Auto';
+        $dmv = $this->ReadPropertyInteger('AutoDarkModeVariable');
+        if ($dmv >= self::IPS_MIN_ID) {
+            if (!GetValue($dmv)) {
+                $prefix .= 'Dark';
+            }
+        }
+        $long = $this->ReadPropertyInteger($prefix . 'LongIdle');
         $anti = $this->ReadPropertyInteger('AutoAntiburnBacklight');
 
         if ($value) {
-            $this->SendDebug(__FUNCTION__, 'Antiburn ON', 0);
+            $this->LogDebug(__FUNCTION__, 'Antiburn ON');
             if (($anti < $long) && ($anti != 0)) {
                 $this->SendCommand('backlight=' . $anti);
                 $this->SetTimerInterval('AntiburnLight', 35 * 1000);
             }
             $this->SendCommand('antiburn=on');
         } else {
-            $this->SendDebug(__FUNCTION__, 'Antiburn OFF', 0);
+            $this->LogDebug(__FUNCTION__, 'Antiburn OFF');
             $this->SetTimerInterval('AntiburnLight', 0);
             if (($anti < $long) && ($anti != 0)) {
                 $this->SendCommand('backlight=' . $long);
@@ -1197,10 +1287,11 @@ class RoomDisplay extends IPSModule
     /**
      * Online State (LWT).
      *
+     * @return void
      */
-    private function Online()
+    private function Online(): void
     {
-        $this->SendDebug(__FUNCTION__, 'Display is online', 0);
+        $this->LogDebug(__FUNCTION__, 'Display is online');
         // Sync linked objects with the device objects
         $this->Synchronize();
     }
@@ -1209,8 +1300,10 @@ class RoomDisplay extends IPSModule
      * Status Update - display status information.
      *
      * @param bool $value True to show status info, otherwise false
+     *
+     * @return void
      */
-    private function StatusUpdate(bool $value)
+    private function StatusUpdate(bool $value): void
     {
         $this->SendCommand('statusupdate');
         if ($value) {
@@ -1223,8 +1316,10 @@ class RoomDisplay extends IPSModule
      * Mood Light - display moodlight information.
      *
      * @param bool $value True to show moodlight info, otherwise false
+     *
+     * @return void
      */
-    private function MoodLight(bool $value)
+    private function MoodLight(bool $value): void
     {
         $this->SendCommand('moodlight');
         if ($value) {
@@ -1235,10 +1330,12 @@ class RoomDisplay extends IPSModule
 
     /**
      * Synchronize from IPS variables to design objects.
+     *
+     * @return void
      */
-    private function Synchronize()
+    private function Synchronize(): void
     {
-        $this->SendDebug(__FUNCTION__, 'Synchronize', 0);
+        $this->LogDebug(__FUNCTION__, 'Synchronize');
         $objects = json_decode($this->ReadPropertyString('Objects'), true);
         // iterate over all objects
         foreach ($objects as $item => $object) {
@@ -1248,7 +1345,7 @@ class RoomDisplay extends IPSModule
             if (IPS_ObjectExists($object['Link']) && (IPS_GetObject($object['Link'])['ObjectType'] == 2)) {
                 // get actual value
                 $value = GetValue($object['Link']);
-                $this->SendDebug(__FUNCTION__, 'ID: ' . $object['Link'] . ' => ' . $value, 0);
+                $this->LogDebug(__FUNCTION__, 'ID: ' . $object['Link'] . ' => ' . $value);
                 if ($object['Type'] != self::UI_MESSAGE) {
                     // process data to specific object
                     $this->ProcessData($object, $value);
@@ -1265,8 +1362,10 @@ class RoomDisplay extends IPSModule
      *
      * @param string $value Layout as JSONL
      * @param bool $save If true upload, otherwise download from device
+     *
+     * @return void
      */
-    private function UpdateLayout(string $value, bool $save)
+    private function UpdateLayout(string $value, bool $save): void
     {
         $ip = $this->ReadPropertyString('IP');
         // check ip
@@ -1310,12 +1409,12 @@ class RoomDisplay extends IPSModule
                 ],
             ]);
             $json = curl_exec($curl);
-            $this->SendDebug(__FUNCTION__, $json);
+            $this->LogDebug(__FUNCTION__, $json);
             curl_close($curl);
         } else {
             $filename = 'pages.jsonl';
             $url = 'http://' . $ip . '/' . $filename . '?download=true';
-            $this->SendDebug(__FUNCTION__, $url);
+            $this->LogDebug(__FUNCTION__, $url);
             $download = file_get_contents($url);
             $this->UpdateFormField('Layout', 'value', $download);
         }
@@ -1326,8 +1425,10 @@ class RoomDisplay extends IPSModule
      *
      * @param string $value json encoded list plus index
      * @param bool $copy flag if also copy a entry
+     *
+     * @return void
      */
-    private function UpdateMapping(string $value, bool $copy)
+    private function UpdateMapping(string $value, bool $copy): void
     {
         $list = json_decode($value, true);
 
@@ -1362,7 +1463,7 @@ class RoomDisplay extends IPSModule
             // otherwise, compare only the first column
             return $a['Page'] <=> $b['Page'];
         });
-        $this->SendDebug(__FUNCTION__, $this->SafePrint($list));
+        $this->LogDebug(__FUNCTION__, $this->Stringify($list));
         $this->UpdateFormField('Objects', 'values', json_encode($list));
     }
 
@@ -1370,8 +1471,10 @@ class RoomDisplay extends IPSModule
      * Try to check the (re-)calulation eval statements
      *
      * @param string $value JSON structure of a selected object mapping
+     *
+     * @return void
      */
-    private function CheckMapping(string $value)
+    private function CheckMapping(string $value): void
     {
         $lines = json_decode($value, true);
         if (empty($lines)) {
@@ -1442,7 +1545,7 @@ class RoomDisplay extends IPSModule
         } elseif (empty($listmsg)) {
             $listmsg = 'Successful (No errors found!)';
         }
-        $this->SendDebug(__FUNCTION__, $listmsg);
+        $this->LogDebug(__FUNCTION__, $listmsg);
         $this->EchoMessage($listmsg);
     }
 
@@ -1450,8 +1553,10 @@ class RoomDisplay extends IPSModule
      * Match all entries in the objects list agains the page definition.
      *
      * @param string $value json encoded list
+     *
+     * @return void
      */
-    private function MatchMapping(string $value)
+    private function MatchMapping(string $value): void
     {
         $list = json_decode($value, true);
 
@@ -1467,7 +1572,7 @@ class RoomDisplay extends IPSModule
             if ($decoded !== null) { // Skip invalid JSON lines
                 $data[] = $decoded;
             } else {
-                $this->SendDebug(__FUNCTION__, json_last_error_msg() . ' => ' . $line);
+                $this->LogDebug(__FUNCTION__, json_last_error_msg() . ' => ' . $line);
             }
         }
         // go through object and look if it exist in page layout
@@ -1491,13 +1596,15 @@ class RoomDisplay extends IPSModule
      * Transfer a list of entries between instances.
      *
      * @param string $value json encoded list (file content)
+     *
+     * @return void
      */
-    private function TransferMapping(string $value)
+    private function TransferMapping(string $value): void
     {
         $json = base64_decode($value);
         $list = json_decode($json, true);
-        $this->SendDebug(__FUNCTION__, json_last_error_msg());
-        $this->SendDebug(__FUNCTION__, $this->SafePrint($list));
+        $this->LogDebug(__FUNCTION__, json_last_error_msg());
+        $this->LogDebug(__FUNCTION__, $this->Stringify($list));
 
         if (!empty($list)) {
             $objects = json_decode($this->ReadPropertyString('Objects'), true);
@@ -1510,8 +1617,10 @@ class RoomDisplay extends IPSModule
      * Re-invert selection of all entries in the objects list.
      *
      * @param string $value json encoded list
+     *
+     * @return void
      */
-    private function SelectMapping(string $value)
+    private function SelectMapping(string $value): void
     {
         $list = json_decode($value, true);
 
@@ -1523,7 +1632,7 @@ class RoomDisplay extends IPSModule
             $object['_'] = $select;
         }
         unset($object);
-        //$this->SendDebug(__FUNCTION__, $this->SafePrint($list));
+        //$this->LogDebug(__FUNCTION__, $this->Stringify($list));
         $this->UpdateFormField('Objects', 'values', json_encode($list));
     }
 
@@ -1531,8 +1640,10 @@ class RoomDisplay extends IPSModule
      * Deletes selection of all entries in the objects list.
      *
      * @param string $value json encoded list
+     *
+     * @return void
      */
-    private function DeleteMapping(string $value)
+    private function DeleteMapping(string $value): void
     {
         $list = json_decode($value, true);
         $del = 0;
@@ -1558,7 +1669,7 @@ class RoomDisplay extends IPSModule
      *
      * @return bool True if every line is a valid JSON object; otherwise false.
      */
-    private function ValidateLayout(string $value, bool $echo)
+    private function ValidateLayout(string $value, bool $echo): bool
     {
         // split the string into lines
         $lines = explode("\n", trim($value));
@@ -1572,7 +1683,8 @@ class RoomDisplay extends IPSModule
                 continue;
             }
             // check for JSON errors
-            $valid = json_validate($line);
+            json_decode($line);
+            $valid = json_last_error() === JSON_ERROR_NONE;
             if (!$valid) {
                 // return false if any line is not valid JSON
                 if ($echo) {
@@ -1592,12 +1704,14 @@ class RoomDisplay extends IPSModule
      * Parse the page layout and cratse the assoziated object mapping entries.
      *
      * @param string $value Serialised parse settings (new, exist, delete)
+     *
+     * @return void
      */
-    private function ParseLayout(string $value)
+    private function ParseLayout(string $value): void
     {
         // parse option
         $options = unserialize($value);
-        $this->SendDebug(__FUNCTION__, $this->DebugPrint($options));
+        $this->LogDebug(__FUNCTION__, $this->Stringify($options));
 
         // read page layout and generate json array
         $layout = explode("\n", trim($this->ReadPropertyString('Layout')));
@@ -1611,21 +1725,21 @@ class RoomDisplay extends IPSModule
             if ($decoded !== null) { // Skip invalid JSON lines
                 $lines[] = $decoded;
             } else {
-                $this->SendDebug(__FUNCTION__, json_last_error_msg() . ' => ' . $line);
+                $this->LogDebug(__FUNCTION__, json_last_error_msg() . ' => ' . $line);
             }
         }
 
         // object list
         $objects = json_decode($this->ReadPropertyString('Objects'), true);
-        $this->SendDebug(__FUNCTION__, $this->SafePrint($objects));
+        $this->LogDebug(__FUNCTION__, $this->Stringify($objects));
 
         // process each line again object list
         $unsupported = $changed = $deleted = $added = 0;
         foreach ($lines as $line) {
-            $this->SendDebug(__FUNCTION__, 'LINE: ' . $this->DebugPrint($line));
+            $this->LogDebug(__FUNCTION__, 'LINE: ' . $this->Stringify($line));
             // only object lines
             if (!isset($line['obj'])) {
-                $this->SendDebug(__FUNCTION__, 'SKIP: ' . $this->DebugPrint($line));
+                $this->LogDebug(__FUNCTION__, 'SKIP: ' . $this->Stringify($line));
                 continue;
             }
             // ui-object identify
@@ -1639,14 +1753,14 @@ class RoomDisplay extends IPSModule
             $support = $this->SupportedType($type);
             // Is supported?
             if (!$support) {
-                $this->SendDebug(__FUNCTION__, 'NOT SUPPORTED: ' . $this->DebugPrint($line));
+                $this->LogDebug(__FUNCTION__, 'NOT SUPPORTED: ' . $this->Stringify($line));
                 $unsupported++;
                 continue;
             }
             // Object still exists?
             $values = ['Page' => $line['page'], 'Id' => $line['id']];
             $index = $this->HasSpecificValues($objects, $values);
-            $this->SendDebug(__FUNCTION__, 'Index: ' . $index);
+            $this->LogDebug(__FUNCTION__, 'Index: ' . $index);
             // new object
             if (($index == -1) && $options['new']) {
                 // Objects with own actions?
@@ -1654,14 +1768,14 @@ class RoomDisplay extends IPSModule
                     continue;
                 }
                 $objects[] = ['Page' => $line['page'], 'Id' => $line['id'], 'Type' => $type];
-                $this->SendDebug(__FUNCTION__, 'NEW: ' . $this->DebugPrint($line));
+                $this->LogDebug(__FUNCTION__, 'NEW: ' . $this->Stringify($line));
                 $added++;
             }
             // change object
             if (($index != -1) && $options['change']) {
                 if ($objects[$index]['Type'] != $type) {
                     $objects[$index]['Type'] = $type;
-                    $this->SendDebug(__FUNCTION__, 'CHANGE: ' . $this->DebugPrint($line));
+                    $this->LogDebug(__FUNCTION__, 'CHANGE: ' . $this->Stringify($line));
                     $changed++;
                 }
             }
@@ -1671,7 +1785,7 @@ class RoomDisplay extends IPSModule
                 // search values
                 $values = ['page' => $object['Page'], 'id' => $object['Id']];
                 if ($this->HasSpecificValues($lines, $values) == -1) {
-                    $this->SendDebug(__FUNCTION__, 'DELETE: ' . $this->DebugPrint($object));
+                    $this->LogDebug(__FUNCTION__, 'DELETE: ' . $this->Stringify($object));
                     unset($objects[$key]); // remove element
                     $deleted++;
                 }
@@ -1683,9 +1797,9 @@ class RoomDisplay extends IPSModule
         }
         // do it really?
         if ($options['simulate']) {
-            $this->SendDebug(__FUNCTION__, 'Simulation run!!!');
+            $this->LogDebug(__FUNCTION__, 'Simulation run!!!');
         } else {
-            $this->SendDebug(__FUNCTION__, $this->SafePrint($objects));
+            $this->LogDebug(__FUNCTION__, $this->Stringify($objects));
             $this->UpdateFormField('Objects', 'values', json_encode($objects));
         }
         // Result output
@@ -1708,7 +1822,7 @@ class RoomDisplay extends IPSModule
         if ((strlen($subject) != 0) && (strpos($subject, '{{') === false)) {
             // sprintf: %s for string, %d for integer %f for float, %% to write a “%”
             $ret = sprintf($subject, $value);
-            $this->SendDebug(__FUNCTION__, 'sprintf: ' . $ret . ' <= ' . $subject);
+            $this->LogDebug(__FUNCTION__, 'sprintf: ' . $ret . ' <= ' . $subject);
             return $ret;
         }
         // bool to string is bad (empty for false)
@@ -1721,7 +1835,7 @@ class RoomDisplay extends IPSModule
             $eval = str_replace(self::PH_TEXT, $text, $eval);
             $eval = str_replace(self::PH_FORMAT, $formatted, $eval);
             $eval = 'return (' . $eval . ');';
-            $this->SendDebug(__FUNCTION__, 'eval: ' . $eval);
+            $this->LogDebug(__FUNCTION__, 'eval: ' . $eval);
             try {
                 $code = @eval($eval);
                 if ($code === false) {
@@ -1730,12 +1844,12 @@ class RoomDisplay extends IPSModule
             } catch (ParseError $e) {
                 // Report error somehow
                 $error = 'Error (' . $e->GetMessage() . ')';
-                $this->SendDebug(__FUNCTION__, 'RD Value: ' . $value . ',RD Type: ' . gettype($value) . ',RD Error: ' . $e->GetMessage() . ',RD Eval: ' . $eval . ',RD Subject: ' . $subject);
+                $this->LogDebug(__FUNCTION__, 'RD Value: ' . $value . ',RD Type: ' . gettype($value) . ',RD Error: ' . $e->GetMessage() . ',RD Eval: ' . $eval . ',RD Subject: ' . $subject);
                 $code = '';
             } catch (Throwable $t) {
                 // Report error somehow
                 $error = 'Error (' . $t->GetMessage() . ')';
-                $this->SendDebug(__FUNCTION__, 'RD Value: ' . $value . ',RD Type: ' . gettype($value) . ',RD Error: ' . $t->GetMessage() . ',RD Eval: ' . $eval . ',RD Subject: ' . $subject);
+                $this->LogDebug(__FUNCTION__, 'RD Value: ' . $value . ',RD Type: ' . gettype($value) . ',RD Error: ' . $t->GetMessage() . ',RD Eval: ' . $eval . ',RD Subject: ' . $subject);
                 $code = '';
             }
             return $code;
@@ -1758,11 +1872,19 @@ class RoomDisplay extends IPSModule
         $encoded = substr($encoded, 1, -1);
         // Replace double backslashes with single backslashes
         $encoded = str_replace('\\\\', '\\', $encoded);
-        $this->SendDebug(__FUNCTION__, $encoded);
+        $this->LogDebug(__FUNCTION__, $encoded);
         return $encoded;
     }
 
-    private function StringPrint(array $data, string $result)
+    /**
+     * Format a single line for string output.
+     *
+     * @param array<string,mixed> $data Object data
+     * @param string $result Result text
+     *
+     * @return string Formatted line
+     */
+    private function StringPrint(array $data, string $result): string
     {
         $line = '[' . $data['Page'] . ',' . $data['Id'] . ']';
         $len = strlen($line);
@@ -1858,10 +1980,11 @@ class RoomDisplay extends IPSModule
     /**
      * Retrieve UI object id of th textual type name.
      *
-     * @param  string Clear name of UI element.
+     * @param string $name Clear name of UI element.
+     *
      * @return int ID of the UI Object.
      */
-    private function SetType(string $name)
+    private function SetType(string $name): int
     {
         $name = strtolower($name);
         $id = -1;
@@ -1953,8 +2076,9 @@ class RoomDisplay extends IPSModule
      * Get HTML rgb formated color.
      *
      * @param int $color Color value or -1 for transparency
+     *
      */
-    private function GetColorFormatted(int $color)
+    private function GetColorFormatted(int $color): string
     {
         if ($color != '-1') {
             return '#' . sprintf('%06X', $color);
@@ -1966,11 +2090,12 @@ class RoomDisplay extends IPSModule
     /**
      * Function to check whether an array with certain key-value pairs exists
      *
-     * @param array $array Array with all page lines
-     * @param array $values Array of search values
+     * @param array<int,array<string,mixed>> $array Array with all page lines
+     * @param array<string,mixed> $values Array of search values
+     *
      * @return int Index if values found, otherwise -1.
      */
-    private function HasSpecificValues(array $array, array $values)
+    private function HasSpecificValues(array $array, array $values): int
     {
         $index = 0;
         foreach ($array as $item) {
@@ -1982,7 +2107,7 @@ class RoomDisplay extends IPSModule
                     break;
                 }
             }
-            // if all key-value pairs match, return true
+            // if all key-value pairs match, return index number
             if ($match) {
                 return $index;
             }
@@ -1993,8 +2118,10 @@ class RoomDisplay extends IPSModule
 
     /**
      * Parse page selection string into a integer array and switch then to the next page.
+     *
+     * @return void
      */
-    private function PageSwitch()
+    private function PageSwitch(): void
     {
         $pages = [];
         // Remove spaces and divide the input at the commas
@@ -2009,14 +2136,14 @@ class RoomDisplay extends IPSModule
                 if ($start <= $end) {
                     $pages = array_merge($pages, range($start, $end));
                 } else {
-                    $this->SendDebug(__FUNCTION__, 'Invalid range: ' . $part);
+                    $this->LogDebug(__FUNCTION__, 'Invalid range: ' . $part);
                     return;
                 }
             } elseif (ctype_digit($part)) {
                 // Add a single page
                 $pages[] = (int) $part;
             } else {
-                $this->SendDebug(__FUNCTION__, 'Invalid format: ' . $part);
+                $this->LogDebug(__FUNCTION__, 'Invalid format: ' . $part);
                 return;
             }
         }
@@ -2043,10 +2170,12 @@ class RoomDisplay extends IPSModule
      * Update time of the widget clock(s) if enabled.
      *
      * @param bool $interval Indicator if to calcolate the seconds to the next minute or not.
+     *
+     * @return void
      */
-    private function TickClock(bool $interval)
+    private function TickClock(bool $interval): void
     {
-        $this->SendDebug(__FUNCTION__, 'Interval: ' . boolval($interval), 0);
+        $this->LogDebug(__FUNCTION__, 'Interval: ' . boolval($interval));
 
         if ($this->ReadPropertyBoolean('ClockCheck')) {
             $page = $this->ReadPropertyInteger('ClockPage');
@@ -2085,9 +2214,11 @@ class RoomDisplay extends IPSModule
     /**
      * Show message via popup.
      *
-     * @param string $caption Echo message text
+     * @param string $file Echo message text
+     *
+     * @return void
      */
-    private function PageShow(string $file)
+    private function PageShow(string $file): void
     {
         $text = file_get_contents(__DIR__ . '/../docs/' . $file . '.jsonl');
         $this->UpdateFormField('JSONL', 'value', $text);
@@ -2095,14 +2226,15 @@ class RoomDisplay extends IPSModule
     }
 
     /**
-     * Show message via popup.
+     * Show message via popup
      *
-     * @param string $caption Echo message text
+     * @param string $caption echo message
+     *
+     * @return void
      */
-    private function EchoMessage(string $caption)
+    private function EchoMessage(string $caption): void
     {
         $this->UpdateFormField('EchoMessage', 'caption', $this->Translate($caption));
         $this->UpdateFormField('EchoPopup', 'visible', true);
     }
-
 }

@@ -25,8 +25,10 @@ trait WidgetHelper
      * @param int $page Page ID
      * @param int $hour Hour hand object ID
      * @param int $minute Minute hand object ID
+     *
+     * @return void
      */
-    protected function AnalougeClock(int $page, int $hour, int $minute)
+    protected function AnalougeClock(int $page, int $hour, int $minute): void
     {
         // Current time
         $h = date('H');      // Actual hour (00 - 23)
@@ -47,11 +49,13 @@ trait WidgetHelper
      * @param int $page Page ID
      * @param int $hour Hour flip card start object ID
      * @param int $minute Minute flip card start object ID
+     *
+     * @return void
      */
-    protected function FlipClock(int $page, int $hour, int $minute)
+    protected function FlipClock(int $page, int $hour, int $minute): void
     {
         // Current time
-        $h = date('H');      // Actual hour (00 - 23)
+        $h = date('H');    // Actual hour (00 - 23)
         $m = date('i');    // Actual minute (00 - 59)
 
         // hour flip
@@ -71,8 +75,10 @@ trait WidgetHelper
      *
      * @param int $page Page ID
      * @param int $minute Minute circle arc ID
+     *
+     * @return void
      */
-    protected function HaspClock(int $page, int $minute)
+    protected function HaspClock(int $page, int $minute): void
     {
         // Current time
         $m = date('i');    // Actual minute (00 - 59)
@@ -90,8 +96,10 @@ trait WidgetHelper
      * @param bool $prefix Show prefix if true, otherwise not.
      * @param bool $suffix Show sufffix if true, otherwise not.
      * @param bool $clock Show always the word 'UHRÄ if true, otherwise not.
+     *
+     * @return void
      */
-    protected function QlocktwoEarth(int $page, int $row, int $color, bool $prefix = true, $suffix = true, $clock = true)
+    protected function QlocktwoEarth(int $page, int $row, int $color, bool $prefix = true, $suffix = true, $clock = true): void
     {
         // Die 10 horizontalen Reihen der QLOCKTWO
         $qlocktwo = [
@@ -121,6 +129,17 @@ trait WidgetHelper
         if ($number_of_dots >= 5) {
             $number_of_dots = $number_of_dots - 5;
         }
+        // predefs
+        $current_time_display = $current_time_hour;
+        $fuenf = -1;
+        $zehn = -1;
+        $zwanzig = -1;
+        $viertel = -1;
+        $nach = -1;
+        $vor = -1;
+        $halb = -1;
+        $hour = -1;
+
         if ($current_time_minute == '00') {
             $fuenf = 0;
             $zehn = 0;
