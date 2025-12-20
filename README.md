@@ -264,7 +264,7 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox'
 
 v4.0.20251220
 * _NEU_: Projektumstrukturierung hin zu einer globalen CI/CD-Pipeline
-* _NEU_: Kompatibilität auf IPS 8.1 hoch gesetzt
+* _NEU_: Kompatibilität auf IPS 8.2 hoch gesetzt
 * _NEU_: Umstellung auf IPSModuleStrict
 * _NEU_: Umschalten im Leerlauf unterstützt jetzt 3 Modi (Fix, Dynamisch und Verzweigung)
 * _NEU_: Modulversion wird in Quellcodesektion angezeigt

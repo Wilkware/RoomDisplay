@@ -14,7 +14,6 @@ class RoomDisplay extends IPSModuleStrict
     use FormatHelper;
     use ProfileHelper;
     use VariableHelper;
-    use WebhookHelper;
     use WidgetHelper;
 
     // Min IPS Object ID
@@ -69,7 +68,7 @@ class RoomDisplay extends IPSModuleStrict
     // Constants
     private const RD_HOST_NAME = 'plate';
     private const RD_PREFIX_TOPIC = 'hasp/';
-    private const RD_PREFIX_HOOK = '/hook/plate';
+    private const RD_PREFIX_HOOK = 'plate';
 
     // Echo maps
     private const RD_STATUS_INFO = [
@@ -179,27 +178,8 @@ class RoomDisplay extends IPSModuleStrict
         $this->RegisterTimer('SwitchPageTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "SwitchPage", true);');
         $this->RegisterTimer('ClockTimer', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "ClockTick", false);');
 
-        // Automatically connect to the MQTT server/splitter instance
-        $this->ConnectParent(self::GUID_MQTT_IO);
-
         // Set visualization type to 1, as we want to offer HTML
         $this->SetVisualizationType(1);
-    }
-
-    /**
-     * This function is called when deleting the instance during operation and when updating via "Module Control".
-     * The function is not called when exiting IP-Symcon.
-     *
-     * @return void
-     */
-    public function Destroy(): void
-    {
-        // Unregister Hook
-        if (!IPS_InstanceExists($this->InstanceID)) {
-            $this->UnregisterHook(self::RD_PREFIX_HOOK . $this->InstanceID);
-        }
-        // Never delete this line!
-        parent::Destroy();
     }
 
     /**
@@ -217,10 +197,10 @@ class RoomDisplay extends IPSModuleStrict
         $ip = $this->ReadPropertyString('IP');
         // Layout Buttons & Status Buttons
         if ($ip != '') {
-            $form['elements'][3]['items'][1]['items'][0]['enabled'] = true;
-            $form['elements'][3]['items'][1]['items'][1]['enabled'] = true;
-            $form['elements'][3]['items'][1]['items'][2]['enabled'] = true;
-            //$form['elements'][3]['items'][1]['items'][3]['enabled'] = true;
+            $form['elements'][2]['items'][1]['items'][0]['enabled'] = true;
+            $form['elements'][2]['items'][1]['items'][1]['enabled'] = true;
+            $form['elements'][2]['items'][1]['items'][2]['enabled'] = true;
+            //$form['elements'][2]['items'][1]['items'][3]['enabled'] = true;
             $form['actions'][2]['items'][0]['items'][2]['enabled'] = true;
         }
         // Extract Version
@@ -230,6 +210,16 @@ class RoomDisplay extends IPSModuleStrict
         $form['actions'][3]['items'][2]['caption'] = sprintf('v%s.%d', $lib['Version'], $lib['Build']);
         // return form
         return json_encode($form);
+    }
+
+    /**
+     * Get compatible parents
+     *
+     * @return string
+     */
+    public function GetCompatibleParents(): string
+    {
+        return '{"type": "require", "moduleIDs": ["' . self::GUID_MQTT_IO . '"]}';
     }
 
     /**
