@@ -4,7 +4,7 @@
 [![Product](https://img.shields.io/badge/Symcon%20Version-8.1-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
 [![Version](https://img.shields.io/badge/Modul%20Version-4.0.20251220-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/style.yml?branch=main&label=CheckStyle&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
+[![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
 Das Modul verbindet ein openHASP-Display über MQTT mit dem IPS-System. Die für das Display gestalteten Seiten und ihren Objekten können mit Variablen oder Skripten von IPS synchronisiert werden.
 
@@ -267,6 +267,7 @@ v4.0.20251220
 * _NEU_: Kompatibilität auf IPS 8.1 hoch gesetzt
 * _NEU_: Umstellung auf IPSModuleStrict
 * _NEU_: Umschalten im Leerlauf unterstützt jetzt 3 Modi (Fix, Dynamisch und Verzweigung)
+* _NEU_: Modulversion wird in Quellcodesektion angezeigt
 * _FIX_: DarkMode wird nach Antiburn wieder korrekt hergestellt
 * _FIX_: SendJSONL behandelt Backslash's jetzt korrekt
 * _FIX_: Bibliotheksfunktionen angeglichen
