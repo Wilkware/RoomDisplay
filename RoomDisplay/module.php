@@ -110,6 +110,13 @@ class RoomDisplay extends IPSModuleStrict
         // Never delete this line!
         parent::Create();
 
+        // Webhook for backup
+        $this->RegisterHook(self::RD_PREFIX_HOOK . $this->InstanceID);
+
+        if ((float) IPS_GetKernelVersion() < 8.2) {
+            $this->ConnectParent(self::GUID_MQTT_IO);
+        }
+
         // Device-Topic (Name)
         $this->RegisterPropertyString('Hostname', self::RD_HOST_NAME);
         $this->RegisterPropertyString('IP', '');
@@ -213,16 +220,6 @@ class RoomDisplay extends IPSModuleStrict
     }
 
     /**
-     * Get compatible parents
-     *
-     * @return string
-     */
-    public function GetCompatibleParents(): string
-    {
-        return '{"type": "require", "moduleIDs": ["' . self::GUID_MQTT_IO . '"]}';
-    }
-
-    /**
      * Is executed when "Apply" is pressed on the configuration page and immediately after the instance has been created.
      *
      * @return void
@@ -234,9 +231,6 @@ class RoomDisplay extends IPSModuleStrict
         $mqttTopic = self::RD_PREFIX_TOPIC . $this->ReadPropertyString('Hostname') . '/';
         $this->SetReceiveDataFilter('.*' . $mqttTopic . '.*');
         $this->LogDebug(__FUNCTION__, 'SetReceiveDataFilter(\'.*' . $mqttTopic . '.*\')');
-
-        // Webhook for backup
-        $this->RegisterHook(self::RD_PREFIX_HOOK . $this->InstanceID);
 
         // Profile "WWXRD.Idle"
         $association = [

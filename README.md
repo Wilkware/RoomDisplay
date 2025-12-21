@@ -1,8 +1,8 @@
-# Raumdisplay (Room Display)
+# 🖵 Raumdisplay (Room Display)
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-8.1-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-4.0.20251220-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-4.0.20251221-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -80,14 +80,14 @@ __Konfigurationsseite__:
 
 Einstellungsbereich:
 
-> Anzeigegerät …
+> 🖼️ Anzeigegerät …
 
 Name                        | Beschreibung
 --------------------------- | ----------------------------------
 Gerätenamen                 | Name des Gerätes (= Hostname)
 Geräteadresse               | IP ist optional , aber ohne gehen Downloads von Screenshots und der Designdatei (pages.jsonl) nicht.
 
-> Seitenaufbau …
+> 📄 Seitenaufbau …
 
 Name                        | Beschreibung
 --------------------------- | ----------------------------------
@@ -102,7 +102,7 @@ EINLESEN³                   | Startet den Prozess zum Einlesen und Umwandeln de
 ²) Bei dieser Aktion werden die aktuell im Konfigurationsformular angezeigten Daten verwendet, ungeachtet ihres Speicherstatus.  
 ³) Bei dieser Aktion werden die aktuell gespeicherten Daten der Instanz verwendet (müssen nicht mit den aktuell angezeigten Daten übereinstimmen).  
 
-> Objektzuordnung …
+> 🧩 Objektzuordnung …
 
 Name                        | Beschreibung
 --------------------------- | ----------------------------------
@@ -129,7 +129,7 @@ __Hier eine kurze Erklärung der Spalten:__
 * _ Rückrechnung_ - Transformationsweg von DISPLAY zu IPS. Das Gleiche wie bei Umrechnung nur Umgekehrt, d.h. eine -1 bewirkt keine Weiterverarbeitung in IPS.
 * _Verknüpfung_ - die Verknüpfung zwischen Design-Objekt und IPS-Variable.
 
-> Visualisierung …
+> ✨ Visualisierung …
 
 Name                                   | Beschreibung
 -------------------------------------- | ----------------------------------
@@ -138,7 +138,7 @@ Kachelhintergrundfarbe (offline)       | Farbauswahl für den Zustand 'OFFLINE'
 Navigationsleiste anzeigen (Vor, Zurück, Weiter)?  | Schaltet die Anzeige der Navigationsbuttons an bzw. aus
 Aktionsleiste anzeigen (Seiten löschen, Seiten neu laden, Synchronisieren, Neustart) | Schaltet die Anzeige der Aktionsbuttons an bzw. aus
 
-> Widgets …
+> 🧰 Widgets …
 
 Name                                   | Beschreibung
 -------------------------------------- | ----------------------------------
@@ -160,7 +160,7 @@ An / Aus (HASP-Uhr)                    | Aktualisierung der Uhrzeit an bzw-aussc
 Seite (HASP-Uhr)                       | Seiten ID, auf welche sich die Uhr befindet
 Minutenkreis (HASP-Uhr)                | Objekt ID des Kreises(Arc), welches die Minuten darstellt
 
-> Erweiterte Einstellungen …
+> ⚙️ Erweiterte Einstellungen …
 
 Name                                   | Beschreibung
 -------------------------------------- | ----------------------------------
@@ -189,18 +189,18 @@ Nachricht an Skript weiterleiten:      | Leitet die Aktion bzw. das Ereignis dir
 
 Aktionsbereich:
 
-> Aktion ausführen …
+> 🚀 Aktion ausführen …
 
 * _Seiten neu laden_ - liest die pages.jsonl neu ein und rendert die Seiten neu
 * _Seiten löschen_ - alle Seiten löschen
 * _Synchronisieren_ - gerade in der Einstellung- bzw. Entwicklungsphase ein ganz wichtiger Button, er geht durch die Mappingliste und ruft für die verknüpften Variablen deren Werte ab und stellt sie dar. Diese Funktion wird auch immer aufgerufen wenn ein Gerät ONLINE geht! Gerade wenn man alles Seiten gelöscht hat und neu lädt ist der Button sehr hilfreich!
 * _Neustart_ - Reboot des Gerätes
 
-> Steitennavigation ...
+> 🧭 Steitennavigation ...
 
 * _Vorher_, _Zurück_, _Weiter_ - eigentlich auch selbsterklärend, mit den Buttons kann man auf den Seiten navigieren
 
-> Abfrage von …
+> ❓ Abfrage von …
 
 * _Stimmungslicht_ - Anzeige der aktuellen Moodlight-Einstellungen
 * _Status_ - Anzeige der Status-Update-Infos
@@ -262,14 +262,17 @@ __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox'
 
 ### 8. Versionshistorie
 
-v4.0.20251220
+v4.0.20251221
 * _NEU_: Projektumstrukturierung hin zu einer globalen CI/CD-Pipeline
-* _NEU_: Kompatibilität auf IPS 8.2 hoch gesetzt
+* _NEU_: Kompatibilität auf IPS 8.1 hoch gesetzt
 * _NEU_: Umstellung auf IPSModuleStrict
+* _NEU_: Kompatibilität für IPS 8.2 vorbereitet
 * _NEU_: Umschalten im Leerlauf unterstützt jetzt 3 Modi (Fix, Dynamisch und Verzweigung)
 * _NEU_: Modulversion wird in Quellcodesektion angezeigt
 * _FIX_: DarkMode wird nach Antiburn wieder korrekt hergestellt
 * _FIX_: SendJSONL behandelt Backslash's jetzt korrekt
+* _FIX_: Umstellung auf RegisterHook aus SDK
+* _FIX_: Diverse Fehlerbehebungen
 * _FIX_: Bibliotheksfunktionen angeglichen
 
 v3.8.20250515
