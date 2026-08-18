@@ -2,30 +2,46 @@
 
 declare(strict_types=1);
 
-// General functions
+/** Generell funktions */
 require_once __DIR__ . '/../libs/_traits.php';
+
+/** Namespaced traits */
+use Wilkware\RoomDisplay\DebugHelper;
+use Wilkware\RoomDisplay\FormatHelper;
+use Wilkware\RoomDisplay\VariableHelper;
+use Wilkware\RoomDisplay\WidgetHelper;
 
 /**
  * CLASS RoomDisplay
  */
 class RoomDisplay extends IPSModuleStrict
 {
+    // -------------------------------------------------------------------------
+    // Traits
+    // -------------------------------------------------------------------------
+
     use DebugHelper;
     use FormatHelper;
-    use ProfileHelper;
     use VariableHelper;
     use WidgetHelper;
 
-    // Min IPS Object ID
+    // -------------------------------------------------------------------------
+    // Constants
+    // -------------------------------------------------------------------------
+
+    /** @var int Min IPS Object ID */
     private const IPS_MIN_ID = 10000;
 
-    // Modul IDs
-    private const GUID_MQTT_IO = '{C6D2AEB3-6E1F-4B2E-8E69-3A1A00246850}';  // Splitter
-    private const GUID_MQTT_TX = '{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}';  // from module to server
-    // from server to module
+    /** @var string MQTT IO Module ID (Splitter) */
+    private const GUID_MQTT_IO = '{C6D2AEB3-6E1F-4B2E-8E69-3A1A00246850}';
+
+    /** @var string MQTT TX Module ID (from module to server) */
+    private const GUID_MQTT_TX = '{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}';
+
+    /** @var string MQTT RX Module ID (from server to module) */
     // private const GUID_MQTT_RX = '{7F7632D9-FA40-4F38-8DEA-C83CD4325A32}';
 
-    // UI Objects
+    /** @var int UI Object IDs */
     private const UI_ARC = 1;
     private const UI_BAR = 2;
     private const UI_BUTTOM = 3;
@@ -50,27 +66,168 @@ class RoomDisplay extends IPSModuleStrict
     private const UI_TAB = 22;
     private const UI_QRCODE = 23;
 
-    // Event handler
-    private const EH_DOWN = 'down';         // Occurs when a button goes from depressed to pressed (the moment of touch)
-    private const EH_UP = 'up';             // The button was released within a short time i.e. a short press has occurred
-    private const EH_CHANGED = 'changed';   // Event is sent when the value of the object has changed during the event
-    /*
-    private const EH_RELEASE = 'release';   // The button is released after being pressed for over the threshold time
-    private const EH_LONG = 'long';         // Event is sent when the button is still being pressed after the threshold time of 400ms
-    private const EH_HOLD = 'hold';         // The HOLD event is repeated every 200ms while the button is still pressed
+    /**
+     * @var string Event handler
+     * Occurs when a button goes from depressed to pressed (the moment of touch)
      */
+    private const EH_DOWN = 'down';
 
-    // Placeholder
+    /** @var string Event handler
+     * The button was released within a short time i.e. a short press has occurred
+     */
+    private const EH_UP = 'up';
+
+    /** @var string Event handler
+     * Event is sent when the value of the object has changed during the event
+     */
+    private const EH_CHANGED = 'changed';
+
+    /** @var string Placeholder Value */
     private const PH_VALUE = '{{val}}';
+
+    /** @var string Placeholder Text */
     private const PH_TEXT = '{{txt}}';
+
+    /** @var string Placeholder Formatted Text */
     private const PH_FORMAT = '{{fmt}}';
 
-    // Constants
+    /** @var string Host Name */
     private const RD_HOST_NAME = 'plate';
+
+    /** @var string Topic Name */
     private const RD_PREFIX_TOPIC = 'hasp/';
+
+    /** @var string Hook Name */
     private const RD_PREFIX_HOOK = 'plate';
 
-    // Echo maps
+    // -------------------------------------------------------------------------
+    // Presentations
+    // -------------------------------------------------------------------------
+
+    /**
+     * @var array<string,mixed> Idle State Presentation (Value)
+     */
+    private const WWXRD_PRESENTATION_IDLE = [
+        'PRESENTATION'        => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+        'USAGE_TYPE'          => 0,
+        'THOUSANDS_SEPARATOR' => '',
+        'SHOW_PREVIEW'        => true,
+        'SUFFIX'              => '',
+        'COLOR'               => -1,
+        'MAX'                 => 0,
+        'MULTILINE'           => false,
+        'DECIMAL_SEPARATOR'   => 'Client',
+        'PERCENTAGE'          => false,
+        'DIGITS'              => 0,
+        'INTERVALS'           => '[{"ColorDisplay":-1,"ContentColorDisplay":-1,"IntervalMinValue":0,"IntervalMaxValue":0,"ConstantActive":true,"ConstantValue":"Off","ConversionFactor":1,"IconActive":false,"IconValue":"","PrefixActive":false,"PrefixValue":"","SuffixActive":false,"SuffixValue":"","DigitsActive":false,"DigitsValue":0,"ColorActive":true,"ColorValue":-1,"ContentColorActive":false,"ContentColorValue":-1},{"ColorDisplay":-1,"ContentColorDisplay":-1,"IntervalMinValue":1,"IntervalMaxValue":1,"ConstantActive":true,"ConstantValue":"Short","ConversionFactor":1,"IconActive":false,"IconValue":"","PrefixActive":false,"PrefixValue":"","SuffixActive":false,"SuffixValue":"","DigitsActive":false,"DigitsValue":0,"ColorActive":true,"ColorValue":-1,"ContentColorActive":false,"ContentColorValue":-1},{"ColorDisplay":-1,"ContentColorDisplay":-1,"IntervalMinValue":2,"IntervalMaxValue":2,"ConstantActive":true,"ConstantValue":"Long","ConversionFactor":1,"IconActive":false,"IconValue":"","PrefixActive":false,"PrefixValue":"","SuffixActive":false,"SuffixValue":"","DigitsActive":false,"DigitsValue":0,"ColorActive":true,"ColorValue":-1,"ContentColorActive":false,"ContentColorValue":-1}]',
+        'DISPLAY_TYPE'        => 0,
+        'ICON'                => 'Hourglass',
+        'INTERVALS_ACTIVE'    => true,
+        'PREVIEW_STYLE'       => 1,
+        'MIN'                 => 0,
+        'CONTENT_COLOR'       => -1,
+        'PREFIX'              => '',
+    ];
+
+    /**
+     * @var array<string,mixed> State Presentation (Value)
+     */
+    private const WWXRD_PRESENTATION_STATE = [
+        'PRESENTATION'        => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+        'USAGE_TYPE'          => 0,
+        'THOUSANDS_SEPARATOR' => '',
+        'SHOW_PREVIEW'        => true,
+        'SUFFIX'              => '',
+        'COLOR'               => -1,
+        'PREFIX'              => '',
+        'CONTENT_COLOR'       => -1,
+        'MAX'                 => 0,
+        'MULTILINE'           => false,
+        'DECIMAL_SEPARATOR'   => 'Client',
+        'PERCENTAGE'          => false,
+        'DIGITS'              => 0,
+        'INTERVALS'           => '[]',
+        'DISPLAY_TYPE'        => 0,
+        'ICON'                => 'Display',
+        'INTERVALS_ACTIVE'    => true,
+        'PREVIEW_STYLE'       => 1,
+        'MIN'                 => 0,
+        'OPTIONS'             => '[{"Value":false,"Caption":"Offline","IconActive":true,"IconValue":"display-slash","ColorActive":true,"ColorValue":16711680},{"Value":true,"Caption":"Online","IconActive":true,"IconValue":"display","ColorActive":true,"ColorValue":65280}]',
+    ];
+
+    /**
+     * @var array<string,mixed> Backlight Presentation (Slider)
+     */
+    private const WWXRD_PRESENTATION_BACKLIGHT = [
+        'PRESENTATION'        => VARIABLE_PRESENTATION_SLIDER,
+        'USAGE_TYPE'          => 5,
+        'THOUSANDS_SEPARATOR' => '',
+        'DECIMAL_SEPARATOR'   => 'Client',
+        'PERCENTAGE'          => false,
+        'DIGITS'              => 0,
+        'INTERVALS'           => '[]',
+        'ICON'                => 'Light',
+        'INTERVALS_ACTIVE'    => false,
+        'MAX'                 => 255,
+        'GRADIENT_TYPE'       => 0,
+        'MIN'                 => 1,
+        'CUSTOM_GRADIENT'     => '[]',
+        'PREFIX'              => '',
+        'STEP_SIZE'           => 1.0,
+        'SUFFIX'              => '',
+    ];
+
+    /**
+     * @var array<string,mixed> Page Presentation (Slider)
+     */
+    private const WWXRD_PRESENTATION_PAGE = [
+        'PRESENTATION'        => VARIABLE_PRESENTATION_SLIDER,
+        'USAGE_TYPE'          => 5,
+        'THOUSANDS_SEPARATOR' => '',
+        'DECIMAL_SEPARATOR'   => 'Client',
+        'PERCENTAGE'          => false,
+        'DIGITS'              => 0,
+        'INTERVALS'           => '[]',
+        'ICON'                => 'Book',
+        'INTERVALS_ACTIVE'    => false,
+        'MAX'                 => 12,
+        'GRADIENT_TYPE'       => 0,
+        'MIN'                 => 1,
+        'CUSTOM_GRADIENT'     => '[]',
+        'PREFIX'              => '',
+        'STEP_SIZE'           => 1.0,
+        'SUFFIX'              => '',
+    ];
+
+    /**
+     * @var array<string,mixed> Navigation Presentation (Enumeration)
+     */
+    private const WWXRD_PRESENTATION_NAVIGATION = [
+        'PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION,
+        'OPTIONS'      => '[{"Value":"page=prev","Caption":"< Prev ]","IconActive":true,"IconValue":"arrow-left-to-bracket","Color":-1},{"Value":"page=back","Caption":"[ Back ]","IconActive":true,"IconValue":"arrow-up-to-bracket","Color":-1},{"Value":"page=next","Caption":"[ Next >","IconActive":true,"IconValue":"arrow-right-to-bracket","Color":-1}]',
+        'LAYOUT'       => 0,
+        'ICON'         => 'square-ellipsis',
+        'DISPLAY'      => 0,
+    ];
+
+    /**
+     * @var array<string,mixed> Action Presentation (Enumeration)
+     */
+    private const WWXRD_PRESENTATION_ACTION = [
+        'PRESENTATION' => VARIABLE_PRESENTATION_ENUMERATION,
+        'OPTIONS'      => '[{"Caption":"Clear Pages","Color":-1,"IconActive":true,"IconValue":"rotate-left","Value":0},{"Caption":"Reload Pages","Color":-1,"IconActive":true,"IconValue":"rotate-right","Value":1},{"Caption":"Synchronize","Color":-1,"IconActive":true,"IconValue":"rotate","Value":2},{"Caption":"Restart","Color":-1,"IconActive":true,"IconValue":"power-off","Value":3}]',
+        'LAYOUT'       => 0,
+        'ICON'         => 'rectangle-terminal',
+        'DISPLAY'      => 0,
+    ];
+
+    // -------------------------------------------------------------------------
+    // Echo Maps
+    // -------------------------------------------------------------------------
+
+    /**
+     * @var array<int,array{0:string,1:string,2:int,3:?string}> Status Info Map
+     */
     private const RD_STATUS_INFO = [
         ['node', 'Node', 3, null],
         ['idle', 'Idle', 3, null],
@@ -90,6 +247,10 @@ class RoomDisplay extends IPSModuleStrict
         ['tftWidth', 'TFT Width', 1, null],
         ['tftHeight', 'TFT Height', 1, null],
     ];
+
+    /**
+     * @var array<int,array{0:string,1:string,2:int,3:?string}> Mood Light Map
+     */
     private const RD_MOOD_LIGHT = [
         ['state', 'Status', 5, null],
         ['brightness', 'Brightness', 3, null],
@@ -98,6 +259,10 @@ class RoomDisplay extends IPSModuleStrict
         ['g', '(G)reen', 1, null],
         ['b', '(B)lue', 1, null],
     ];
+
+    // -------------------------------------------------------------------------
+    // Methods
+    // -------------------------------------------------------------------------
 
     /**
      * In contrast to Construct, this function is called only once when creating the instance and starting IP-Symcon.
@@ -232,46 +397,18 @@ class RoomDisplay extends IPSModuleStrict
         $this->SetReceiveDataFilter('.*' . $mqttTopic . '.*');
         $this->LogDebug(__FUNCTION__, 'SetReceiveDataFilter(\'.*' . $mqttTopic . '.*\')');
 
-        // Profile "WWXRD.Idle"
-        $association = [
-            [0, 'Off', '', -1],
-            [1, 'Short', '', -1],
-            [2, 'Long', '', -1],
-        ];
-        $this->RegisterProfileInteger('WWXRD.Idle', 'Hourglass', '', '', 0, 0, 0, $association);
-        // Profile "WWXRD.Status"
-        $association = [
-            [false, 'Offline', 'display-slash', 0xFF0000],
-            [true, 'Online', 'display', 0x00FF00],
-        ];
-        $this->RegisterProfileBoolean('WWXRD.Status', 'Display', '', '', $association);
-        // Profile "WWXRD.Backlight"
-        $this->RegisterProfileInteger('WWXRD.Backlight', 'Light', '', '', 1, 255, 1);
-        // Profile "WWXRD.Page"
-        $this->RegisterProfileInteger('WWXRD.Page', 'Book', '', '', 1, 12, 1);
-        // Profile "WWXRD.Navigate"
-        $association = [
-            ['page=prev', '< Prev ]', 'arrow-left-to-bracket', -1],
-            ['page=back', '[ Back ]', 'arrow-up-to-bracket', -1],
-            ['page=next', '[ Next >', 'arrow-right-to-bracket', -1],
-        ];
-        $this->RegisterProfileString('WWXRD.Navigate', 'square-ellipsis', '', '', $association);
-        // Profile "WWXRD.Action"
-        $association = [
-            [0, 'Clear Pages', 'rotate-left', -1],
-            [1, 'Reload Pages', 'rotate-right', -1],
-            [2, 'Synchronize', 'rotate', -1],
-            [3, 'Restart', 'power-off', -1],
-        ];
-        $this->RegisterProfileInteger('WWXRD.Action', 'rectangle-terminal', '', '', 0, 0, 0, $association);
+        //Presentations
+        $idle = $this->TranslatePresentation(self::WWXRD_PRESENTATION_IDLE, 'INTERVALS', 'ConstantValue');
+        $navi = $this->TranslatePresentation(self::WWXRD_PRESENTATION_NAVIGATION, 'OPTIONS', 'Caption');
+        $action = $this->TranslatePresentation(self::WWXRD_PRESENTATION_ACTION, 'OPTIONS', 'Caption');
 
         // Maintain variables
-        $this->MaintainVariable('Idle', $this->Translate('Idle'), 1, 'WWXRD.Idle', 2, true);
-        $this->MaintainVariable('Status', $this->Translate('Status'), 0, 'WWXRD.Status', 1, true);
-        $this->MaintainVariable('Backlight', $this->Translate('Backlight'), 1, 'WWXRD.Backlight', 3, true);
-        $this->MaintainVariable('Page', $this->Translate('Page'), 1, 'WWXRD.Page', 4, true);
+        $this->MaintainVariable('Idle', $this->Translate('Idle'), 1, $idle, 2, true);
+        $this->MaintainVariable('Status', $this->Translate('Status'), 0, self::WWXRD_PRESENTATION_STATE, 1, true);
+        $this->MaintainVariable('Backlight', $this->Translate('Backlight'), 1, self::WWXRD_PRESENTATION_BACKLIGHT, 3, true);
+        $this->MaintainVariable('Page', $this->Translate('Page'), 1, self::WWXRD_PRESENTATION_PAGE, 4, true);
         $this->MaintainVariable('Navigate', $this->Translate('Navigate'), 3, 'WWXRD.Navigate', 5, true);
-        $this->MaintainVariable('Action', $this->Translate('Action'), 1, 'WWXRD.Action', 6, true);
+        $this->MaintainVariable('Action', $this->Translate('Action'), 1, $action, 6, true);
 
         // Maintain actions
         $this->MaintainAction('Backlight', true);
@@ -551,7 +688,7 @@ class RoomDisplay extends IPSModuleStrict
     protected function ProcessHookData(): void
     {
         $this->LogDebug(__FUNCTION__, $_GET);
-        $file = isset($_GET['file']) ? $_GET['file'] : '';
+        $file = $_GET['file'] ?? '';
         $filename = '';
         $contenttype = '';
         $download = '';
@@ -566,7 +703,7 @@ class RoomDisplay extends IPSModuleStrict
             case 'objects':
                 $filename = 'objects.json';
                 $contenttype = 'Content-Type: application/json; charset=utf-8';
-                $download = isset($_GET['list']) ? $_GET['list'] : '';
+                $download = $_GET['list'] ?? '';
                 break;
             case 'pages':
                 $filename = 'pages.jsonl';
@@ -935,6 +1072,22 @@ class RoomDisplay extends IPSModuleStrict
             } else {
                 $text = $this->EvaluateString($object['Caption'], $value, $formatted);
                 $this->SetItemText($object['Page'], $object['Id'], $this->EncodeText($text));
+            }
+        }
+        // Bar
+        if ($object['Type'] == self::UI_BAR) {
+            // Text for Bar
+            if ($object['Caption'] != '') {
+                $text = $this->EvaluateString($object['Caption'], $value, $formatted);
+                $this->SetItemProperty($object['Page'], $object['Id'], 'bg_color10', $text);
+                $this->SetItemProperty($object['Page'], $object['Id'], 'bg_grad_color10', $text);
+            }
+            if ($object['Value'] == '') {
+                // If the value is empty, the value is written directly.
+                $this->SetItemValue($object['Page'], $object['Id'], intval($value));
+            } else {
+                $value = $this->EvaluateString($object['Value'], $value, $formatted);
+                $this->SetItemValue($object['Page'], $object['Id'], intval($value));
             }
         }
         // Button
@@ -1326,18 +1479,19 @@ class RoomDisplay extends IPSModuleStrict
             if ($object['Link'] == 1 || $object['Calculation'] == -1) {
                 continue;
             }
-            if (IPS_ObjectExists($object['Link']) && (IPS_GetObject($object['Link'])['ObjectType'] == 2)) {
-                // get actual value
-                $value = GetValue($object['Link']);
-                $this->LogDebug(__FUNCTION__, 'ID: ' . $object['Link'] . ' => ' . $value);
-                if ($object['Type'] != self::UI_MESSAGE) {
-                    // process data to specific object
-                    $this->ProcessData($object, $value);
+            if (IPS_ObjectExists($object['Link']))
+                if (IPS_GetObject($object['Link'])['ObjectType'] == 2) {
+                    // get actual value
+                    $value = GetValue($object['Link']);
+                    $this->LogDebug(__FUNCTION__, 'ID: ' . $object['Link'] . ' => ' . $value);
+                    if ($object['Type'] != self::UI_MESSAGE) {
+                        // process data to specific object
+                        $this->ProcessData($object, $value);
+                    }
                 }
-            }
-            else {
-                $this->LogMessage('Linked object with #' . $object['Link'] . ' dosent exist!', KL_ERROR);
-            }
+                else {
+                    $this->LogMessage('Linked object with #' . $object['Link'] . ' dosent exist!', KL_ERROR);
+                }
         }
     }
 
@@ -2131,23 +2285,19 @@ class RoomDisplay extends IPSModuleStrict
                 return;
             }
         }
-        if (!empty($pages)) {
-            // Remove and sort duplicates
-            $pages = array_unique($pages);
-            sort($pages);
-            $current = $this->GetValue('Page');
-            foreach ($pages as $page) {
-                if ($page > $current) {
-                    // First page that is larger than the current page
-                    $this->SendCommand('page=' . $page);
-                    return;
-                }
+        // Remove and sort duplicates
+        $pages = array_unique($pages);
+        sort($pages);
+        $current = $this->GetValue('Page');
+        foreach ($pages as $page) {
+            if ($page > $current) {
+                // First page that is larger than the current page
+                $this->SendCommand('page=' . $page);
+                return;
             }
-            // If no larger page was found, return to the first page
-            $this->SendCommand('page=' . $pages[0]);
-        } else {
-            $this->SendCommand('page=next');
         }
+        // If no larger page was found, return to the first page
+        $this->SendCommand('page=' . $pages[0]);
     }
 
     /**

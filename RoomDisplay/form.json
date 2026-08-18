@@ -180,6 +180,10 @@
                                         "value": 1
                                     },
                                     {
+                                        "caption": "Bar",
+                                        "value": 2
+                                    },
+                                    {
                                         "caption": "Button",
                                         "value": 3
                                     },

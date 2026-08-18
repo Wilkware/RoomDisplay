@@ -2,26 +2,28 @@
 
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-8.1-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-4.0.20251221-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-4.1.20260818-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
 Das Modul verbindet ein openHASP-Display über MQTT mit dem IPS-System. Die für das Display gestalteten Seiten und ihren Objekten können mit Variablen oder Skripten von IPS synchronisiert werden.
+
+![Module-Visu](imgs/page11.bmp)   ![Module-Visu](imgs/page14.bmp)
 
 ## Inhaltverzeichnis
 
 1. [Funktionsumfang](#user-content-1-funktionsumfang)
 2. [Voraussetzungen](#user-content-2-voraussetzungen)
 3. [Installation](#user-content-3-installation)
-4. [Einrichten der Instanzen in IP-Symcon](#user-content-4-einrichten-der-instanzen-in-ip-symcon)
-5. [Statusvariablen und Profile](#user-content-5-statusvariablen-und-profile)
+4. [Einrichten der Instanzen in Symcon](#user-content-4-einrichten-der-instanzen-in-symcon)
+5. [Statusvariablen und Darstellungen](#user-content-5-statusvariablen-und-darstellungen)
 6. [Visualisierung](#user-content-6-visualisierung)
 7. [PHP-Befehlsreferenz](#user-content-7-php-befehlsreferenz)
 8. [Versionshistorie](#user-content-8-versionshistorie)
 
 ### 1. Funktionsumfang
 
-Das Modul übersetzt Aktionen und Ereignisse in IP-Symcon und aktualisiert umgekehrt die Variablen in IP-Symcon zur Darstellung auf 
+Das Modul übersetzt Aktionen und Ereignisse in Symcon und aktualisiert umgekehrt die Variablen in Symcon zur Darstellung auf 
 dem Display.
 
 <details>
@@ -64,7 +66,7 @@ Was macht bzw. was kann das Modul?
 
 ### 2. Voraussetzungen
 
-* IP-Symcon ab Version 8.1
+* Symcon ab Version 8.1
 
 ### 3. Installation
 
@@ -72,7 +74,7 @@ Was macht bzw. was kann das Modul?
 * Alternativ Über das Modul-Control folgende URL hinzufügen.  
 `https://github.com/Wilkware/RoomDisplay` oder `git://github.com/Wilkware/RoomDisplay.git`
 
-### 4. Einrichten der Instanzen in IP-Symcon
+### 4. Einrichten der Instanzen in Symcon
 
 * Unter "Instanz hinzufügen" ist das _'Room Display'_-Modul (Alias: _'Raumdisplay'_) unter dem Hersteller _'(Geräte)'_ aufgeführt.
 
@@ -261,6 +263,13 @@ Die Funktion liefert keinerlei Rückgabewert.
 __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox','text' => 'A message box with two buttons','options' => ['Open','Close']]);`
 
 ### 8. Versionshistorie
+
+v4.1.20260818
+* _NEU_: Unterstützung für BAR (über Beschriftung (optional) => Farbwert des Indikators, über Wert => Fortschrittswert)
+* _NEU_: Umstellung aller Profile auf Darstellungen
+* _FIX_: Fehler in Synchonize im Zusammenspiel mit Skripten behoben
+* _FIX_: Umstellung auf namespaced Bibliotheken
+* _FIX_: Kleinere Codeoptimierungen
 
 v4.0.20251221
 * _NEU_: Projektumstrukturierung hin zu einer globalen CI/CD-Pipeline

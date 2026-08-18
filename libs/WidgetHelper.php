@@ -14,6 +14,10 @@
 
 declare(strict_types=1);
 
+/** @symcon-namespace */
+
+namespace Wilkware\RoomDisplay;
+
 /**
  * Helper class for openHASP widgets.
  */
@@ -117,7 +121,7 @@ trait WidgetHelper
         ];
 
         // Systemzeit auslesen
-        $act_time = new Datetime();
+        $act_time = new \Datetime();
 
         $current_time_hour = (int) $act_time->format('H');     // Stunden in Variable schreiben
         $current_time_minute = (int) $act_time->format('i');   // Minuten in Variable schreiben
