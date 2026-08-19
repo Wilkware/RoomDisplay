@@ -407,7 +407,7 @@ class RoomDisplay extends IPSModuleStrict
         $this->MaintainVariable('Status', $this->Translate('Status'), 0, self::WWXRD_PRESENTATION_STATE, 1, true);
         $this->MaintainVariable('Backlight', $this->Translate('Backlight'), 1, self::WWXRD_PRESENTATION_BACKLIGHT, 3, true);
         $this->MaintainVariable('Page', $this->Translate('Page'), 1, self::WWXRD_PRESENTATION_PAGE, 4, true);
-        $this->MaintainVariable('Navigate', $this->Translate('Navigate'), 3, 'WWXRD.Navigate', 5, true);
+        $this->MaintainVariable('Navigate', $this->Translate('Navigate'), 3, $navi, 5, true);
         $this->MaintainVariable('Action', $this->Translate('Action'), 1, $action, 6, true);
 
         // Maintain actions
