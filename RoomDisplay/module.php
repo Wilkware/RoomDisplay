@@ -756,12 +756,11 @@ class RoomDisplay extends IPSModuleStrict
      * @param string $topic Topic name
      * @param string $payload Payload data
      *
-     * @return string Result of the call
+     * @return void
      */
-    protected function SendMQTT(string $topic, string $payload): string
+    protected function SendMQTT(string $topic, string $payload): void
     {
-        $resultServer = true;
-        $resultClient = true;
+        $result = true;
         // MQTT Server
         $server['DataID'] = self::GUID_MQTT_TX;
         $server['PacketType'] = 3;
@@ -770,10 +769,9 @@ class RoomDisplay extends IPSModuleStrict
         $server['Topic'] = $topic;
         $server['Payload'] = bin2hex($payload);
         $json = json_encode($server, JSON_UNESCAPED_SLASHES);
-        //$this->LogDebug(__FUNCTION__.'MQTT Server', $json, 0);
-        $resultServer = @$this->SendDataToParent($json);
-
-        return $resultServer;
+        $result = @$this->SendDataToParent($json);
+        //$this->LogDebug(__FUNCTION__, $json);
+        //$this->LogDebug(__FUNCTION__, $result);
     }
 
     /**
