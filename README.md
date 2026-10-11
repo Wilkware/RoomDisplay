@@ -1,8 +1,9 @@
 # 🖵 Raumdisplay (Room Display)
 
+[![Home](https://img.shields.io/badge/Home-wilkware.de-0b1830.svg?style=flat-square)](https://wilkware.de/module/raumdisplay/)
 [![Version](https://img.shields.io/badge/Symcon-PHP--Modul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Product](https://img.shields.io/badge/Symcon%20Version-8.1-blue.svg?style=flat-square)](https://www.symcon.de/produkt/)
-[![Version](https://img.shields.io/badge/Modul%20Version-4.1.20260828-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
+[![Version](https://img.shields.io/badge/Modul%20Version-5.0.20261011-orange.svg?style=flat-square)](https://github.com/Wilkware/RoomDisplay)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Actions](https://img.shields.io/github/actions/workflow/status/wilkware/RoomDisplay/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/Wilkware/RoomDisplay/actions)
 
@@ -15,11 +16,12 @@ Das Modul verbindet ein openHASP-Display über MQTT mit dem IPS-System. Die für
 1. [Funktionsumfang](#user-content-1-funktionsumfang)
 2. [Voraussetzungen](#user-content-2-voraussetzungen)
 3. [Installation](#user-content-3-installation)
-4. [Einrichten der Instanzen in Symcon](#user-content-4-einrichten-der-instanzen-in-symcon)
-5. [Statusvariablen und Darstellungen](#user-content-5-statusvariablen-und-darstellungen)
-6. [Visualisierung](#user-content-6-visualisierung)
-7. [PHP-Befehlsreferenz](#user-content-7-php-befehlsreferenz)
-8. [Versionshistorie](#user-content-8-versionshistorie)
+4. [Einrichtung](#user-content-4-einrichtung)
+5. [Statusvariablen](#user-content-5-statusvariablen)
+6. [Darstellungen](#user-content-6-darstellungen)
+7. [Visualisierung](#user-content-7-visualisierung)
+8. [Befehlsreferenz](#user-content-8-befehlsreferenz)
+9. [Versionshistorie](#user-content-9-versionshistorie)
 
 ### 1. Funktionsumfang
 
@@ -37,7 +39,7 @@ dem Display.
 * Gauge
 * Image
 * Label
-* LED Inicator
+* LED Indicator
 * Line Meter
 * MessageBox
 * Object
@@ -71,32 +73,32 @@ Was macht bzw. was kann das Modul?
 ### 3. Installation
 
 * Über den Modul Store das Modul _Raumdisplay_ installieren.
-* Alternativ Über das Modul-Control folgende URL hinzufügen.  
+* Alternativ über das Modul Control folgende URL hinzufügen.  
 `https://github.com/Wilkware/RoomDisplay` oder `git://github.com/Wilkware/RoomDisplay.git`
 
-### 4. Einrichten der Instanzen in Symcon
+### 4. Einrichtung
 
-* Unter "Instanz hinzufügen" ist das _'Room Display'_-Modul (Alias: _'Raumdisplay'_) unter dem Hersteller _'(Geräte)'_ aufgeführt.
+* Unter 'Instanz hinzufügen' ist das _Raumdisplay_-Modul unter dem Hersteller '(Geräte)' aufgeführt.
 
 __Konfigurationsseite__:
 
 Einstellungsbereich:
 
-> 🖼️ Anzeigegerät …
+> 🖼️ Anzeigegerät ...
 
 Name                        | Beschreibung
 --------------------------- | ----------------------------------
 Gerätenamen                 | Name des Gerätes (= Hostname)
 Geräteadresse               | IP ist optional , aber ohne gehen Downloads von Screenshots und der Designdatei (pages.jsonl) nicht.
 
-> 📄 Seitenaufbau …
+> 📄 Seitenaufbau ...
 
 Name                        | Beschreibung
 --------------------------- | ----------------------------------
-Datei (pages.jsonl)         | JSONL formatierter Inhalt zur Syncronisierung des Seitenaufbaus
+Datei (pages.jsonl)         | JSONL formatierter Inhalt zur Synchronisierung des Seitenaufbaus
 HERUNTERLADEN¹              | Schalter um den Seitenaufbau vom Gerät herunterzuladen
 HOCHRLADEN²                 | Schalter um den Seitenaufbau zum Gerät senden.
-SICHERN¹                    | Schalter um den Seitenaufbau vom Gerät herunterzuladen und in eine Datei zu schreiben.
+SICHERN¹                    | Schalter um den Seitenaufbau vom Gerät herunterzuladen und in eine Datei zu schreiben (Dateiname mit Datum, z. B. `20261011_plate01_pages.jsonl`).
 PRÜFEN²                     | Schalter um den Inhalt des Seitenaufbaus auf JSONL Konformität zu prüfen.
 EINLESEN³                   | Startet den Prozess zum Einlesen und Umwandeln des Seitenaufbaus in eine Objektzuordnung.
 
@@ -104,34 +106,125 @@ EINLESEN³                   | Startet den Prozess zum Einlesen und Umwandeln de
 ²) Bei dieser Aktion werden die aktuell im Konfigurationsformular angezeigten Daten verwendet, ungeachtet ihres Speicherstatus.  
 ³) Bei dieser Aktion werden die aktuell gespeicherten Daten der Instanz verwendet (müssen nicht mit den aktuell angezeigten Daten übereinstimmen).  
 
-> 🧩 Objektzuordnung …
+__Optionen beim Einlesen:__
+
+Option                                       | Beschreibung
+-------------------------------------------- | ----------------------------------
+Nur neue Objekte anlegen                     | Legt für Objekte des Seitenaufbaus, die noch nicht in der Objektliste stehen, einen neuen Eintrag an
+... Objekte mit eigener Aktion               | Überspringt Objekte mit `action` (z. B. Navigationsbuttons `p+`, `p-`) – Standard: an
+... Deaktivierte oder nicht klickbare Objekte | Überspringt Objekte mit `"enabled":0` oder `"click":0`
+... Ausgeblendete Objekte                    | Überspringt Objekte mit `"hidden":1`
+... Objekte auf Seite 0                      | Überspringt globale Objekte, die auf allen Seiten angezeigt werden (z. B. Kopf- oder Fußzeile)
+... Bilder und Basisobjekte                  | Überspringt Objekte vom Typ `img` und `obj` (z. B. Hintergrundbilder, Rahmen)
+... Mit Tag "skip" markierte Objekte         | Überspringt Objekte mit `"tag":"skip"` oder `"tag":{"skip":1}` – Standard: an
+Vorhandene Objekte überschreiben             | Korrigiert den Typ bereits zugeordneter Objekte
+Alle nicht vorhandenen Objekte löschen       | Entfernt Einträge, deren Objekt nicht mehr im Seitenaufbau existiert
+
+Die Filter gelten nur für neue Objekte, bereits zugeordnete Einträge bleiben unverändert.
+Mit SIMULIEREN wird nichts übernommen; das Popup bleibt offen und zeigt das Ergebnis direkt an – die Anzahl je Aktion, die übersprungenen Objekte je Grund und die Liste der betroffenen Objekte (z. B. `p1b12 (label) "Küche"`). So lassen sich die Optionen anpassen und erneut simulieren. STARTEN übernimmt das Ergebnis in die Objektliste, schließt das Popup und zeigt das Ergebnis als Meldung.
+Für Objekte, die nie eine Zuordnung brauchen, ist die Markierung per Tag im Seitenaufbau am zuverlässigsten. Die Vorlagen der Widgets (Uhren) sind bereits so markiert, da das Modul diese Objekte selbst ansteuert:
+
+```json
+{"page":1,"id":2,"obj":"img","src":"L:/background.png","tag":"skip"}
+```
+
+> 🧩 Objektzuordnung ...
 
 Name                        | Beschreibung
 --------------------------- | ----------------------------------
-Objekte                     | Table zur Zuordnung zwischen UI- und IPS-Objekt
+Objekte                     | Tabelle zur Zuordnung zwischen UI-Objekt und Symcon-Variable bzw. -Skript
 AUSWAHL¹                    | Schalter um den Zustand der Auswahlboxen umzukehren, Basis ist die Checkbox des ersten Elementes
 LÖSCHEN¹                    | Schalter um selektierte Zeile zu löschen
 DUPLIZIEREN¹                | Schalter um selektierte Zeile zu duplizieren (und gleich einzusortieren)
 PRÜFEN¹                     | Schalter um die hinterlegten Eingaben (Berechnungen) eines ausgewählten Eintrag zu prüfen.
-ÜBERTRAGEN¹                 | Öffnet ein Dialog um die zuvor selektierten Zeilen in eine Datei zu exportieren, oder eine abgespeicherte Konfiguration aus einer Datei zu importieren.
+ÜBERTRAGEN¹                 | Öffnet ein Dialog um die zuvor selektierten Zeilen in eine Datei zu exportieren (z. B. `20261011_plate01_objects.json`), oder eine abgespeicherte Konfiguration aus einer Datei zu importieren.
 NEUSORTIEREN²               | Schalter um die Liste endsprechend _Seite_ und _ID_ zu sortieren
-ABGLEICHEN²                 | Schalter um die hinterlegten Objekte mit dem Inhalt des Seitenaufbaus gegen zu prüfen. den (Umkehr-)Folgezustand.
+ABGLEICHEN²                 | Schalter um die hinterlegten Objekte gegen den Inhalt des Seitenaufbaus zu prüfen.
 
 ¹) Diese Aktionen verwenden die aktuell ausgewählten Daten aus der Objektliste.  
 ²) Diese Aktionen verwenden alle Daten aus der Objektliste, unabhängig von ihrem Auswahlstatus.  
 
-__Hier eine kurze Erklärung der Spalten:__
+__Spalten der Objektliste:__
 
-* Spalte mit Checkboxen für die Auswahl der Objekte für ein Export (Schalter: Übertragen)
-* _Typ_, _Seite_ und _ID_ - sollten selbsterklärend sein und identifizieren das UI-Object
-* _Kommentar_ - auch klar, aber nicht ganz unwichtig um sich bei der Vielzahl von Mappings zurecht zu finden. Ich habe es extra eingeführt, weil ich zum Teil die Übersicht zu behalten. Empfind es es als sehr hilfreich.
-* _Beschriftung_ - eigentlich alles was man bei der Visu an Text sieht. Also bei Buttons die Icons oder Titel, bei Labels die Beschriftung usw.
-* _Wert_ - Zustände von Toggle Buttons, Sourcen von Images oder Hintergrundfarben von Objekten
-* _Umrechnung_ - Transformationsweg von IPS zum DISPLAY, als Platzhalter kann {{val}} verwendet werden, was den Roh-Wert der Variablenänderung beinhaltet. Im Endeffekt ist das ein PHP eval() Ausdruck (ohne Klammern und Semikolon drum herum). Das Ergebnis davon wird dann bei Beschriftung oder/und Wert eingesetzt. Spezialwert -1 bedeutet keine weitere Auswertung vornehmen, also den Workflow stoppen.
-* _ Rückrechnung_ - Transformationsweg von DISPLAY zu IPS. Das Gleiche wie bei Umrechnung nur Umgekehrt, d.h. eine -1 bewirkt keine Weiterverarbeitung in IPS.
-* _Verknüpfung_ - die Verknüpfung zwischen Design-Objekt und IPS-Variable.
+Spalte                      | Beschreibung
+--------------------------- | ----------------------------------
+☑️                          | Auswahl der Einträge für ÜBERTRAGEN (Export), AUSWAHL, LÖSCHEN usw.
+Typ                         | Typ des UI-Objektes (siehe Tabelle unten)
+Seite / Id                  | Seite und ID des UI-Objektes im Seitenaufbau (pages.jsonl), zusammen eindeutig
+Kommentar                   | Freier Text, hilft bei vielen Zuordnungen den Überblick zu behalten
+Beschriftung                | Ausdruck für den Text des Objektes – was genau gesetzt wird, hängt vom Typ ab
+Wert                        | Ausdruck für den Wert des Objektes – was genau gesetzt wird, hängt vom Typ ab
+Umrechnung                  | Ausdruck Symcon ➡️ Display, wird zuerst auf den Variablenwert angewendet
+Rückrechnung                | Ausdruck Display ➡️ Symcon, bei Messagebox stattdessen die ID des auszuführenden Skriptes
+Verknüpfung                 | Variable oder Skript in Symcon
 
-> ✨ Visualisierung …
+__Ablauf Symcon ➡️ Display__ (bei Änderung der verknüpften Variable und beim Synchronisieren):
+
+1. Der Variablenwert wird mit _Umrechnung_ umgerechnet (leer = unverändert, `-1` = nichts an das Display senden).
+2. Das Ergebnis steht in _Beschriftung_ und _Wert_ als `{{val}}` zur Verfügung.
+3. Sind _Beschriftung_ bzw. _Wert_ leer, wird das Ergebnis aus Schritt 1 direkt verwendet (sofern der Typ das vorsieht).
+
+__Ablauf Display ➡️ Symcon__ (bei einem Ereignis auf dem Display, siehe Spalte _Rückmeldung_):
+
+1. Der Wert vom Display (`val`) wird mit _Rückrechnung_ umgerechnet, der Text vom Display steht als `{{txt}}` zur Verfügung.
+2. Ist ein Skript verknüpft, wird es ausgeführt und erhält `$_IPS['VALUE']` und `$_IPS['TEXT']`.
+3. Ist eine Variable verknüpft, wird sie geschaltet (`RequestAction`, ohne Aktion `SetValue`). Ergibt die Rückrechnung `-1` oder liefert das Display keinen Wert, passiert nichts.
+
+__Ausdrücke und Platzhalter:__
+
+Alle Ausdrücke (Beschriftung, Wert, Umrechnung, Rückrechnung) sind PHP-Ausdrücke ohne `return` und Semikolon, z. B. `{{val}} > 20 ? 'warm' : 'kalt'`.
+Ausdrücke ohne Platzhalter werden so behandelt:
+
+* mit `%` als `sprintf`-Formatierung des Wertes, z. B. `%.1f °C`
+* sonst als fester Wert, z. B. `true`, `1`, `'#FF0000'` oder `['Ja', 'Nein']`
+* ist das kein gültiger PHP-Ausdruck, wird er als einfacher Text übernommen, z. B. `Licht an`
+
+Platzhalter                 | Bedeutung                                      | Verfügbar in
+--------------------------- | ---------------------------------------------- | ----------------------------------
+`{{val}}`                   | Rohwert der Variable bzw. Ergebnis der Umrechnung, bei Rückrechnung der Wert vom Display | allen Spalten
+`{{fmt}}`                   | Formatierter Wert der Variable (laut Darstellung bzw. Profil) | Umrechnung, Beschriftung, Wert
+`{{txt}}`                   | Text vom Display (z. B. gewählter Eintrag eines Dropdowns) | Rückrechnung
+
+Mit dem Schalter PRÜFEN lassen sich die Ausdrücke eines ausgewählten Eintrags mit dem aktuellen Variablenwert testen.
+
+__Zuordnung je UI-Objekt:__
+
+Typ           | Beschriftung setzt …            | Wert setzt …                                  | Rückmeldung an Symcon
+------------- | ------------------------------- | --------------------------------------------- | ----------------------
+Arc           | Text (`val_str`)                | Wert (`val`)                                  | bei jeder Wertänderung
+Bar           | Farbe des Indikators (`bg_color10`) | Wert (`val`)                              | –
+Button        | Text                            | –                                             | Drücken (`down`)¹
+Checkbox      | Text                            | – (Wert wird immer als `val` gesetzt)         | Loslassen (`up`)
+Dropdown      | –                               | gewählter Eintrag (`val`)                     | Auswahl geändert (`changed`)
+Gauge         | –                               | Wert (`val`)                                  | –
+Image         | –                               | Bildquelle (`src`)                            | –
+Label         | Text                            | –                                             | –
+LED Indicator | –                               | – (Bool-Variable: 0/255, sonst Wert als `val`) | –
+Line Meter    | Text (`val_str`)                | Wert (`val`)                                  | –
+MessageBox    | Meldungstext²                   | Buttons, z. B. `['Ja', 'Nein']` (Standard: OK) | Button gedrückt (`up`) ➡️ Skript aus Rückrechnung
+Object        | Text (`val_str`)                | Hintergrundfarbe (`bg_color`), z. B. `'#FF0000'` | –
+Roller        | –                               | gewählter Eintrag (`val`)³                    | Auswahl geändert (`changed`)
+Slider        | Text (`val_str`)                | – (Wert wird immer als `val` gesetzt)         | Loslassen (`up`)
+Spinner       | Text (`val_str`)                | Geschwindigkeit, negativ = gegen den Uhrzeigersinn³ | –
+Switch        | –                               | Zustand (`val`)                               | Loslassen (`up`)
+Toggle Button | Text                            | – (Wert wird immer als `val` gesetzt)         | Loslassen (`up`)
+
+¹) Ein einfacher Button liefert keinen Wert – die _Rückrechnung_ muss den zu setzenden Wert liefern (z. B. `true`), oder es wird ein Skript verknüpft.  
+²) Ohne Beschriftung wird keine Meldung angezeigt.  
+³) Ohne Wert-Ausdruck wird nichts gesetzt.  
+
+__Beispiele:__
+
+Ziel                                         | Typ           | Beschriftung              | Wert                          | Umrechnung | Rückrechnung
+-------------------------------------------- | ------------- | ------------------------- | ----------------------------- | ---------- | ------------
+Temperatur mit Einheit anzeigen              | Label         | `{{fmt}}`                 |                               |            |
+Licht schalten, Text je nach Zustand         | Toggle Button | `{{val}} ? 'An' : 'Aus'`  |                               |            |
+Szene per Button aufrufen                    | Button        |                           |                               | `-1`       | `1`
+Helligkeit 0–100 % auf Slider 0–255          | Slider        | `{{fmt}}`                 |                               | `{{val}} * 2.55` | `round({{val}} / 2.55)`
+Fenster offen rot, geschlossen grün          | Object        |                           | `{{val}} ? '#FF0000' : '#00FF00'` |        |
+Rückfrage mit Skript (ID 12345)              | MessageBox    | `'Garage schließen?'`     | `['Ja', 'Nein']`              |            | `12345`
+
+> ✨ Visualisierung ...
 
 Name                                   | Beschreibung
 -------------------------------------- | ----------------------------------
@@ -140,7 +233,7 @@ Kachelhintergrundfarbe (offline)       | Farbauswahl für den Zustand 'OFFLINE'
 Navigationsleiste anzeigen (Vor, Zurück, Weiter)?  | Schaltet die Anzeige der Navigationsbuttons an bzw. aus
 Aktionsleiste anzeigen (Seiten löschen, Seiten neu laden, Synchronisieren, Neustart) | Schaltet die Anzeige der Aktionsbuttons an bzw. aus
 
-> 🧰 Widgets …
+> 🧰 Widgets ...
 
 Name                                   | Beschreibung
 -------------------------------------- | ----------------------------------
@@ -162,7 +255,7 @@ An / Aus (HASP-Uhr)                    | Aktualisierung der Uhrzeit an bzw-aussc
 Seite (HASP-Uhr)                       | Seiten ID, auf welche sich die Uhr befindet
 Minutenkreis (HASP-Uhr)                | Objekt ID des Kreises(Arc), welches die Minuten darstellt
 
-> ⚙️ Erweiterte Einstellungen …
+> ⚙️ Erweiterte Einstellungen ...
 
 Name                                   | Beschreibung
 -------------------------------------- | ----------------------------------
@@ -177,7 +270,7 @@ Langer Leerlauf (Dunkelmodus)          | Wert der Helligkeit nach längerer Nich
 Einbrennschutz automatisch aktivieren! | Schalter, ob der Einbrennschutz automatisch im definierten Zyklus gestartet werden soll!
 Zyklus                                 | Zeitlicher Zyklus in Minuten in dem der Einbrennschutz für 30 Sekunden eingeschaltet wird.
 Hintergrundbeleuchtung dimmen          | Schaltet die Beleuchtung während des Einbrennschutzes (30s) auf die eingestellte Beleuchtungsstärke, solange sie kleiner ist als der Wert für den langen Leerlauf und nicht Null ist!
-Im Ruhezustand keine Syncronisierung!  | Schaltet die Synchrinistaion im Leerlauf ab (idle->long)
+Im Ruhezustand keine Synchronisierung!  | Schaltet die Synchronisation im Leerlauf ab (idle->long)
 Im Ruhezustand auf eine bestimmte Seite wechseln!   | Schalter,  ob im langen Leerlauf eine bestimmte Seite angezeigt werden soll!
 Feste Seite                            | Statische Seitenummer auf welche gewechselt werden soll im langen Leerlauf-Modus
 Dynmische Seite                        | Variable, welche die Seitenummer enthält auf welche gewechselt werden soll im langen Leerlauf-Modus
@@ -188,51 +281,58 @@ Im Ruhezustand durch die Seiten blättern!   | Schalter, ob im langem Leerlauf d
 Intervall                              | Zeitspanne zwischen den einzelnen Seitenwechseln in Minuten (1-60)
 Popup-Meldung schließen nach           | Standardwert in Sekunden nachdem eine MessageBox automatisch geschlossen wird.
 Nachricht an Skript weiterleiten:      | Leitet die Aktion bzw. das Ereignis direkt weiter. Die Daten können im Script mit der Variable $_IPS['Data'] empfangen und ausgewertet werden.
+Nachrichten weiterleiten von:          | Welche Ereignisse weitergeleitet werden: nur zugeordnete Objekte (Standard), nur nicht zugeordnete Objekte oder alle Objekte. In $_IPS['Data'] zeigt 'Registered' (true/false), ob das Objekt in der Objektliste zugeordnet ist.
 
 Aktionsbereich:
 
-> 🚀 Aktion ausführen …
+> 🚀 Aktion ausführen ...
 
 * _Seiten neu laden_ - liest die pages.jsonl neu ein und rendert die Seiten neu
 * _Seiten löschen_ - alle Seiten löschen
 * _Synchronisieren_ - gerade in der Einstellung- bzw. Entwicklungsphase ein ganz wichtiger Button, er geht durch die Mappingliste und ruft für die verknüpften Variablen deren Werte ab und stellt sie dar. Diese Funktion wird auch immer aufgerufen wenn ein Gerät ONLINE geht! Gerade wenn man alles Seiten gelöscht hat und neu lädt ist der Button sehr hilfreich!
 * _Neustart_ - Reboot des Gerätes
 
-> 🧭 Steitennavigation ...
+> 🧭 Seitennavigation ...
 
 * _Vorher_, _Zurück_, _Weiter_ - eigentlich auch selbsterklärend, mit den Buttons kann man auf den Seiten navigieren
 
-> ❓ Abfrage von …
+> ❓ Abfrage von ...
 
 * _Stimmungslicht_ - Anzeige der aktuellen Moodlight-Einstellungen
 * _Status_ - Anzeige der Status-Update-Infos
-* _Bildschirmfoto_ - Erstellen und Speichern eines aktuellen Screenshots (aktuelle Seite), siehe auch imgs Ordner im Modul
+* _Bildschirmfoto_ - Erstellen und Speichern eines aktuellen Screenshots (aktuelle Seite) mit Datum und Uhrzeit im Dateinamen (z. B. `20261011_1530_plate01_screenshot.bmp`), siehe auch imgs Ordner im Modul
 
-### 5. Statusvariablen und Profile
+### 5. Statusvariablen
 
 Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu Fehlfunktionen führen.
 
-Name                        | Typ       | Beschreibung
---------------------------- | --------- | ----------------
-Status                      | Boolean   | Verfügbarkeitsstaus (siehe WWXRD.Status)
-Leerlauf                    | Integer   | Zeigt den Leerlaufzustand an (siehe WWXRD.Status)
-Hintergrundbeleuchtung      | Integer   | Wert der Hintergrundbeleuchtung (siehe WWXRD.Backlight)
-Seite                       | Integer   | Aktuell aufgezeigte Seite (siehe WWXRD.Page)
+Ident                       | Name                        | Typ     | Beschreibung
+--------------------------- | --------------------------- | ------- | ------------------------------
+Status                      | Status                      | Boolean | Verfügbarkeitsstatus des Displays
+Idle                        | Leerlauf                    | Integer | Zeigt den Leerlaufzustand an
+Backlight                   | Hintergrundbeleuchtung      | Integer | Wert der Hintergrundbeleuchtung
+Page                        | Seite                       | Integer | Aktuell angezeigte Seite
+Navigate                    | Navigiere                   | String  | Navigation zwischen den Seiten des Displays
+Action                      | Aktion                      | Integer | Ausführen einer Aktion auf dem Display
 
-Folgendes Profil wird angelegt:
+### 6. Darstellungen
 
-Name                 | Typ       | Beschreibung
--------------------- | --------- | ----------------
-WWXRD.Status         | Boolean   | Online (true) bzw. Offline (false)
-WWXRD.Idle           | Integer   | Aus, Kurz oder Lang (0, 1, 2)
-WWXRD.Backlight      | Integer   | Helligkeitswert (1 .. 255)
-WWXRD.Page           | Integer   | Seitennummer (1 .. 12)
+Die Darstellungen werden direkt an den Statusvariablen hinterlegt, es werden keine Profile angelegt.
 
-### 6. Visualisierung
+Variable                    | Darstellung   | Werte
+--------------------------- | ------------- | ------------------------------
+Status                      | Wertanzeige   | Online (true), Offline (false)
+Leerlauf                    | Wertanzeige   | Aus (0), Kurz (1), Lang (2)
+Hintergrundbeleuchtung      | Schieberegler | 1 – 255 (Schrittweite 1)
+Seite                       | Schieberegler | 1 – 12 (Schrittweite 1)
+Navigiere                   | Aufzählung    | Vorher, Zurück, Weiter
+Aktion                      | Aufzählung    | Seiten löschen, Seiten neu laden, Synchronisieren, Neustart
+
+### 7. Visualisierung
 
 Man könnte die Statusvariablen direkt in die Visualisierung verlinken.
 
-### 7. PHP-Befehlsreferenz
+### 8. Befehlsreferenz
 
 ```php
 void WWXRD_DisableIdle(int $InstanzID, bool $disable);
@@ -262,7 +362,30 @@ Die Funktion liefert keinerlei Rückgabewert.
 
 __Beispiel__: `WWXRD_SendJSONL(12345, ['page' => 1,'id' => 99),'obj' => 'msgbox','text' => 'A message box with two buttons','options' => ['Open','Close']]);`
 
-### 8. Versionshistorie
+### 9. Versionshistorie
+
+v5.0.20261011
+* _NEU_: Weiterleitung an ein Skript wahlweise für zugeordnete, nicht zugeordnete oder alle Objekte
+* _NEU_: Rückmeldung beim Hochladen des Seitenlayouts (erfolgreich oder Fehler)
+* _NEU_: Downloads mit Datum und Gerätenamen im Dateinamen (JJJJMMTT_Gerät_pages.jsonl, JJJJMMTT_Gerät_objects.json, JJJJMMTT_HHMM_Gerät_screenshot.bmp)
+* _FIX_: Sicherheitslücke bei Berechnungen geschlossen – Texte vom Display können keinen Code mehr ausführen
+* _FIX_: Werte mit Hochkomma (z.B. "Kinder's") führen in Berechnungen nicht mehr zu Fehlern
+* _FIX_: Keine falschen Fehlermeldungen mehr im Log bei Objekten, die mit einem Skript verknüpft sind
+* _FIX_: Gelöschte verknüpfte Objekte werden jetzt im Log gemeldet
+* _FIX_: Display wird nicht mehr gedimmt, wenn der Leerlauf deaktiviert ist
+* _FIX_: Konfiguration hängt nicht mehr, wenn das Display nicht erreichbar ist
+* _FIX_: Messagebox mit hinterlegtem Skript startet dieses jetzt zuverlässig
+* _FIX_: Unerwartete Nachrichten vom Display führen nicht mehr zu Fehlern
+* _FIX_: Leere Auswahlfelder (Objekt, Skript) werden korrekt ignoriert
+* _FIX_: Verknüpfte Objekte werden erst nach dem Systemstart geprüft (kein falscher Fehlerstatus beim Neustart)
+* _FIX_: Darstellungen der Statusvariablen bereinigt (nur noch notwendige Parameter)
+* _FIX_: Umrechnung `-1` verhindert jetzt auch bei Variablenänderungen das Senden an das Display
+* _FIX_: Ausdrücke ohne Platzhalter liefern feste Werte mit richtigem Typ (z. B. `true`, `1`, `['Ja', 'Nein']` für MessageBox-Buttons), sonst Text
+* _FIX_: Rückrechnung wird jetzt auch bei Arc angewendet
+* _NEU_: Dokumentation der Objektzuordnung je UI-Objekt, Platzhalter und Beispiele
+* _NEU_: Vorlagen der Widgets (Analoguhr, QLOCKTWO, Fallblattuhr, HASP-Uhr) mit `"tag":"skip"` markiert
+* _NEU_: Einlesen mit Filtern für neue Objekte (eigene Aktion, deaktiviert, ausgeblendet, Seite 0, Bilder/Basisobjekte, Tag "skip") und Ergebnisliste der betroffenen Objekte
+* _FIX_: Kleinere Codeoptimierungen und Aufräumarbeiten
 
 v4.1.20260828
 * _FIX_: Problem in MQTT Pipeline behoben
@@ -426,7 +549,7 @@ Vielen Dank an Euch!
 
 ## Entwickler
 
-Seit nunmehr über 10 Jahren fasziniert mich das Thema Haussteuerung. In den letzten Jahren betätige ich mich auch intensiv in der IP-Symcon Community und steuere dort verschiedenste Skript und Module bei. Ihr findet mich dort unter dem Namen @pitti ;-)
+Seit nunmehr über 10 Jahren fasziniert mich das Thema Haussteuerung. In den letzten Jahren betätige ich mich auch intensiv in der Symcon Community und steuere dort verschiedenste Skript und Module bei. Ihr findet mich dort unter dem Namen @pitti ;-)
 
 [![GitHub](https://img.shields.io/badge/GitHub-@wilkware-181717.svg?style=for-the-badge&logo=github)](https://wilkware.github.io/)
 

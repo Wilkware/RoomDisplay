@@ -65,18 +65,21 @@
                     "items": [
                         {
                             "type": "Button",
+                            "name": "LayoutDownload",
                             "caption": "Download¹",
                             "onClick": "IPS_RequestAction($id,'LayoutLoad', $Layout);",
                             "enabled": false
                         },
                         {
                             "type": "Button",
+                            "name": "LayoutUpload",
                             "caption": "Upload²",
                             "onClick": "IPS_RequestAction($id,'LayoutSave', $Layout);",
                             "enabled": false
                         },
                         {
                             "type": "Button",
+                            "name": "LayoutBackup",
                             "caption": "Backup¹",
                             "onClick": "echo \"../hook/plate$id?file=pages\";",
                             "link": true,
@@ -91,6 +94,7 @@
                         {
                             "type": "PopupButton",
                             "caption": "Parse³",
+                            "onClick": "IPS_RequestAction($id,'ParseReset','');",
                             "popup": {
                                 "caption": "Parse",
                                 "items": [
@@ -98,29 +102,148 @@
                                         "type": "CheckBox",
                                         "name": "CheckParseNew",
                                         "caption": "Only create new objects",
-                                        "value": true
+                                        "value": true,
+                                        "onChange": "IPS_RequestAction($id,'ParseNew', $CheckParseNew);"
+                                    },
+                                    {
+                                        "type": "Label",
+                                        "caption": "... but skip:"
+                                    },
+                                    {
+                                        "type": "RowLayout",
+                                        "items": [
+                                            {
+                                                "type": "Label",
+                                                "caption": " ",
+                                                "width": "20px"
+                                            },
+                                            {
+                                                "type": "CheckBox",
+                                                "name": "CheckParseSkipAction",
+                                                "caption": "Objects with own action",
+                                                "value": true,
+                                                "onChange": "IPS_RequestAction($id,'ParseReset','');"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "RowLayout",
+                                        "items": [
+                                            {
+                                                "type": "Label",
+                                                "caption": " ",
+                                                "width": "20px"
+                                            },
+                                            {
+                                                "type": "CheckBox",
+                                                "name": "CheckParseSkipDisabled",
+                                                "caption": "Disabled or not clickable objects (enabled/click = 0)",
+                                                "value": false,
+                                                "onChange": "IPS_RequestAction($id,'ParseReset','');"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "RowLayout",
+                                        "items": [
+                                            {
+                                                "type": "Label",
+                                                "caption": " ",
+                                                "width": "20px"
+                                            },
+                                            {
+                                                "type": "CheckBox",
+                                                "name": "CheckParseSkipHidden",
+                                                "caption": "Hidden objects (hidden = 1)",
+                                                "value": false,
+                                                "onChange": "IPS_RequestAction($id,'ParseReset','');"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "RowLayout",
+                                        "items": [
+                                            {
+                                                "type": "Label",
+                                                "caption": " ",
+                                                "width": "20px"
+                                            },
+                                            {
+                                                "type": "CheckBox",
+                                                "name": "CheckParseSkipPage0",
+                                                "caption": "Objects on page 0 (shown on all pages)",
+                                                "value": false,
+                                                "onChange": "IPS_RequestAction($id,'ParseReset','');"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "RowLayout",
+                                        "items": [
+                                            {
+                                                "type": "Label",
+                                                "caption": " ",
+                                                "width": "20px"
+                                            },
+                                            {
+                                                "type": "CheckBox",
+                                                "name": "CheckParseSkipStatic",
+                                                "caption": "Images and base objects (img, obj)",
+                                                "value": false,
+                                                "onChange": "IPS_RequestAction($id,'ParseReset','');"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "RowLayout",
+                                        "items": [
+                                            {
+                                                "type": "Label",
+                                                "caption": " ",
+                                                "width": "20px"
+                                            },
+                                            {
+                                                "type": "CheckBox",
+                                                "name": "CheckParseSkipTag",
+                                                "caption": "Objects marked with tag \"skip\"",
+                                                "value": true,
+                                                "onChange": "IPS_RequestAction($id,'ParseReset','');"
+                                            }
+                                        ]
                                     },
                                     {
                                         "type": "CheckBox",
                                         "name": "CheckParseChange",
                                         "caption": "Overwrite existing objects (correct type)",
-                                        "value": true
+                                        "value": true,
+                                        "onChange": "IPS_RequestAction($id,'ParseReset','');"
                                     },
                                     {
                                         "type": "CheckBox",
                                         "name": "CheckParseDelete",
                                         "caption": "Delete all non-existing objects",
-                                        "value": false
+                                        "value": false,
+                                        "onChange": "IPS_RequestAction($id,'ParseReset','');"
+                                    },
+                                    {
+                                        "type": "Button",
+                                        "caption": "Simulate",
+                                        "onClick": "IPS_RequestAction($id,'LayoutParse', json_encode(['new'=>$CheckParseNew,'change'=>$CheckParseChange,'delete'=>$CheckParseDelete,'skip'=>['action'=>$CheckParseSkipAction,'disabled'=>$CheckParseSkipDisabled,'hidden'=>$CheckParseSkipHidden,'page0'=>$CheckParseSkipPage0,'static'=>$CheckParseSkipStatic,'tag'=>$CheckParseSkipTag], 'simulate' => true]));"
+                                    },
+                                    {
+                                        "type": "ValidationTextBox",
+                                        "name": "ParseResult",
+                                        "caption": "Result of the simulation",
+                                        "multiline": true,
+                                        "visible": false,
+                                        "width": "100%",
+                                        "value": ""
                                     }
                                 ],
                                 "buttons": [
                                     {
-                                        "caption": "Simulate",
-                                        "onClick": "IPS_RequestAction($id,'LayoutParse', serialize(['new'=>$CheckParseNew,'change'=>$CheckParseChange,'delete'=>$CheckParseDelete, 'simulate' => true]));"
-                                    },
-                                    {
                                         "caption": "Start",
-                                        "onClick": "IPS_RequestAction($id,'LayoutParse', serialize(['new'=>$CheckParseNew,'change'=>$CheckParseChange,'delete'=>$CheckParseDelete, 'simulate' => false]));"
+                                        "onClick": "IPS_RequestAction($id,'LayoutParse', json_encode(['new'=>$CheckParseNew,'change'=>$CheckParseChange,'delete'=>$CheckParseDelete,'skip'=>['action'=>$CheckParseSkipAction,'disabled'=>$CheckParseSkipDisabled,'hidden'=>$CheckParseSkipHidden,'page0'=>$CheckParseSkipPage0,'static'=>$CheckParseSkipStatic,'tag'=>$CheckParseSkipTag], 'simulate' => false]));"
                                     }
                                 ]
                             }
@@ -208,7 +331,7 @@
                                         "value": 9
                                     },
                                     {
-                                        "caption": "LED Inicator",
+                                        "caption": "LED Indicator",
                                         "value": 10
                                     },
                                     {
@@ -1266,10 +1389,35 @@
                     "width": "200px"
                 },
                 {
-                    "type": "SelectScript",
-                    "name": "ForwardMessageScript",
-                    "caption": "Forward message to script:",
-                    "width": "616px"
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "SelectScript",
+                            "name": "ForwardMessageScript",
+                            "caption": "Forward message to script:",
+                            "width": "358px"
+                        },
+                        {
+                            "type": "Select",
+                            "name": "ForwardMessageMode",
+                            "caption": "Forward messages from:",
+                            "width": "300px",
+                            "options": [
+                                {
+                                    "caption": "Assigned objects only",
+                                    "value": 0
+                                },
+                                {
+                                    "caption": "Unassigned objects only",
+                                    "value": 1
+                                },
+                                {
+                                    "caption": "All objects",
+                                    "value": 2
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         }
@@ -1361,6 +1509,7 @@
                         },
                         {
                             "type": "Button",
+                            "name": "DisplayScreenshot",
                             "caption": "Screenshot",
                             "onClick": "echo \"../hook/plate$id?file=screenshot\";",
                             "link": true,
@@ -1401,6 +1550,7 @@
                 },
                 {
                     "type": "Label",
+                    "name": "Version",
                     "color": 8421504
                 }
             ]
